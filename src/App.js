@@ -1,7 +1,8 @@
 import React from 'react';
 
-const App = (props) => {
-  return <h3>Hello World</h3>;
-};
+function App() {
+  console.log(process.env.REACT_APP_ABC);
+  return (<h2>Hello world</h2>);
+}
 
 export default App;

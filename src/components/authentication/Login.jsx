@@ -1,40 +1,20 @@
 
-import {
-	Container,
-	Button,
-    ButtonGroup,
-	Grid,
-	Paper,
-	TextField,
-	IconButton,
-	InputAdornment,
-    Box
-} from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { IconButton, InputAdornment, Container, Grid, Paper, TextField, Button, Typography, Link } from "@mui/material"
+import { Formik, Form, Field, ErrorMessage } from 'formik'
+import * as Yup from 'yup'
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import React, { useState, useEffect } from "react";
-import axios from "axios";
 
-const LoginPage = () => {
+
+const LoginPage = ({ handleChange }) => {
+    useEffect(() => {
+        document.title = `Login Page`;
+    }, []);
 
     const [values, setValues] = useState({
-        email: "",
-        pass: "",
         showPass: false,
     });
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        axios
-            .post("https://reqres.in/api/login", {
-                email: values.email,
-                password: values.pass,
-            })
-            .then((res) => {
-                localStorage.setItem("token", res.data.token);
-            })
-            .catch((err) => console.error(err));
-    };
 
     const handlePassVisibilty = () => {
         setValues({
@@ -43,102 +23,101 @@ const LoginPage = () => {
         });
     };
 
-    useEffect(() => {
-        document.title = `Login Page`;
-      }, []);
+    const btnstyle = { margin: '8px 0' }
 
-	return (
-		<div>
+    const initialValues = {
+        username: '',
+        password: '',
+        remember: false
+    }
+    const validationSchema = Yup.object().shape({
+        username: Yup.string().email('please enter valid email').required("Required"),
+        password: Yup.string().required("Required").min(4)
+    })
+    const onSubmit = (values, props) => {
+        console.log(values)
+        setTimeout(() => {
+            props.resetForm()
+            props.setSubmitting(false)
+        }, 2000)
+
+    }
+    return (
+        <div>
             <Container maxWidth="sm">
             <Grid
                 container
-                spacing={2}
+                spacing={1}
                 direction="column"
                 justifyContent="center"
                 style={{ minHeight: "100vh" }}
             >
-            <Paper elelvation={2} sx={{ padding: 5 }}>
-            <form onSubmit={handleSubmit}>
-            <Grid container direction="column" spacing={2}>
+                <Paper elelvation={2} sx={{ padding: 5 }}>
+                <Grid container direction="column" spacing={1}>
+                    <Grid align='center'>
+                        <h1>Log In</h1>
+                    </Grid>
+                    <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema}>
+                        {(props) => (
+                            <Form>
+                                <Grid item>
+                                    <Field as={TextField} label='Username' name="username"
+                                        placeholder='Enter username' fullWidth required
+                                        helperText={<ErrorMessage name="username" />}
+                                    />
+                                </Grid>
+                                <Grid item rowSpacing={5}>
+                                    <Field as={TextField} 
+                                    label='Password' 
+                                    name="password"
+                                    placeholder='Enter password' 
+                                    type={values.showPass ? "text" : "password"} 
+                                    fullWidth 
+                                    required
+                                    helperText={<ErrorMessage name="password" />} 
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    onClick={handlePassVisibilty}
+                                                    aria-label="toggle password"
+                                                    edge="end"
+                                                >
+                                                    {values.showPass ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                    
+                                    />
+                                </Grid>
+                                <Grid item>
+                                    <Button type='submit' color='primary' variant="contained" disabled={props.isSubmitting}
+                                    style={btnstyle} fullWidth>{props.isSubmitting ? "Loading" : "Log in"}</Button>
 
-
-                <Grid align='center'>
-                     {/* <Avatar style={avatarStyle}><LockOutlinedIcon/></Avatar> */}
-                    <h2>Log In</h2>
-                </Grid>
-
-
-                <Grid item>
-                    <TextField
-                        type="email"
-                        fullWidth
-                        label="Enter your email"
-                        placeholder="Email Address"
-                        variant="outlined"
-                        required
-                        onChange={(e) => setValues({ ...values, email: e.target.value })}
-                    />
-                </Grid>
-
-                <Grid item>
-                <TextField
-                    type={values.showPass ? "text" : "password"}
-                    fullWidth
-                    label="Password"
-                    placeholder="Password"
-                    variant="outlined"
-                    required
-                    onChange={(e) => setValues({ ...values, pass: e.target.value })}
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton
-                                    onClick={handlePassVisibilty}
-                                    aria-label="toggle password"
-                                    edge="end"
-                                >
-                                    {values.showPass ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                                </IconButton>
-                            </InputAdornment>
-                        ),
-                    }}
-                />
-                </Grid>
-
-                <Grid item>
-                <Button type="submit" fullWidth variant="contained">
-                    Log In
-                </Button>
-                </Grid>
-
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        '& > *': {
-                        m: 1,
-                        },
-                    }}
-                    >
-                    <ButtonGroup variant="text" aria-label="text button group">
-                        <Button variant="text" size="small" href="/">
+                                </Grid>
+                                
+                            </Form>
+                        )}
+                    </Formik>
+                    <Typography >
+                        <Link href="/forgotpwd" >
+                            Forgot password ?
+                    </Link>
+                    </Typography>
+                    <Typography > Do you have an account ?
+                        <Link href="/register" onClick={() => handleChange("event", 1)} >
                             Register
-                        </Button>
-                        <Button variant="text" size="small" href="/">
-                        Forgot password?
-                        </Button>
-                        
-                    </ButtonGroup>
-                </Box>
-
-            </Grid>
-            </form>
-            </Paper>
+                    </Link>
+                    </Typography>
+                </Grid>
+                </Paper>
             </Grid>
             </Container>
-		</div>
-	);
-};
+            
+        </div>
+        
+    )
+}
 
-export default LoginPage;
+export default LoginPage

@@ -1,8 +1,12 @@
+
 import React from "react";
 
-function RegisterPage(props)
-{
-    return <h2>Register Page</h2>
-}
+const RegisterPage = () => {
 
-export default RegisterPage;
+
+	return (
+		<h2>RegisterPage</h2>
+	);
+};
+
+export default RegisterPage

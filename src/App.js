@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router";
 import ForgotPasswordPage from "./components/authentication/ForgotPassword";
 import LoginPage from "./components/authentication/Login";
 import RegisterPage from "./components/authentication/Register";
+import ChangePasswordPage from "./components/authentication/ChangePassword";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/register" exact element={<RegisterPage/>} />
         <Route path="/login" exact element={<LoginPage/>} />
         <Route path="/forgotpwd" exact element={<ForgotPasswordPage/>} />
+        <Route path="/changepwd" exact element={<ChangePasswordPage/>} />
       </Routes>
     </>
   );

@@ -24,15 +24,17 @@ const LoginPage = ({ handleChange }) => {
     };
 
     const btnstyle = { margin: '8px 0' }
+    const passwordRegExp=/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$/
 
     const initialValues = {
-        username: '',
+        email: '',
         password: '',
         remember: false
     }
     const validationSchema = Yup.object().shape({
-        username: Yup.string().email('please enter valid email').required("Required"),
-        password: Yup.string().required("Required").min(4)
+        email: Yup.string().email('please enter valid email').required("Required"),
+        password: Yup.string().min(8, "Minimum characters should be 8")
+        .matches(passwordRegExp,"Password must have one upper, lower case, number").required('Required')
     })
     const onSubmit = (values, props) => {
         console.log(values)
@@ -61,12 +63,12 @@ const LoginPage = ({ handleChange }) => {
                         {(props) => (
                             <Form>
                                 <Grid item>
-                                    <Field as={TextField} label='Username' name="username"
-                                        placeholder='Enter username' fullWidth required
-                                        helperText={<ErrorMessage name="username" />}
+                                    <Field as={TextField} label='Email' name="email"
+                                        placeholder='Enter email' fullWidth required
+                                        helperText={<ErrorMessage name="email" />}
                                     />
                                 </Grid>
-                                <Grid item rowSpacing={5}>
+                                <Grid item>
                                     <Field as={TextField} 
                                     label='Password' 
                                     name="password"

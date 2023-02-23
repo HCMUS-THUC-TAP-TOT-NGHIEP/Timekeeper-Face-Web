@@ -5,6 +5,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import axios from "axios";
 
 
 const LoginPage = ({ handleChange }) => {
@@ -29,27 +30,31 @@ const LoginPage = ({ handleChange }) => {
     const initialValues = {
         email: '',
         password: '',
-        remember: false
     }
     const validationSchema = Yup.object().shape({
-        email: Yup.string().email('please enter valid email').required("Required"),
+        email: Yup.string().email('please enter valid email').required("Email is required"),
         password: Yup.string().min(8, "Minimum characters should be 8")
-        .matches(passwordRegExp,"Password must have one upper, lower case, number").required('Required')
+        .matches(passwordRegExp,"Password must have one upper, lower case, number").required('Password is required')
     })
     const onSubmit = (values, props) => {
         console.log(values)
-        setTimeout(() => {
-            props.resetForm()
-            props.setSubmitting(false)
-        }, 2000)
-
+        axios
+            .post('http://localhost:3000/login', {
+                email: values.email,
+                password: values.password,
+            })
+            .then((response) => {
+                localStorage.setItem("token", response.data.token);
+            })
+            .catch((error) => { alert(error); });
+            
     }
     return (
-        <div>
+        <div style={{backgroundColor: '#EEEEEE'}}>
             <Container maxWidth="sm">
             <Grid
                 container
-                spacing={1}
+                spacing={5}
                 direction="column"
                 justifyContent="center"
                 style={{ minHeight: "100vh" }}
@@ -62,38 +67,35 @@ const LoginPage = ({ handleChange }) => {
                     <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema}>
                         {(props) => (
                             <Form>
-                                <Grid item>
+                                <div>
+                                <Grid item p={1}>
                                     <Field as={TextField} label='Email' name="email"
-                                        placeholder='Enter email' fullWidth required
-                                        helperText={<ErrorMessage name="email" />}
+                                        placeholder='Enter email' fullWidth 
+                                        helperText={<ErrorMessage name="email" render={msg => <div style={{color: 'red'}}>{msg}</div>} />}
                                     />
                                 </Grid>
-                                <Grid item>
-                                    <Field as={TextField} 
-                                    label='Password' 
-                                    name="password"
-                                    placeholder='Enter password' 
-                                    type={values.showPass ? "text" : "password"} 
-                                    fullWidth 
-                                    required
-                                    helperText={<ErrorMessage name="password" />} 
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <IconButton
-                                                    onClick={handlePassVisibilty}
-                                                    aria-label="toggle password"
-                                                    edge="end"
-                                                >
-                                                    {values.showPass ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                    
-                                    />
-                                </Grid>
-                                <Grid item>
+                                </div>
+                                
+                                <div>
+                                    <Grid item p={1}>
+                                        <Field as={TextField} label='Password' name="password"
+                                            placeholder='Enter password' fullWidth 
+                                            helperText={<ErrorMessage name="password" render={msg => <div style={{color: 'red'}}>{msg}</div>} />}
+                                            type={values.showPass? 'text' : 'password'}
+                                            InputProps={{
+                                                endAdornment: (
+                                                    <InputAdornment position="end">
+                                                        <IconButton onClick={handlePassVisibilty}>
+                                                            {values.showPass? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                                        </IconButton>
+                                                    </InputAdornment>
+                                                )
+                                            }}
+                                        />
+                                    </Grid>
+                                </div>
+                            
+                                <Grid item p={1}>
                                     <Button type='submit' color='primary' variant="contained" disabled={props.isSubmitting}
                                     style={btnstyle} fullWidth>{props.isSubmitting ? "Loading" : "Log in"}</Button>
 
@@ -102,16 +104,18 @@ const LoginPage = ({ handleChange }) => {
                             </Form>
                         )}
                     </Formik>
-                    <Typography >
-                        <Link href="/forgotpwd" >
-                            Forgot password ?
-                    </Link>
-                    </Typography>
-                    <Typography > Do you have an account ?
-                        <Link href="/register" onClick={() => handleChange("event", 1)} >
-                            Register
-                    </Link>
-                    </Typography>
+                    <Grid item p={1}>
+                        <Typography >
+                            <Link href="/forgotpwd" >
+                                Forgot password ?
+                        </Link>
+                        </Typography>
+                        <Typography > Do you have an account ?
+                            <Link href="/register" onClick={() => handleChange("event", 1)} >
+                                Register
+                        </Link>
+                        </Typography>
+                    </Grid>
                 </Grid>
                 </Paper>
             </Grid>

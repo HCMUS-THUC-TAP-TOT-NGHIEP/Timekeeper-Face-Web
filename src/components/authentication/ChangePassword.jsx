@@ -5,6 +5,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import axios from "axios";
 
 const ChangePasswordPage = ({ handleChange }) => {
     useEffect(() => {
@@ -29,27 +30,31 @@ const ChangePasswordPage = ({ handleChange }) => {
         email: '',
         password: '',
         newPassword: '',
-        confirmNewPassword:'',
-        remember: false
-    }
+        confirmNewPassword:''
+        }
     const validationSchema = Yup.object().shape({
-        email: Yup.string().email('please enter valid email').required("Required"),
+        email: Yup.string().email('please enter valid email').required("Email is required"),
         password: Yup.string().min(8, "Minimum characters should be 8")
-        .matches(passwordRegExp,"Password must have one upper, lower case, number").required('Required'),
+        .matches(passwordRegExp,"Password must have one upper, lower case, number").required('Password is required'),
         newPassword: Yup.string().min(8, "Minimum characters should be 8")
-        .matches(passwordRegExp,"Password must have one upper, lower case, number").required('Required'),
-        confirmNewPassword:Yup.string().oneOf([Yup.ref('newPassword')],"Password not matches").required('Required')
+        .matches(passwordRegExp,"Password must have one upper, lower case, number").required('New password is required'),
+        confirmNewPassword:Yup.string().oneOf([Yup.ref('newPassword')],"Password not matches").required('Confirm new password is required')
     })
     const onSubmit = (values, props) => {
         console.log(values)
-        setTimeout(() => {
-            props.resetForm()
-            props.setSubmitting(false)
-        }, 2000)
-
+        axios
+            .post('http://localhost:3000/changepwd', {
+                email: values.email,
+                password: values.password,
+            })
+            .then((response) => {
+                localStorage.setItem("token", response.data.token);
+            })
+            .catch((error) => { alert(error); });
+            
     }
     return (
-        <div>
+        <div style={{backgroundColor: '#EEEEEE'}}>
             <Container maxWidth="sm">
             <Grid
                 container
@@ -66,13 +71,13 @@ const ChangePasswordPage = ({ handleChange }) => {
                     <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema}>
                         {(props) => (
                             <Form>
-                                <Grid item>
+                                <Grid item p={1}>
                                     <Field as={TextField} label='Email' name="email"
                                         placeholder='Enter email' fullWidth required
-                                        helperText={<ErrorMessage name="email" />}
+                                        helperText={<ErrorMessage name="email" render={msg => <div style={{color: 'red'}}>{msg}</div>} />}
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid item p={1}>
                                     <Field as={TextField} 
                                     label='Password' 
                                     name="password"
@@ -80,7 +85,7 @@ const ChangePasswordPage = ({ handleChange }) => {
                                     type={values.showPass ? "text" : "password"} 
                                     fullWidth 
                                     required
-                                    helperText={<ErrorMessage name="password" />} 
+                                    helperText={<ErrorMessage name="password" render={msg => <div style={{color: 'red'}}>{msg}</div>} />} 
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="end">
@@ -97,7 +102,7 @@ const ChangePasswordPage = ({ handleChange }) => {
                                     />
                                 </Grid>
 
-                                <Grid item>
+                                <Grid item p={1}>
                                     <Field as={TextField} 
                                     label='New password' 
                                     name="newPassword"
@@ -105,7 +110,7 @@ const ChangePasswordPage = ({ handleChange }) => {
                                     type={values.showPass ? "text" : "password"} 
                                     fullWidth 
                                     required
-                                    helperText={<ErrorMessage name="newPassword" />} 
+                                    helperText={<ErrorMessage name="newPassword" render={msg => <div style={{color: 'red'}}>{msg}</div>} />} 
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="end">
@@ -122,7 +127,7 @@ const ChangePasswordPage = ({ handleChange }) => {
                                     />
                                 </Grid>
 
-                                <Grid item>
+                                <Grid item p={1}>
                                     <Field as={TextField} 
                                     label='Confirm new password' 
                                     name="confirmNewPassword"
@@ -130,7 +135,7 @@ const ChangePasswordPage = ({ handleChange }) => {
                                     type={values.showPass ? "text" : "password"} 
                                     fullWidth 
                                     required
-                                    helperText={<ErrorMessage name="confirmNewPassword" />} 
+                                    helperText={<ErrorMessage name="confirmNewPassword" render={msg => <div style={{color: 'red'}}>{msg}</div>} />} 
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="end">
@@ -146,7 +151,7 @@ const ChangePasswordPage = ({ handleChange }) => {
                                     }}
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid item p={1}>
                                     <Button type='submit' color='primary' variant="contained" disabled={props.isSubmitting}
                                     style={btnstyle} fullWidth>{props.isSubmitting ? "Loading" : "Change password"}</Button>
 
@@ -155,11 +160,14 @@ const ChangePasswordPage = ({ handleChange }) => {
                             </Form>
                         )}
                     </Formik>
-                    <Typography >
-                        <Link href="/forgotpwd" >
-                            Forgot password ?
-                    </Link>
-                    </Typography>
+                    <Grid item p={1}>
+                        <Typography >
+                            <Link href="/forgotpwd" >
+                                Forgot password ?
+                        </Link>
+                        </Typography>
+                    </Grid>
+                    
                 </Grid>
                 </Paper>
             </Grid>

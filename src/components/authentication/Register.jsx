@@ -11,6 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { notification } from "antd";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,13 +20,14 @@ import { RegisterAccount } from "./api";
 
 const RegisterPage = ({ handleChange }) => {
   const navigate = useNavigate();
-  useEffect(() => {
-    document.title = `Register Page`;
-  }, []);
-
+  const [notify, contextHolder] = notification.useNotification();
   const [values, setValues] = useState({
     showPass: false,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  useEffect(() => {
+    document.title = `Register Page`;
+  }, []);
 
   const handlePassVisibilty = () => {
     setValues({
@@ -72,19 +74,28 @@ const RegisterPage = ({ handleChange }) => {
     RegisterAccount(requestData)
       .then((response) => {
         var { Status, Description } = response;
-        if (Status != 1) {
-            alert('Cannot register account')
+        if (Status !== 1) {
+          notify.error({
+            message: "Register account failed",
+            description: Description,
+          });
+          setIsSubmitting(false);
           return;
         }
-        navigate("/login")
+        navigate("/login");
       })
       .catch((error) => {
+        notify.error({
+          message: "Register account failed",
+          description: error,
+        });
         console.log(error);
       });
   };
 
   return (
     <div style={{ backgroundColor: "#EEEEEE" }}>
+      {contextHolder}
       <Container maxWidth="sm">
         <Grid
           container
@@ -238,11 +249,11 @@ const RegisterPage = ({ handleChange }) => {
                         type="submit"
                         color="primary"
                         variant="contained"
-                        disabled={props.isSubmitting}
+                        disabled={isSubmitting}
                         style={btnstyle}
                         fullWidth
                       >
-                        {props.isSubmitting ? "Loading" : "Register"}
+                        {isSubmitting ? "Loading" : "Register"}
                       </Button>
                     </Grid>
                   </Form>

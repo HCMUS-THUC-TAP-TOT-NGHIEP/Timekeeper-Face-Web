@@ -12,6 +12,5 @@ export const RegisterAccount = async (requestData) => {
     firstName: requestData.firstName,
   };
   var response = await AxiosInstance.post("auth/register", bodyData);
-//   console.log(response.data);
   return response.data;
 };

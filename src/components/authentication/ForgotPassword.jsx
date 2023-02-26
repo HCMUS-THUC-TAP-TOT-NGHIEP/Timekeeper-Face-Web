@@ -231,6 +231,7 @@ export const ResetPasswordPage = function (props) {
                     message: "Password must be at least 8 characters.",
                   },
                 ]}
+                hasFeedback
               >
                 <Input.Password size="large" />
               </Form.Item>
@@ -256,6 +257,7 @@ export const ResetPasswordPage = function (props) {
                     },
                   }),
                 ]}
+                hasFeedback
               >
                 <Input.Password size="large" />
               </Form.Item>

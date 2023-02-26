@@ -14,3 +14,22 @@ export const RegisterAccount = async (requestData) => {
   var response = await AxiosInstance.post("auth/register", bodyData);
   return response.data;
 };
+
+export const RequestResetLink = async (requestData) => {
+  var params = {
+    email: requestData.email,
+  };
+  var response = await AxiosInstance.get("auth/request/reset-password", {
+    params: params,
+  });
+  return response.data;
+};
+
+export const ResetPassword = async (requestData) => {
+  var bodyData = {
+    access_token: requestData.access_token,
+    new_password: requestData.new_password,
+  };
+  var response = await AxiosInstance.post("auth/reset_password", bodyData);
+  return response.data;
+};

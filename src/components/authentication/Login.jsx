@@ -65,7 +65,8 @@ const LoginPage = ({ handleChange }) => {
     };
     LoginAccount(requestData)
       .then((response) => {
-        const { Status, Description, ResponseData } = response;
+        console.log(response);
+        var { Status, Description, ResponseData } = response;
         if (Status !== 1) {
           notify.error({
             message: "Login account failed",
@@ -84,9 +85,9 @@ const LoginPage = ({ handleChange }) => {
           description: error,
         });
         console.log(error);
-        window.location.reload(); // reload
       });
   };
+
   return (
     <div style={{ backgroundColor: "#EEEEEE" }}>
       {contextHolder}
@@ -122,7 +123,7 @@ const LoginPage = ({ handleChange }) => {
                             <ErrorMessage
                               name="email"
                               render={(msg) => (
-                                <div style={{ color: "red" }}>{msg}</div>
+                                <span style={{ color: "red" }}>{msg}</span>
                               )}
                             />
                           }
@@ -142,7 +143,7 @@ const LoginPage = ({ handleChange }) => {
                             <ErrorMessage
                               name="password"
                               render={(msg) => (
-                                <div style={{ color: "red" }}>{msg}</div>
+                                <span style={{ color: "red" }}>{msg}</span>
                               )}
                             />
                           }

@@ -15,6 +15,15 @@ export const RegisterAccount = async (requestData) => {
   return response.data;
 };
 
+export const LoginAccount = async (requestData) => {
+  var bodyData = {
+    email: requestData.email,
+    password: requestData.password,
+  };
+  var response = await AxiosInstance.post("auth/login", bodyData);
+  return response.data;
+};
+
 export const RequestResetLink = async (requestData) => {
   var params = {
     email: requestData.email,

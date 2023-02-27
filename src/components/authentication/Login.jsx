@@ -5,10 +5,17 @@ import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { LoginAccount } from "./api";
+import { notification } from "antd";
 
 
 const LoginPage = ({ handleChange }) => {
+
+    const navigate = useNavigate();
+    const [notify] = notification.useNotification();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     useEffect(() => {
         document.title = `Login Page`;
     }, []);
@@ -36,18 +43,38 @@ const LoginPage = ({ handleChange }) => {
         password: Yup.string().min(8, "Minimum characters should be 8")
         .matches(passwordRegExp,"Password must have one upper, lower case, number").required('Password is required')
     })
-    const onSubmit = (values, props) => {
+    const onSubmit = (values) => {
         console.log(values)
-        axios
-            .post('http://localhost:3000/login', {
-                email: values.email,
-                password: values.password,
-            })
+        var requestData = {
+            email: values.email,
+            password: values.password
+        };
+        LoginAccount(requestData)
             .then((response) => {
-                localStorage.setItem("token", response.data.token);
+                var {Status, Description} = response;
+                if (Status !== 1){
+                    notify.error({
+                        message: "Login account failed",
+                        description: Description,
+                    });
+                    console.log(Description);
+                    setIsSubmitting(false);
+                    window.location.reload(); // reload
+                    
+                }
+                localStorage.setItem("access_token", response.data.access_token);
+                navigate("/"); // redirect to home page
             })
-            .catch((error) => { alert(error); });
-            
+            .catch((error) => {
+                notify.error({
+                    message: "Login account failed",
+                    description: error,
+                });
+                console.log(error);
+                alert("Login account failed");
+                window.location.reload(); // reload
+                
+            })
     }
     return (
         <div style={{backgroundColor: '#EEEEEE'}}>
@@ -96,8 +123,17 @@ const LoginPage = ({ handleChange }) => {
                                 </div>
                             
                                 <Grid item p={1}>
-                                    <Button type='submit' color='primary' variant="contained" disabled={props.isSubmitting}
-                                    style={btnstyle} fullWidth>{props.isSubmitting ? "Loading" : "Log in"}</Button>
+                                    <Button 
+                                        type='submit' 
+                                        color='primary' 
+                                        variant="contained" 
+                                        disabled={props.isSubmitting}
+                                        style={btnstyle}
+                                        fullWidth
+                                    >
+
+                                    {isSubmitting ? "Loading" : "Log in"}
+                                    </Button>
 
                                 </Grid>
                                 

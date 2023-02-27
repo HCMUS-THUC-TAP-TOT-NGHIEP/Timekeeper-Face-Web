@@ -12,7 +12,6 @@ import {
 } from "antd";
 import React, { useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { date } from "yup";
 import { RequestResetLink, ResetPassword } from "./api";
 const { Content } = Layout;
 const { Title, Text } = Typography;

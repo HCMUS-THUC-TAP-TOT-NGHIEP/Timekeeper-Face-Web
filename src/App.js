@@ -4,12 +4,13 @@ import { ForgotPasswordPage, ResetPasswordPage } from "./components/authenticati
 import LoginPage from "./components/authentication/Login";
 import RegisterPage from "./components/authentication/Register";
 import ChangePasswordPage from "./components/authentication/ChangePassword";
+import { Dashboard } from "./components/dashboard";
 
 function App() {
   return (
     <>
       <Routes>
-        <Route path="/" exact element={<LoginPage />} />
+        <Route path="/" exact element={<Dashboard />} />
         <Route path="/register" exact element={<RegisterPage />} />
         <Route path="/login" exact element={<LoginPage />} />
         <Route path="/forgotpwd" exact element={<ForgotPasswordPage />} />

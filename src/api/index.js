@@ -1,13 +1,13 @@
 import axios from "axios";
-import Config from "../../constant";
+import Config from "../constant";
 let AxiosInstance = axios.create({
   baseURL: Config.ServerApiUrl,
   timeout: Config.Timeout || 6000,
-  headers:{
+  headers: {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin":"*",
-    "Accept": 'application/json'
-  }
+    "Access-Control-Allow-Origin": "*",
+    Accept: "application/json",
+  },
 });
 
 export const getUserInfo = async () => {
@@ -19,3 +19,5 @@ export const getUserInfo = async () => {
   });
   return response.data;
 };
+
+export const logout = async () => {};

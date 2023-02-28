@@ -16,7 +16,7 @@ import { RequestResetLink, ResetPassword } from "./api";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
-export const ForgotPasswordPage = function (props) {
+export const ForgotPasswordPage = function(props) {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -137,7 +137,7 @@ export const ForgotPasswordPage = function (props) {
   );
 };
 
-export const ResetPasswordPage = function (props) {
+export const ResetPasswordPage = function(props) {
   const { access_token } = useParams();
   const {
     token: { colorBgContainer },
@@ -277,7 +277,10 @@ export const ResetPasswordPage = function (props) {
               align="center"
             >
               <Text level={5}>
-                Remember your password? <Link to="/login">Login</Link>
+                Remember your password?{" "}
+                <Text underline>
+                  <Link to="/login">Login</Link>
+                </Text>
               </Text>
             </Space>
           </Content>

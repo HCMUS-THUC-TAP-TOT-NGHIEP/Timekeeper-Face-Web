@@ -66,7 +66,7 @@ const LoginPage = ({ handleChange }) => {
     LoginAccount(requestData)
       .then((response) => {
         console.log(response);
-        var { Status, Description, ResponseData } = response;
+        const { Status, Description, ResponseData } = response;
         if (Status !== 1) {
           notify.error({
             message: "Login account failed",
@@ -74,7 +74,6 @@ const LoginPage = ({ handleChange }) => {
           });
           console.log(Description);
           setIsSubmitting(false);
-          window.location.reload(); // reload
         }
         localStorage.setItem("access_token", ResponseData.access_token);
         navigate("/"); // redirect to home page

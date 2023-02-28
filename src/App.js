@@ -11,6 +11,7 @@ function App() {
     <>
       <Routes>
         <Route path="/" exact element={<Dashboard />} />
+        <Route path="/dashboard" exact element={<Dashboard />} />
         <Route path="/register" exact element={<RegisterPage />} />
         <Route path="/login" exact element={<LoginPage />} />
         <Route path="/forgotpwd" exact element={<ForgotPasswordPage />} />

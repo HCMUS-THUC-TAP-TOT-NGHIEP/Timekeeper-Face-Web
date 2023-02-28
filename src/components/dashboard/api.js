@@ -12,7 +12,6 @@ let AxiosInstance = axios.create({
 
 export const getUserInfo = async () => {
   var access_token = localStorage.getItem("access_token");
-  console.log(access_token);
   var response = await AxiosInstance.get("user", {
     headers: {
       Authorization: "Bearer " + access_token,

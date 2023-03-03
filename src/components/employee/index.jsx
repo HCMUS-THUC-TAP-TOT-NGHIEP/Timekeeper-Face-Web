@@ -17,13 +17,14 @@ import {
 } from "@ant-design/icons";
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
+import "./style.css";
 
 export const AllEmployeesPage = (props) => {
   useEffect(() => {
     document.title = "Tất cả nhân viên";
   }, []);
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <Space direction="vertical" style={{ width: "100%", overflowX: "scroll" }}>
       <Row wrap={false}>
         <Col flex="none">
           <Breadcrumb>
@@ -47,7 +48,6 @@ export const AllEmployeesPage = (props) => {
         dataSource={dataSource}
         columns={columns}
       />
-      ;
     </Space>
   );
 };
@@ -69,6 +69,7 @@ const rowSelection = {
 };
 const dataSource = [
   {
+    key: 1,
     Id: 1,
     FirstName: "Khanh",
     LastName: "Nguyễn",
@@ -87,11 +88,13 @@ const columns = [
     dataIndex: "FullName",
     key: "FullName",
     render: (_, employee) => `${employee.FirstName} ${employee.LastName}`,
+    width: 100,
   },
   {
     title: "ID",
     dataIndex: "Id",
     key: "Id",
+    width: 10,
   },
   {
     title: "Ngày sinh",
@@ -101,18 +104,21 @@ const columns = [
       DateOfBirth
         ? `${DateOfBirth.getDate()} - ${DateOfBirth.getMonth()} - ${DateOfBirth.getFullYear()}`
         : "-",
+    width: 10,
   },
   {
     title: "Giới tính",
     dataIndex: "Gender",
     key: "Gender",
     render: (_, employee) => (employee.Gender ? "Nam" : "Nữ"),
+    width: 10,
   },
   {
     title: "Phòng ban",
     dataIndex: "DepartmentId",
     key: "DepartmentId",
     rende: (_, { DepartmentId }) => (DepartmentId ? DepartmentId : "-"),
+    width: 10,
   },
   {
     title: "Ngày vào",
@@ -120,6 +126,7 @@ const columns = [
     key: "JoinDate",
     render: (_, { JoinDate }) =>
       `${JoinDate.getDate()} - ${JoinDate.getMonth()} - ${JoinDate.getFullYear()}`,
+    width: 10,
   },
   {
     title: "Ngày nghỉ",
@@ -129,19 +136,59 @@ const columns = [
       LeaveDate
         ? `${LeaveDate.getDate()} - ${LeaveDate.getMonth()} - ${LeaveDate.getFullYear()}`
         : "-",
+    width: 10,
   },
   {
     title: "",
     dataIndex: "Action",
     key: "Action",
     render: (_, employee) => <ActionMenu EmployeeId={employee.Id} />,
+    width: 10,
   },
 ];
 
 function ActionMenu(props) {
   const { EmployeeId } = props;
   return (
-    <Dropdown menu={{ items }} trigger={["click"]} placement="bottomRight">
+    <Dropdown
+      menu={[
+        {
+          label: (
+            <Link to={`employee/${EmployeeId}`}>
+              <Space>
+                <EyeFilled />
+                Xem
+              </Space>
+            </Link>
+          ),
+          key: "3",
+        },
+        {
+          label: (
+            <Link to={`/edit/${EmployeeId}`}>
+              <Space>
+                <EditFilled />
+                Chỉnh sửa
+              </Space>
+            </Link>
+          ),
+          key: "0",
+        },
+        {
+          label: (
+            <Link to="">
+              <Space>
+                <DeleteFilled key="1" />
+                Xóa
+              </Space>
+            </Link>
+          ),
+          key: "1",
+        },
+      ]}
+      trigger={["click"]}
+      placement="bottomRight"
+    >
       <Space>
         <MoreOutlined />
       </Space>
@@ -176,7 +223,7 @@ const items = [
     label: (
       <Link to="">
         <Space>
-          <DeleteFilled />
+          <DeleteFilled key="1" />
           Xóa
         </Space>
       </Link>

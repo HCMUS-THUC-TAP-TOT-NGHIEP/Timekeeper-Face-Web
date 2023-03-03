@@ -4,8 +4,8 @@
   "description": "Website của hệ thống chấm công khuôn mặt",
   "main": "index.js",
   "scripts": {
-    "start_": "react-scripts --openssl-legacy-provider start",
-    "start": "react-scripts start",
+    "start": "react-scripts --openssl-legacy-provider start",
+    "start_": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

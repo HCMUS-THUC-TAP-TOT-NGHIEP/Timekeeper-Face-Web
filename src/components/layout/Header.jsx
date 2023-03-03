@@ -45,7 +45,6 @@ function MyHeader(props) {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
           setUserInfo(ResponseData);
-          console.log(userInfo);
           return;
         }
         navigate("/login");

@@ -22,8 +22,10 @@ function App() {
           <Route path="/" exact element={<Dashboard />} />
           <Route path="/dashboard" exact element={<Dashboard />} />
           <Route path="/employee" exact element={<AllEmployeesPage />} />
+          <Route path="/employee/all" exact element={<AllEmployeesPage />} />
           <Route path="/employee/add" exact element={<AllEmployeesPage />} />
-          <Route path="/employee/update" exact element={<AllEmployeesPage />} />
+          <Route path="/employee/edit/:employeeId" exact element={<AllEmployeesPage />} />
+          <Route path="/employee/:employeeId" exact element={<AllEmployeesPage />} />
         </Route>
         <Route path="/register" exact element={<RegisterPage />} />
         <Route path="/login" exact element={<LoginPage />} />

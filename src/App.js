@@ -9,6 +9,7 @@ import {
 import LoginPage from "./components/authentication/Login";
 import RegisterPage from "./components/authentication/Register";
 import { Dashboard } from "./components/dashboard";
+import { AllEmployeesPage } from "./components/employee";
 import MyFooter from "./components/layout/Footer";
 import MyHeader from "./components/layout/Header";
 import MySidebar from "./components/layout/Sidebar";
@@ -20,6 +21,9 @@ function App() {
         <Route path="/" element={<CustomLayout />}>
           <Route path="/" exact element={<Dashboard />} />
           <Route path="/dashboard" exact element={<Dashboard />} />
+          <Route path="/employee" exact element={<AllEmployeesPage />} />
+          <Route path="/employee/add" exact element={<AllEmployeesPage />} />
+          <Route path="/employee/update" exact element={<AllEmployeesPage />} />
         </Route>
         <Route path="/register" exact element={<RegisterPage />} />
         <Route path="/login" exact element={<LoginPage />} />

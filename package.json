@@ -38,6 +38,7 @@
     "url": "https://github.com/HCMUS-THUC-TAP-TOT-NGHIEP/Timekeeper-Face-Web/issues"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.0.1",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@mui/icons-material": "^5.11.9",

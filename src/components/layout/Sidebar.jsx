@@ -21,7 +21,7 @@ function MySidebar(props) {
     {
       key: "2",
       icon: <PeopleAltIcon fontSize="large" />,
-      label: <Link to="/employee">Employee</Link>,
+      label: <Link to="/employee/all">Employee</Link>,
     },
     {
       key: "3",

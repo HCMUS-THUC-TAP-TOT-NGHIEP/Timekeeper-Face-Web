@@ -9,7 +9,7 @@ import {
 import LoginPage from "./components/authentication/Login";
 import RegisterPage from "./components/authentication/Register";
 import { Dashboard } from "./components/dashboard";
-import { AllEmployeesPage } from "./components/employee";
+import { AllEmployeesPage, EmployeeProfile } from "./components/employee";
 import MyFooter from "./components/layout/Footer";
 import MyHeader from "./components/layout/Header";
 import MySidebar from "./components/layout/Sidebar";
@@ -24,8 +24,16 @@ function App() {
           <Route path="/employee" exact element={<AllEmployeesPage />} />
           <Route path="/employee/all" exact element={<AllEmployeesPage />} />
           <Route path="/employee/add" exact element={<AllEmployeesPage />} />
-          <Route path="/employee/edit/:employeeId" exact element={<AllEmployeesPage />} />
-          <Route path="/employee/:employeeId" exact element={<AllEmployeesPage />} />
+          <Route
+            path="/employee/edit/:employeeId"
+            exact
+            element={<EmployeeProfile />}
+          />
+          <Route
+            path="/employee/:employeeId"
+            exact
+            element={<EmployeeProfile />}
+          />
         </Route>
         <Route path="/register" exact element={<RegisterPage />} />
         <Route path="/login" exact element={<LoginPage />} />

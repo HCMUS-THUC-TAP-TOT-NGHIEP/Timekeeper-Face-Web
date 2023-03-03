@@ -56,6 +56,9 @@ function MyHeader(props) {
       style={{
         padding: 0,
         background: colorBgContainer,
+        position: 'sticky',
+        zIndex: 999,
+        top: 0
       }}
     >
       <Row wrap={false}>
@@ -79,7 +82,7 @@ function MyHeader(props) {
           </Space>
         </Col>
         <Col flex="none" style={{ paddingRight: "24px" }}>
-          <Dropdown menu={{ items }}>
+          <Dropdown menu={{ items }} arrow placement="bottomRight">
             <Space>
               <Avatar
                 size={{

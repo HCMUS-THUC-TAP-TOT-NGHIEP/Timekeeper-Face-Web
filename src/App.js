@@ -9,7 +9,12 @@ import {
 import LoginPage from "./components/authentication/Login";
 import RegisterPage from "./components/authentication/Register";
 import { Dashboard } from "./components/dashboard";
-import { AllEmployeesPage, EmployeeProfile } from "./components/employee";
+import {
+  AllEmployeesPage,
+  EditEmployeePage,
+  EmployeeProfile,
+  NewEmployeePage,
+} from "./components/employee";
 import MyFooter from "./components/layout/Footer";
 import MyHeader from "./components/layout/Header";
 import MySidebar from "./components/layout/Sidebar";
@@ -19,21 +24,16 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<CustomLayout />}>
-          <Route path="/" exact element={<Dashboard />} />
-          <Route path="/dashboard" exact element={<Dashboard />} />
-          <Route path="/employee" exact element={<AllEmployeesPage />} />
-          <Route path="/employee/all" exact element={<AllEmployeesPage />} />
-          <Route path="/employee/add" exact element={<AllEmployeesPage />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/employee" element={<AllEmployeesPage />} />
+          <Route path="/employee/all" element={<AllEmployeesPage />} />
+          <Route path="/employee/add" element={<NewEmployeePage />} />
           <Route
             path="/employee/edit/:employeeId"
-            exact
-            element={<EmployeeProfile />}
+            element={<EditEmployeePage />}
           />
-          <Route
-            path="/employee/:employeeId"
-            exact
-            element={<EmployeeProfile />}
-          />
+          <Route path="/employee/:employeeId" element={<EmployeeProfile />} />
         </Route>
         <Route path="/register" exact element={<RegisterPage />} />
         <Route path="/login" exact element={<LoginPage />} />
@@ -68,7 +68,7 @@ function CustomLayout(props) {
             margin: "24px 16px",
             padding: 24,
             minHeight: 280,
-            background: colorBgContainer,
+            // background: colorBgContainer,
           }}
         >
           <Outlet />

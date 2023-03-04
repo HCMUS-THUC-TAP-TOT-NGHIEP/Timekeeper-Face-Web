@@ -6,47 +6,20 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import { Badge, Menu, Space } from "antd";
 import Sider from "antd/es/layout/Sider";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import "./style.css";
+
+let activeStyle = {
+  textDecoration: "underline",
+};
+
+let activeClassName = "underline";
 
 function MySidebar(props) {
   const [show, setShow] = useState(true);
-
-  const items = [
-    {
-      key: "1",
-      icon: <DashboardIcon fontSize="large" />,
-      label: <Link to="/dashboard">Dashboard</Link>,
-    },
-    {
-      key: "2",
-      icon: <PeopleAltIcon fontSize="large" />,
-      label: <Link to="/employee/all">Employee</Link>,
-    },
-    {
-      key: "3",
-      icon: <BusinessCenterIcon fontSize="large" />,
-      label: <Link to="/department">Department</Link>,
-    },
-    {
-      key: "4",
-      icon: <AccessTimeFilledIcon fontSize="large" />,
-      label: <Link to="/attendance">Time Attendance</Link>,
-    },
-    {
-      key: "5",
-      icon: <NotificationsActiveIcon fontSize="large" />,
-      label: (
-        <Link to="/notification">
-          <Space>
-            Notification
-            <Badge count={show ? 109 : 0} />
-          </Space>
-        </Link>
-      ),
-    },
-  ];
+  const [selectedKey, setSelectedKey] = useState(1);
   const { collapsed } = props;
+
   return (
     <Sider trigger={null} collapsible collapsed={collapsed}>
       <div className="logo" />
@@ -58,33 +31,33 @@ function MySidebar(props) {
           {
             key: "1",
             icon: <DashboardIcon fontSize="large" />,
-            label: <Link to="/dashboard">Dashboard</Link>,
+            label: <NavLink to="/dashboard">Dashboard</NavLink>,
           },
           {
             key: "2",
             icon: <PeopleAltIcon fontSize="large" />,
-            label: <Link to="/employee">Employee</Link>,
+            label: <NavLink to="/employee">Employee</NavLink>,
           },
           {
             key: "3",
             icon: <BusinessCenterIcon fontSize="large" />,
-            label: <Link to="/department">Department</Link>,
+            label: <NavLink to="/department">Department</NavLink>,
           },
           {
             key: "4",
             icon: <AccessTimeFilledIcon fontSize="large" />,
-            label: <Link to="/attendance">Time Attendance</Link>,
+            label: <NavLink to="/attendance">Time Attendance</NavLink>,
           },
           {
             key: "5",
             icon: <NotificationsActiveIcon fontSize="large" />,
             label: (
-              <Link to="/notification">
+              <NavLink to="/notification">
                 <Space>
                   Notification
                   <Badge count={show ? 109 : 0} />
                 </Space>
-              </Link>
+              </NavLink>
             ),
           },
         ]}

@@ -17,7 +17,7 @@ import {
   MoreOutlined,
 } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./style.css";
 import { GetManyEmployee } from "./api";
 
@@ -25,9 +25,15 @@ export const AllEmployeesPage = (props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "Tất cả nhân viên";
+    const access_token = localStorage.getItem("access_token");
+    if (!access_token) {
+      navigate("/login");
+      return;
+    }
   }, []);
 
   useEffect(() => {
@@ -35,10 +41,6 @@ export const AllEmployeesPage = (props) => {
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          for (let i = 0; i < 9; i++) {
-            // test
-            ResponseData.push(ResponseData[0]);
-          }
           setCurrentEmployeeList(ResponseData);
           return;
         }
@@ -60,7 +62,9 @@ export const AllEmployeesPage = (props) => {
           </Breadcrumb>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <Button type="primary">Thêm nhân viên mới</Button>
+          <Button type="primary" onClick={() => navigate("/employee/add")}>
+            Thêm nhân viên mới
+          </Button>
         </Col>
       </Row>
       <Table
@@ -99,10 +103,9 @@ const columns = [
     title: "Họ tên",
     dataIndex: "FullName",
     key: "FullName",
-    width: 100,
+    width: 80,
     fixed: "left",
     render: (_, employee) => `${employee.FirstName} ${employee.LastName}`,
-    sorter: true,
   },
   {
     title: "ID",
@@ -110,7 +113,7 @@ const columns = [
     key: "Id",
     width: 40,
     fixed: "left",
-    sorter: true,
+    sorter: (a, b) => a.Id > b.Id,
   },
   {
     title: "Ngày sinh",
@@ -126,7 +129,6 @@ const columns = [
     key: "Gender",
     render: (_, employee) => (employee.Gender ? "Nam" : "Nữ"),
     width: 40,
-    
   },
   {
     title: "Phòng ban",
@@ -142,6 +144,12 @@ const columns = [
     render: (_, { JoinDate }) =>
       JoinDate ? new Date(Date.parse(JoinDate)).toLocaleDateString() : "",
     width: 60,
+  },
+  {
+    title: "Địa chỉ",
+    dataIndex: "Address",
+    key: "Address",
+    width: 120,
   },
   {
     title: "Ngày nghỉ",
@@ -177,7 +185,7 @@ function ActionMenu(props) {
     },
     {
       label: (
-        <Link to={`employee/edit/${Employee.Id}`}>
+        <Link to={`/employee/edit/${Employee.Id}`}>
           <Space>
             <EditFilled />
             Chỉnh sửa

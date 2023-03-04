@@ -15,8 +15,49 @@ export const GetManyEmployee = async (requestData) => {
     Page: requestData.page,
     PerPage: requestData.perPage,
   };
+  var access_token = localStorage.getItem("access_token");
   var response = await AxiosInstance.get("employee/many", {
     params: params,
+    headers: {
+      Authorization: "Bearer " + access_token,
+    },
+  });
+  return response.data;
+};
+
+export const GetOneEmployeeInfo = async (requestData) => {
+  var params = {
+    Id: requestData.employeeId,
+  };
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.get("employee/", {
+    params: params,
+    headers: {
+      Authorization: "Bearer " + access_token,
+    },
+  });
+  console.log(response.data);
+  return response.data;
+};
+
+export const ModifyEmployeeInfo = async (requestData) => {
+  var bodyData = requestData;
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.put("employee/update", bodyData, {
+    headers: {
+      Authorization: "Bearer " + access_token,
+    },
+  });
+  return response.data;
+};
+
+export const AddNewEmployee = async (requestData) => {
+  var bodyData = requestData;
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.post("employee/create", bodyData, {
+    headers: {
+      Authorization: "Bearer " + access_token,
+    },
   });
   return response.data;
 };

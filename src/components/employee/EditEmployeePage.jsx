@@ -51,7 +51,7 @@ export const EditEmployeePage = () => {
             Email: ResponseData.Email.trim(),
             MobilePhone: ResponseData.MobilePhone,
             Gender: ResponseData.Gender,
-            DepartmentId: ResponseData.DepartmentId || undefined,
+            DepartmentId: ResponseData.DepartmentId,
             JoinDate: dayjs(ResponseData.JoinDate),
             DateOfBirth: dayjs(ResponseData.DateOfBirth),
             Position: ResponseData.Position,

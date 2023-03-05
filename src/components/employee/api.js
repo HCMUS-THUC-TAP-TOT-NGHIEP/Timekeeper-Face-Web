@@ -36,7 +36,6 @@ export const GetOneEmployeeInfo = async (requestData) => {
       Authorization: "Bearer " + access_token,
     },
   });
-  console.log(response.data);
   return response.data;
 };
 

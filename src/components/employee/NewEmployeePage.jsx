@@ -25,7 +25,7 @@ export const NewEmployeePage = (props) => {
   } = theme.useToken();
   const [form] = Form.useForm();
   useEffect(() => {
-    document.title = "Cập nhật hồ sơ nhân viên";
+    document.title = "Thêm hồ sơ nhân viên";
     const access_token = localStorage.getItem("access_token");
     if (!access_token) {
       navigate("/login");

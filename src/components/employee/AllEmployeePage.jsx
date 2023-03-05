@@ -132,7 +132,7 @@ export const AllEmployeesPage = (props) => {
           value: "Marketing",
         },
       ],
-      onFilter: (value, record) => record.address.startsWith(value),
+      onFilter: (value, record) => record.DepartmentId.startsWith(value),
       filterSearch: true,
     },
     {

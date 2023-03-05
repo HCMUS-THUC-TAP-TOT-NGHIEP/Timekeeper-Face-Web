@@ -4,16 +4,17 @@ import { Outlet, Route, Routes } from "react-router";
 import ChangePasswordPage from "./components/authentication/ChangePassword";
 import {
   ForgotPasswordPage,
-  ResetPasswordPage
+  ResetPasswordPage,
 } from "./components/authentication/ForgotPassword";
 import LoginPage from "./components/authentication/Login";
 import RegisterPage from "./components/authentication/Register";
 import { Dashboard } from "./components/dashboard";
+import { AllDepartmentPage } from "./components/department";
 import {
   AllEmployeesPage,
   EditEmployeePage,
   EmployeeProfile,
-  NewEmployeePage
+  NewEmployeePage,
 } from "./components/employee";
 import MyFooter from "./components/layout/Footer";
 import MyHeader from "./components/layout/Header";
@@ -34,6 +35,8 @@ function App() {
             element={<EditEmployeePage />}
           />
           <Route path="/employee/:employeeId" element={<EmployeeProfile />} />
+          <Route path="/department" element={<AllDepartmentPage />} />
+          <Route path="/department/all" element={<AllDepartmentPage />} />
         </Route>
         <Route path="/register" exact element={<RegisterPage />} />
         <Route path="/login" exact element={<LoginPage />} />

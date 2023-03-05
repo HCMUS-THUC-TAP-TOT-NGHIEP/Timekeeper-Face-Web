@@ -17,7 +17,7 @@ let activeClassName = "underline";
 
 function MySidebar(props) {
   const [show, setShow] = useState(true);
-  const [selectedKey, setSelectedKey] = useState(1);
+  const [selectedKey, setSelectedKey] = useState("1");
   const { collapsed } = props;
 
   return (
@@ -26,33 +26,74 @@ function MySidebar(props) {
       <Menu
         theme="dark"
         mode="inline"
-        defaultSelectedKeys={["1"]}
+        selectedKeys={[selectedKey]}
         items={[
           {
             key: "1",
             icon: <DashboardIcon fontSize="large" />,
-            label: <NavLink to="/dashboard">Dashboard</NavLink>,
+            label: (
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  isActive ? setSelectedKey("1") : undefined
+                }
+              >
+                Dashboard
+              </NavLink>
+            ),
           },
           {
             key: "2",
             icon: <PeopleAltIcon fontSize="large" />,
-            label: <NavLink to="/employee">Employee</NavLink>,
+            label: (
+              <NavLink
+                to="/employee"
+                className={({ isActive }) =>
+                  isActive ? setSelectedKey("2") : undefined
+                }
+              >
+                Employee
+              </NavLink>
+            ),
           },
           {
             key: "3",
             icon: <BusinessCenterIcon fontSize="large" />,
-            label: <NavLink to="/department">Department</NavLink>,
+            label: (
+              <NavLink
+                to="/department"
+                className={({ isActive }) =>
+                  isActive ? setSelectedKey("3") : undefined
+                }
+              >
+                Department
+              </NavLink>
+            ),
           },
           {
             key: "4",
             icon: <AccessTimeFilledIcon fontSize="large" />,
-            label: <NavLink to="/attendance">Time Attendance</NavLink>,
+            label: (
+              <NavLink
+                to="/attendance"
+                className={({ isActive }) =>
+                  isActive ? setSelectedKey("4") : undefined
+                }
+              >
+                Time Attendance
+              </NavLink>
+            ),
           },
           {
             key: "5",
             icon: <NotificationsActiveIcon fontSize="large" />,
             label: (
-              <NavLink to="/notification">
+              <NavLink
+                to="/notification"
+                className={({ isActive }) =>
+                  isActive ? setSelectedKey("5") : undefined
+                }
+              >
                 <Space>
                   Notification
                   <Badge count={show ? 109 : 0} />

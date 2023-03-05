@@ -3,11 +3,11 @@ import Config from "../../constant";
 let AxiosInstance = axios.create({
   baseURL: Config.ServerApiUrl,
   timeout: Config.Timeout || 6000,
-  headers:{
+  headers: {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin":"*",
-    "Accept": 'application/json'
-  }
+    "Access-Control-Allow-Origin": "*",
+    Accept: "application/json",
+  },
 });
 
 export const RegisterAccount = async (requestData) => {
@@ -45,5 +45,15 @@ export const ResetPassword = async (requestData) => {
     new_password: requestData.new_password,
   };
   var response = await AxiosInstance.post("auth/reset_password", bodyData);
+  return response.data;
+};
+
+export const Logout = async () => {
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.get("auth/logout/", {
+    headers: {
+      Authorization: "Bearer " + access_token,
+    },
+  });
   return response.data;
 };

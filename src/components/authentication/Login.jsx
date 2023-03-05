@@ -16,17 +16,21 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from "react-router-dom";
 import { LoginAccount } from "./api";
-import { notification } from "antd";
+import { notification, Spin } from "antd";
 
 const LoginPage = ({ handleChange }) => {
   const navigate = useNavigate();
   const [notify, contextHolder] = notification.useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
+    const access_token = localStorage.getItem("access_token");
+    if (access_token) {
+      navigate("/dashboard");
+    }
     document.title = `Login Page`;
+    setLoading(true);
   }, []);
-
   const [values, setValues] = useState({
     showPass: false,
   });
@@ -90,114 +94,116 @@ const LoginPage = ({ handleChange }) => {
   return (
     <div style={{ backgroundColor: "#EEEEEE" }}>
       {contextHolder}
-      <Container maxWidth="sm">
-        <Grid
-          container
-          spacing={5}
-          direction="column"
-          justifyContent="center"
-          style={{ minHeight: "100vh" }}
-        >
-          <Paper elelvation={2} sx={{ padding: 5 }}>
-            <Grid container direction="column" spacing={1}>
-              <Grid align="center">
-                <h1>Log In</h1>
-              </Grid>
-              <Formik
-                initialValues={initialValues}
-                onSubmit={onSubmit}
-                validationSchema={validationSchema}
-              >
-                {(props) => (
-                  <Form>
-                    <div>
-                      <Grid item p={1}>
-                        <Field
-                          as={TextField}
-                          label="Email"
-                          name="email"
-                          placeholder="Enter email"
-                          fullWidth
-                          helperText={
-                            <ErrorMessage
-                              name="email"
-                              render={(msg) => (
-                                <span style={{ color: "red" }}>{msg}</span>
-                              )}
-                            />
-                          }
-                        />
-                      </Grid>
-                    </div>
+      <Spin spinning={loading} size="large">
+        <Container maxWidth="sm">
+          <Grid
+            container
+            spacing={5}
+            direction="column"
+            justifyContent="center"
+            style={{ minHeight: "100vh" }}
+          >
+            <Paper elelvation={2} sx={{ padding: 5 }}>
+              <Grid container direction="column" spacing={1}>
+                <Grid align="center">
+                  <h1>Log In</h1>
+                </Grid>
+                <Formik
+                  initialValues={initialValues}
+                  onSubmit={onSubmit}
+                  validationSchema={validationSchema}
+                >
+                  {(props) => (
+                    <Form>
+                      <div>
+                        <Grid item p={1}>
+                          <Field
+                            as={TextField}
+                            label="Email"
+                            name="email"
+                            placeholder="Enter email"
+                            fullWidth
+                            helperText={
+                              <ErrorMessage
+                                name="email"
+                                render={(msg) => (
+                                  <span style={{ color: "red" }}>{msg}</span>
+                                )}
+                              />
+                            }
+                          />
+                        </Grid>
+                      </div>
 
-                    <div>
-                      <Grid item p={1}>
-                        <Field
-                          as={TextField}
-                          label="Password"
-                          name="password"
-                          placeholder="Enter password"
-                          fullWidth
-                          helperText={
-                            <ErrorMessage
-                              name="password"
-                              render={(msg) => (
-                                <span style={{ color: "red" }}>{msg}</span>
-                              )}
-                            />
-                          }
-                          type={values.showPass ? "text" : "password"}
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <IconButton onClick={handlePassVisibilty}>
-                                  {values.showPass ? (
-                                    <VisibilityOffIcon />
-                                  ) : (
-                                    <VisibilityIcon />
-                                  )}
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      </Grid>
-                    </div>
+                      <div>
+                        <Grid item p={1}>
+                          <Field
+                            as={TextField}
+                            label="Password"
+                            name="password"
+                            placeholder="Enter password"
+                            fullWidth
+                            helperText={
+                              <ErrorMessage
+                                name="password"
+                                render={(msg) => (
+                                  <span style={{ color: "red" }}>{msg}</span>
+                                )}
+                              />
+                            }
+                            type={values.showPass ? "text" : "password"}
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  <IconButton onClick={handlePassVisibilty}>
+                                    {values.showPass ? (
+                                      <VisibilityOffIcon />
+                                    ) : (
+                                      <VisibilityIcon />
+                                    )}
+                                  </IconButton>
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        </Grid>
+                      </div>
 
-                    <Grid item p={1}>
-                      <Button
-                        type="submit"
-                        color="primary"
-                        variant="contained"
-                        disabled={props.isSubmitting}
-                        style={btnstyle}
-                        fullWidth
-                      >
-                        {isSubmitting ? "Loading" : "Log in"}
-                      </Button>
-                    </Grid>
-                  </Form>
-                )}
-              </Formik>
-              <Grid item p={1}>
-                <Typography>
-                  <Link href="/forgotpwd">Forgot password ?</Link>
-                </Typography>
-                <Typography>
-                  {" "}
-                  Do you have an account ?
-                  <Link
-                    href="/register"
-                    onClick={() => handleChange("event", 1)}
-                  >
-                    Register
-                  </Link>
-                </Typography>
+                      <Grid item p={1}>
+                        <Button
+                          type="submit"
+                          color="primary"
+                          variant="contained"
+                          disabled={props.isSubmitting}
+                          style={btnstyle}
+                          fullWidth
+                        >
+                          {isSubmitting ? "Loading" : "Log in"}
+                        </Button>
+                      </Grid>
+                    </Form>
+                  )}
+                </Formik>
+                <Grid item p={1}>
+                  <Typography>
+                    <Link href="/forgotpwd">Forgot password ?</Link>
+                  </Typography>
+                  <Typography>
+                    {" "}
+                    Do you have an account ?
+                    <Link
+                      href="/register"
+                      onClick={() => handleChange("event", 1)}
+                    >
+                      Register
+                    </Link>
+                  </Typography>
+                </Grid>
               </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
-      </Container>
+            </Paper>
+          </Grid>
+        </Container>
+      </Spin>
     </div>
   );
 };

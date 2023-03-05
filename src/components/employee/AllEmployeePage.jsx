@@ -6,6 +6,7 @@ import {
   Menu,
   Popconfirm,
   Row,
+  Skeleton,
   Space,
   Table,
   Typography,
@@ -25,6 +26,7 @@ export const AllEmployeesPage = (props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,6 +44,7 @@ export const AllEmployeesPage = (props) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
           setCurrentEmployeeList(ResponseData);
+          setLoading(false);
           return;
         }
       })
@@ -67,17 +70,19 @@ export const AllEmployeesPage = (props) => {
           </Button>
         </Col>
       </Row>
-      <Table
-        scroll={{
-          x: 1500,
-        }}
-        rowSelection={{
-          type: "checkbox",
-          ...rowSelection,
-        }}
-        dataSource={currentEmployeeList}
-        columns={columns}
-      />
+      <Skeleton loading={loading} active={loading}>
+        <Table
+          scroll={{
+            x: 1500,
+          }}
+          rowSelection={{
+            type: "checkbox",
+            ...rowSelection,
+          }}
+          dataSource={currentEmployeeList}
+          columns={columns}
+        />
+      </Skeleton>
     </Space>
   );
 };
@@ -106,6 +111,7 @@ const columns = [
     width: 80,
     fixed: "left",
     render: (_, employee) => `${employee.FirstName} ${employee.LastName}`,
+    sorter: (a, b) => (a.FirstName + a.LastName).localeCompare(b.FirstName + b.LastName),
   },
   {
     title: "ID",
@@ -113,7 +119,7 @@ const columns = [
     key: "Id",
     width: 40,
     fixed: "left",
-    sorter: (a, b) => a.Id > b.Id,
+    sorter: (a, b) => a.Id - b.Id,
   },
   {
     title: "Ngày sinh",
@@ -134,8 +140,10 @@ const columns = [
     title: "Phòng ban",
     dataIndex: "DepartmentId",
     key: "DepartmentId",
-    rende: (_, { DepartmentId }) => (DepartmentId ? DepartmentId : "-"),
+    render: (_, { DepartmentId }) => (DepartmentId ? DepartmentId : "-"),
     width: 100,
+    sorter: (a, b) =>
+      String(a.DepartmentId).localeCompare(String(b.DepartmentId)),
   },
   {
     title: "Ngày vào",
@@ -144,6 +152,7 @@ const columns = [
     render: (_, { JoinDate }) =>
       JoinDate ? new Date(Date.parse(JoinDate)).toLocaleDateString() : "",
     width: 60,
+    sorter: (a, b) => Date.parse(a.JoinDate) - Date.parse(b.JoinDate),
   },
   {
     title: "Địa chỉ",

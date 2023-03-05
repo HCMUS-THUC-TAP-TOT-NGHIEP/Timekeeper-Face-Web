@@ -5,11 +5,21 @@ import {
 } from "@ant-design/icons";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { Avatar, Col, Dropdown, Row, Space, theme, Typography } from "antd";
+import {
+  Avatar,
+  Col,
+  Dropdown,
+  Row,
+  Skeleton,
+  Space,
+  theme,
+  Typography,
+} from "antd";
 import { Header } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { getUserInfo, logout } from "../../api";
+import { Logout } from "../authentication/api";
 
 const items = [
   {
@@ -22,7 +32,9 @@ const items = [
     label: (
       <Link
         onClick={async () => {
-          await logout();
+          await Logout();
+          localStorage.removeItem("access_token");
+          window.location = "/login";
         }}
       >
         Log Out
@@ -35,6 +47,7 @@ const items = [
 function MyHeader(props) {
   const { collapsed, setCollapsed } = props;
   const [userInfo, setUserInfo] = useState(null);
+  const [active, setActive] = useState(true);
   const navigate = useNavigate();
   const {
     token: { colorBgContainer },
@@ -45,6 +58,7 @@ function MyHeader(props) {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
           setUserInfo(ResponseData);
+          setActive(false);
           return;
         }
         navigate("/login");
@@ -56,9 +70,9 @@ function MyHeader(props) {
       style={{
         padding: 0,
         background: colorBgContainer,
-        position: 'sticky',
+        position: "sticky",
         zIndex: 999,
-        top: 0
+        top: 0,
       }}
     >
       <Row wrap={false}>
@@ -82,7 +96,12 @@ function MyHeader(props) {
           </Space>
         </Col>
         <Col flex="none" style={{ paddingRight: "24px" }}>
-          <Dropdown menu={{ items }} arrow placement="bottomRight">
+          <Dropdown
+            menu={{ items }}
+            arrow
+            placement="bottomRight"
+            trigger="click"
+          >
             <Space>
               <Avatar
                 size={{
@@ -91,7 +110,9 @@ function MyHeader(props) {
                   md: 40,
                 }}
               >
-                {userInfo ? userInfo.email[0] + userInfo.email[1] : ""}
+                <Skeleton loading={active} active={active}>
+                  {userInfo ? userInfo.email[0] + userInfo.email[1] : ""}
+                </Skeleton>
               </Avatar>
               <DownOutlined fontSize="small" />
             </Space>

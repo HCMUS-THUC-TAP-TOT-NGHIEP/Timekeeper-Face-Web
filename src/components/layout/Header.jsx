@@ -1,7 +1,7 @@
 import {
   DownOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined,
+  MenuUnfoldOutlined
 } from "@ant-design/icons";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -13,12 +13,12 @@ import {
   Skeleton,
   Space,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import { Header } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import { getUserInfo, logout } from "../../api";
+import { Link, useNavigate } from "react-router-dom";
+import { getUserInfo } from "../../api";
 import { Logout } from "../authentication/api";
 
 const items = [

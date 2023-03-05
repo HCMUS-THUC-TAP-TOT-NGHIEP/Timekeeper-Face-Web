@@ -8,10 +8,10 @@ import {
   Row,
   Space,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import React, { useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { RequestResetLink, ResetPassword } from "./api";
 const { Content } = Layout;
 const { Title, Text } = Typography;

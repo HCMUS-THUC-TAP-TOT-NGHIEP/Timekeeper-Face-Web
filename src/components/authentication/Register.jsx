@@ -9,7 +9,7 @@ import {
   Link,
   Paper,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import { notification } from "antd";
 import { ErrorMessage, Field, Form, Formik } from "formik";

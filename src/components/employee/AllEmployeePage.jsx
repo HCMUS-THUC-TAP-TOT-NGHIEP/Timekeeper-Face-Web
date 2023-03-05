@@ -1,26 +1,25 @@
 import {
+  DeleteFilled,
+  EditFilled,
+  EyeFilled,
+  MoreOutlined
+} from "@ant-design/icons";
+import {
   Breadcrumb,
   Button,
   Col,
   Dropdown,
-  Menu,
+  notification,
   Popconfirm,
   Row,
   Skeleton,
   Space,
-  Table,
-  Typography,
+  Table
 } from "antd";
-import {
-  DeleteFilled,
-  EditFilled,
-  EyeFilled,
-  MoreOutlined,
-} from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { DeleteOneEmployee, GetManyEmployee } from "./api";
 import "./style.css";
-import { GetManyEmployee } from "./api";
 
 export const AllEmployeesPage = (props) => {
   const [page, setPage] = useState(1);
@@ -50,6 +49,130 @@ export const AllEmployeesPage = (props) => {
       })
       .catch((error) => {});
   }, [page, perPage]);
+
+  const rowSelection = {
+    onChange: (selectedRowKeys, selectedRows) => {
+      console.log(
+        `selectedRowKeys: ${selectedRowKeys}`,
+        "selectedRows: ",
+        selectedRows
+      );
+    },
+    getCheckboxProps: (record) => ({
+      disabled: record.name === "Disabled User",
+      // Column configuration not to be checked
+      name: record.name,
+    }),
+  };
+
+  const columns = [
+    {
+      title: "Họ tên",
+      dataIndex: "FullName",
+      key: "FullName",
+      width: 80,
+      fixed: "left",
+      render: (_, employee) => `${employee.FirstName} ${employee.LastName}`,
+      sorter: (a, b) =>
+        (a.FirstName + a.LastName).localeCompare(b.FirstName + b.LastName),
+    },
+    {
+      title: "ID",
+      dataIndex: "Id",
+      key: "Id",
+      width: 40,
+      fixed: "left",
+      sorter: (a, b) => a.Id - b.Id,
+    },
+    {
+      title: "Ngày sinh",
+      dataIndex: "DateOfBirth",
+      key: "DateOfBirth",
+      render: (_, { DateOfBirth }) =>
+        DateOfBirth
+          ? new Date(Date.parse(DateOfBirth)).toLocaleDateString()
+          : "",
+      width: 60,
+    },
+    {
+      title: "Giới tính",
+      dataIndex: "Gender",
+      key: "Gender",
+      render: (_, employee) => (employee.Gender ? "Nam" : "Nữ"),
+      width: 40,
+    },
+    {
+      title: "Chức vụ",
+      dataIndex: "Position",
+      key: "Position",
+      width: 100,
+      sorter: (a, b) => String(a.Position).localeCompare(String(b.Position)),
+      filters: [],
+      onFilter: (value, record) => record.address.startsWith(value),
+      filterSearch: true,
+    },
+    {
+      title: "Phòng ban",
+      dataIndex: "DepartmentId",
+      key: "DepartmentId",
+      width: 100,
+      sorter: (a, b) =>
+        String(a.DepartmentId).localeCompare(String(b.DepartmentId)),
+      filters: [
+        {
+          text: "HR - Nhân sự",
+          value: "HR - Nhân sự",
+        },
+        {
+          text: "FTS - Phòng Lập trình",
+          value: "FTS - Phòng Lập trình",
+        },
+        {
+          text: "Marketing",
+          value: "Marketing",
+        },
+      ],
+      onFilter: (value, record) => record.address.startsWith(value),
+      filterSearch: true,
+    },
+    {
+      title: "Ngày vào",
+      dataIndex: "JoinDate",
+      key: "JoinDate",
+      render: (_, { JoinDate }) =>
+        JoinDate ? new Date(Date.parse(JoinDate)).toLocaleDateString() : "",
+      width: 60,
+      sorter: (a, b) => Date.parse(a.JoinDate) - Date.parse(b.JoinDate),
+    },
+    {
+      title: "Địa chỉ",
+      dataIndex: "Address",
+      key: "Address",
+      width: 120,
+    },
+    {
+      title: "Ngày nghỉ",
+      dataIndex: "LeaveDate",
+      key: "LeaveDate",
+      render: (_, { LeaveDate }) =>
+        LeaveDate ? new Date(Date.parse(LeaveDate)).toLocaleDateString() : "",
+      width: 60,
+    },
+    {
+      title: "",
+      dataIndex: "Action",
+      key: "Action",
+      render: (_, employee) => (
+        <ActionMenu
+          Employee={employee}
+          currentEmployeeList={currentEmployeeList}
+          setCurrentEmployeeList={setCurrentEmployeeList}
+        />
+      ),
+      width: 20,
+      fixed: "right",
+    },
+  ];
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
@@ -88,98 +211,45 @@ export const AllEmployeesPage = (props) => {
 };
 
 // rowSelection object indicates the need for row selection
-const rowSelection = {
-  onChange: (selectedRowKeys, selectedRows) => {
-    console.log(
-      `selectedRowKeys: ${selectedRowKeys}`,
-      "selectedRows: ",
-      selectedRows
-    );
-  },
-  getCheckboxProps: (record) => ({
-    disabled: record.name === "Disabled User",
-    // Column configuration not to be checked
-    name: record.name,
-  }),
-};
-
-const columns = [
-  {
-    title: "Họ tên",
-    dataIndex: "FullName",
-    key: "FullName",
-    width: 80,
-    fixed: "left",
-    render: (_, employee) => `${employee.FirstName} ${employee.LastName}`,
-    sorter: (a, b) => (a.FirstName + a.LastName).localeCompare(b.FirstName + b.LastName),
-  },
-  {
-    title: "ID",
-    dataIndex: "Id",
-    key: "Id",
-    width: 40,
-    fixed: "left",
-    sorter: (a, b) => a.Id - b.Id,
-  },
-  {
-    title: "Ngày sinh",
-    dataIndex: "DateOfBirth",
-    key: "DateOfBirth",
-    render: (_, { DateOfBirth }) =>
-      DateOfBirth ? new Date(Date.parse(DateOfBirth)).toLocaleDateString() : "",
-    width: 60,
-  },
-  {
-    title: "Giới tính",
-    dataIndex: "Gender",
-    key: "Gender",
-    render: (_, employee) => (employee.Gender ? "Nam" : "Nữ"),
-    width: 40,
-  },
-  {
-    title: "Phòng ban",
-    dataIndex: "DepartmentId",
-    key: "DepartmentId",
-    render: (_, { DepartmentId }) => (DepartmentId ? DepartmentId : "-"),
-    width: 100,
-    sorter: (a, b) =>
-      String(a.DepartmentId).localeCompare(String(b.DepartmentId)),
-  },
-  {
-    title: "Ngày vào",
-    dataIndex: "JoinDate",
-    key: "JoinDate",
-    render: (_, { JoinDate }) =>
-      JoinDate ? new Date(Date.parse(JoinDate)).toLocaleDateString() : "",
-    width: 60,
-    sorter: (a, b) => Date.parse(a.JoinDate) - Date.parse(b.JoinDate),
-  },
-  {
-    title: "Địa chỉ",
-    dataIndex: "Address",
-    key: "Address",
-    width: 120,
-  },
-  {
-    title: "Ngày nghỉ",
-    dataIndex: "LeaveDate",
-    key: "LeaveDate",
-    render: (_, { LeaveDate }) =>
-      LeaveDate ? new Date(Date.parse(LeaveDate)).toLocaleDateString() : "",
-    width: 60,
-  },
-  {
-    title: "",
-    dataIndex: "Action",
-    key: "Action",
-    render: (_, employee) => <ActionMenu Employee={employee} />,
-    width: 20,
-    fixed: "right",
-  },
-];
 
 function ActionMenu(props) {
-  const { Employee } = props;
+  const { Employee, setCurrentEmployeeList, currentEmployeeList } = props;
+  const deleteEmployee = () => {
+    DeleteOneEmployee({ EmployeeId: Employee.Id })
+      .then((response) => {
+        const { Status, Description, ResponseData } = response;
+        if (Status === 1) {
+          notification.success({
+            description: "Xóa nhân viên thành công",
+          });
+          setCurrentEmployeeList(
+            currentEmployeeList.filter((a) => a.Id !== Employee.Id)
+          );
+          return;
+        }
+        notification.error({
+          title: "Xóa nhân viên thất bại",
+          description: Description,
+        });
+      })
+      .catch((error) => {
+        if (error.response) {
+          notification.error({
+            title: "Request có lỗi.",
+            message: `Data: [${error.response.data}], Status [${error.response.status}]`,
+          });
+        } else if (error.request) {
+          notification.error({
+            title: "Response có lỗi.",
+            message: error.response,
+          });
+        } else {
+          notification.error({
+            description: error.message,
+          });
+        }
+      });
+  };
   const items = [
     {
       label: (
@@ -207,10 +277,11 @@ function ActionMenu(props) {
       label: (
         <Popconfirm
           title={`Xóa nhân viên ID ${Employee.Id}`}
-          description={`Bạn có chắc muốn xóa nhân viên ID ${Employee.Id}`}
+          description={`Bạn có chắc muốn xóa nhân viên ID ${Employee.Id} - ${Employee.FirstName} ${Employee.LastName}?`}
           okText="Yes"
           cancelText="No"
           placement="top"
+          onConfirm={deleteEmployee}
         >
           <a href="#" style={{ display: "block" }}>
             <Space>
@@ -224,15 +295,17 @@ function ActionMenu(props) {
     },
   ];
   return (
-    <Dropdown
-      menu={{ items }}
-      trigger={["click"]}
-      placement="bottomRight"
-      arrow
-    >
-      <Space>
-        <MoreOutlined />
-      </Space>
-    </Dropdown>
+    <>
+      <Dropdown
+        menu={{ items }}
+        trigger={["click"]}
+        placement="bottomRight"
+        arrow
+      >
+        <Space>
+          <MoreOutlined />
+        </Space>
+      </Dropdown>
+    </>
   );
 }

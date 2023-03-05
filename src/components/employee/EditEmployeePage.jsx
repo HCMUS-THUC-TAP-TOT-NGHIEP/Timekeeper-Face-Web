@@ -11,16 +11,16 @@ import {
   Select,
   Skeleton,
   Space,
-  theme,
+  theme
 } from "antd";
 import Title from "antd/es/typography/Title";
+import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { GetOneEmployeeInfo, ModifyEmployeeInfo } from "./api";
-import dayjs from "dayjs";
 import "./style.css";
 
-export const EditEmployeePage = (props) => {
+export const EditEmployeePage = () => {
   const navigate = useNavigate();
   const {
     token: { colorBgContainer },
@@ -28,7 +28,6 @@ export const EditEmployeePage = (props) => {
   const { employeeId } = useParams();
   const [currentEmployee, setCurrentEmployee] = useState({});
   const [loading, setLoading] = useState(true);
-  const [api, contextHolder] = notification.useNotification();
   const [form] = Form.useForm();
   useEffect(() => {
     document.title = "Cập nhật hồ sơ nhân viên";
@@ -41,7 +40,7 @@ export const EditEmployeePage = (props) => {
   useEffect(() => {
     GetOneEmployeeInfo({ employeeId })
       .then((response) => {
-        const { Status, Description, ResponseData } = response;
+        const { Status, ResponseData } = response;
         if (Status === 1) {
           setCurrentEmployee(ResponseData);
           form.setFieldsValue({
@@ -61,7 +60,7 @@ export const EditEmployeePage = (props) => {
           return;
         }
       })
-      .catch((error) => {});
+      .catch(() => {});
   }, [employeeId]);
 
   const onSubmit = (values) => {
@@ -101,7 +100,6 @@ export const EditEmployeePage = (props) => {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
-      {contextHolder}
       <Row wrap={false}>
         <Col flex="none">
           <Breadcrumb>

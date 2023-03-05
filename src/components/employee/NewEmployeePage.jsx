@@ -10,13 +10,12 @@ import {
   Row,
   Select,
   Space,
-  theme,
+  theme
 } from "antd";
 import Title from "antd/es/typography/Title";
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { AddNewEmployee, GetOneEmployeeInfo, ModifyEmployeeInfo } from "./api";
-import dayjs from "dayjs";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AddNewEmployee } from "./api";
 import "./style.css";
 
 export const NewEmployeePage = (props) => {
@@ -24,8 +23,6 @@ export const NewEmployeePage = (props) => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const [currentEmployee, setCurrentEmployee] = useState({});
-  const [api, contextHolder] = notification.useNotification();
   const [form] = Form.useForm();
   useEffect(() => {
     document.title = "Cập nhật hồ sơ nhân viên";
@@ -74,7 +71,6 @@ export const NewEmployeePage = (props) => {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
-      {contextHolder}
       <Row wrap={false}>
         <Col flex="none">
           <Breadcrumb>

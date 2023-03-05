@@ -9,14 +9,7 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./style.css";
 
-let activeStyle = {
-  textDecoration: "underline",
-};
-
-let activeClassName = "underline";
-
 function MySidebar(props) {
-  const [show, setShow] = useState(true);
   const [selectedKey, setSelectedKey] = useState("1");
   const { collapsed } = props;
 
@@ -96,7 +89,7 @@ function MySidebar(props) {
               >
                 <Space>
                   Notification
-                  <Badge count={show ? 109 : 0} />
+                  <Badge count={0}/>
                 </Space>
               </NavLink>
             ),

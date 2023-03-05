@@ -1,10 +1,10 @@
-import { Layout, theme } from "antd";
+import { Layout } from "antd";
 import React, { useState } from "react";
 import { Outlet, Route, Routes } from "react-router";
 import ChangePasswordPage from "./components/authentication/ChangePassword";
 import {
   ForgotPasswordPage,
-  ResetPasswordPage,
+  ResetPasswordPage
 } from "./components/authentication/ForgotPassword";
 import LoginPage from "./components/authentication/Login";
 import RegisterPage from "./components/authentication/Register";
@@ -13,7 +13,7 @@ import {
   AllEmployeesPage,
   EditEmployeePage,
   EmployeeProfile,
-  NewEmployeePage,
+  NewEmployeePage
 } from "./components/employee";
 import MyFooter from "./components/layout/Footer";
 import MyHeader from "./components/layout/Header";
@@ -51,9 +51,6 @@ function App() {
 
 function CustomLayout(props) {
   const [collapsed, setCollapsed] = useState(false);
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
   return (
     <Layout
       style={{

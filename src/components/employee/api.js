@@ -61,3 +61,15 @@ export const AddNewEmployee = async (requestData) => {
   });
   return response.data;
 };
+
+export const DeleteOneEmployee = async (requestData) => {
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.delete("employee/", {
+    data: requestData,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + access_token,
+    },
+  });
+  return response.data;
+};

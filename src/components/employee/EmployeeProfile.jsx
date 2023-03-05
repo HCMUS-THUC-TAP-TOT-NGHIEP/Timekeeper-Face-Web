@@ -4,11 +4,9 @@ import {
   Button,
   Card,
   Col,
-  Descriptions,
-  Divider,
-  Row,
+  Descriptions, Row,
   Skeleton,
-  Space,
+  Space
 } from "antd";
 import Meta from "antd/es/card/Meta";
 import React, { useEffect, useState } from "react";

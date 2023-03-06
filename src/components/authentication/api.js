@@ -50,7 +50,7 @@ export const ResetPassword = async (requestData) => {
 
 export const Logout = async () => {
   var access_token = localStorage.getItem("access_token");
-  var response = await AxiosInstance.get("auth/logout/", {
+  var response = await AxiosInstance.get("auth/logout", {
     headers: {
       Authorization: "Bearer " + access_token,
     },

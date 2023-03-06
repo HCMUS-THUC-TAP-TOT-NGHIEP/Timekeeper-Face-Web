@@ -24,7 +24,7 @@ const LoginPage = ({ handleChange }) => {
       navigate("/dashboard");
     }
     document.title = `Login Page`;
-    setLoading(true);
+    setLoading(false);
   }, []);
   const [values, setValues] = useState({
     showPass: false,
@@ -57,14 +57,12 @@ const LoginPage = ({ handleChange }) => {
       .required("Password is required"),
   });
   const onSubmit = (values) => {
-    console.log(values);
     var requestData = {
       email: values.email,
       password: values.password,
     };
     LoginAccount(requestData)
       .then((response) => {
-        console.log(response);
         const { Status, Description, ResponseData } = response;
         if (Status !== 1) {
           notify.error({
@@ -73,9 +71,10 @@ const LoginPage = ({ handleChange }) => {
           });
           console.log(Description);
           setIsSubmitting(false);
+          return;
         }
         localStorage.setItem("access_token", ResponseData.access_token);
-        navigate("/"); // redirect to home page
+        navigate("/dashboard"); // redirect to home page
       })
       .catch((error) => {
         notify.error({

@@ -12,10 +12,12 @@ let AxiosInstance = axios.create({
 
 export const GetDepartmentList = async (requestData) => {
   const params = requestData;
+  const accessToken = localStorage.getItem("access_token");
   var response = await AxiosInstance.get("department/list", {
     params,
     headers: {
       "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + accessToken
     },
   });
   return response.data;

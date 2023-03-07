@@ -17,7 +17,29 @@ export const GetDepartmentList = async (requestData) => {
     params,
     headers: {
       "Access-Control-Allow-Origin": "*",
-      Authorization: "Bearer " + accessToken
+      Authorization: "Bearer " + accessToken,
+    },
+  });
+  return response.data;
+};
+
+export const UpdateOneDepartment = async (req) => {
+  const accessToken = localStorage.getItem("access_token");
+  var response = await AxiosInstance.put("department/update", req, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + accessToken,
+    },
+  });
+  return response.data;
+};
+
+export const CreateOneDepartment = async (req) => {
+  const accessToken = localStorage.getItem("access_token");
+  var response = await AxiosInstance.post("department/create", req, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + accessToken,
     },
   });
   return response.data;

@@ -34,6 +34,7 @@
   },
   "author": "",
   "license": "ISC",
+  "devtool": "cheap-module-source-map",
   "bugs": {
     "url": "https://github.com/HCMUS-THUC-TAP-TOT-NGHIEP/Timekeeper-Face-Web/issues"
   },

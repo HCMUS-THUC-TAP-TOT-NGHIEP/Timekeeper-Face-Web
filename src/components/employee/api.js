@@ -12,8 +12,8 @@ let AxiosInstance = axios.create({
 
 export const GetManyEmployee = async (requestData) => {
   var params = {
-    Page: requestData.page,
-    PerPage: requestData.perPage,
+    Page: requestData && requestData.page ? requestData.page : 1,
+    PerPage: requestData && requestData.perPage ? requestData.perPage : 10,
   };
   var access_token = localStorage.getItem("access_token");
   var response = await AxiosInstance.get("employee/many", {

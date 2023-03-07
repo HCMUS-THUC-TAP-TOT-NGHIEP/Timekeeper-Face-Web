@@ -1,7 +1,9 @@
 import {
+  CloseOutlined,
   DeleteFilled,
   EditFilled,
-  EyeFilled,
+  EditTwoTone,
+  InfoCircleTwoTone,
   MoreOutlined,
 } from "@ant-design/icons";
 import {
@@ -9,24 +11,38 @@ import {
   Button,
   Col,
   Dropdown,
-  notification,
   Popconfirm,
   Row,
   Skeleton,
   Space,
   Table,
+  Modal,
+  Form,
+  Input,
+  notification,
+  Select,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { GetDepartmentList } from "./api";
+import { GetManyEmployee } from "../employee/api";
+import {
+  CreateOneDepartment,
+  GetDepartmentList,
+  UpdateOneDepartment,
+} from "./api";
 
 const AllDepartmentPage = (props) => {
   const [loading, setLoading] = useState(true);
   const [currentDepartmentList, setCurrentDepartmentList] = useState([]);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [form] = Form.useForm();
+
   useEffect(() => {
     document.title = "Danh sách phòng ban";
+  }, []);
+  useEffect(() => {
+    console.info("GetDepartmentList");
     GetDepartmentList()
       .then((response) => {
         const { Status, Description, ResponseData } = response;
@@ -37,7 +53,42 @@ const AllDepartmentPage = (props) => {
         }
       })
       .catch((error) => {});
-  }, []);
+  }, [perPage, page]);
+
+  const updateOneDepartment = (values) => {
+    const newCurrentDepartmentList = currentDepartmentList.map((department) => {
+      if (department.Id === values.Id) {
+        return values;
+      } else {
+        return department;
+      }
+    });
+    setCurrentDepartmentList(newCurrentDepartmentList);
+    return;
+  };
+  const insertOneDepartment = (values) => {
+    console.log(values);
+    setCurrentDepartmentList([...currentDepartmentList, values]);
+  };
+  const showCreateForm = () => {
+    Modal.confirm({
+      title: "Thêm phòng ban",
+      icon: <InfoCircleTwoTone />,
+      closeIcon: <CloseOutlined />,
+      content: (
+        <AddDepartmentFrom
+          form={form}
+          listState={[insertOneDepartment, currentDepartmentList]}
+        />
+      ),
+      cancelText: "Hủy",
+      okText: "Tạo mới",
+      onOk() {
+        form.submit();
+      },
+    });
+  };
+
   const columns = [
     {
       title: "Mã",
@@ -45,6 +96,7 @@ const AllDepartmentPage = (props) => {
       key: "Id",
       width: 150,
       sorter: (a, b) => a.Id - b.Id,
+      fixed: "left",
     },
     {
       title: "Tên",
@@ -57,7 +109,8 @@ const AllDepartmentPage = (props) => {
       title: "Trưởng phòng",
       dataIndex: "Manager",
       key: "Manager",
-      render: (_, { ManagerId, ManagerName }) => ManagerId ? `${ManagerId} - ${ManagerName}` : "",
+      render: (_, { ManagerId, ManagerName }) =>
+        ManagerId ? `${ManagerId} - ${ManagerName}` : "",
     },
     {
       title: "",
@@ -68,9 +121,11 @@ const AllDepartmentPage = (props) => {
           department={department}
           setDepartmentList={setCurrentDepartmentList}
           departmentList={currentDepartmentList}
+          updateOneDepartment={updateOneDepartment}
         />
       ),
-      width: 10,
+      width: 50,
+      fixed: "right",
     },
   ];
   return (
@@ -87,7 +142,9 @@ const AllDepartmentPage = (props) => {
           </Breadcrumb>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <Button type="primary">Thêm phòng ban mới</Button>
+          <Button type="primary" onClick={showCreateForm}>
+            Thêm phòng ban mới
+          </Button>
         </Col>
       </Row>
       <Skeleton loading={loading} active={loading}>
@@ -108,8 +165,14 @@ const AllDepartmentPage = (props) => {
 };
 
 function ActionMenu(props) {
-  const { department, setDepartmentList, departmentList } = props;
-  const deleteEmployee = () => {
+  const [form] = Form.useForm();
+  const {
+    department,
+    setDepartmentList,
+    departmentList,
+    updateOneDepartment,
+  } = props;
+  const deleteDepartment = () => {
     // DeleteOneEmployee({ EmployeeId: Employee.Id })
     //   .then((response) => {
     //     const { Status, Description, ResponseData } = response;
@@ -145,10 +208,31 @@ function ActionMenu(props) {
     //     }
     //   });
   };
+
+  const showEditForm = () => {
+    Modal.confirm({
+      title: "Chỉnh sửa phòng ban",
+      icon: <EditTwoTone />,
+      closeIcon: <CloseOutlined />,
+      content: (
+        <EditDepartmentFrom
+          form={form}
+          content={department}
+          listState={[updateOneDepartment, departmentList]}
+        />
+      ),
+      cancelText: "Hủy",
+      okText: "Cập nhật",
+      onOk() {
+        form.submit();
+      },
+    });
+  };
+
   const items = [
     {
       label: (
-        <Space>
+        <Space onClick={showEditForm}>
           <EditFilled />
           Chỉnh sửa
         </Space>
@@ -161,9 +245,10 @@ function ActionMenu(props) {
           title={`Xóa phòng ban ID ${department.Id}`}
           description={`Bạn có chắc muốn xóa nhân viên ID ${department.Id} - ${department.Name}?`}
           okText="Yes"
+          okType="danger"
           cancelText="No"
           placement="top"
-          onConfirm={deleteEmployee}
+          onConfirm={deleteDepartment}
         >
           <a href="#" style={{ display: "block" }}>
             <Space>
@@ -177,19 +262,309 @@ function ActionMenu(props) {
     },
   ];
   return (
-    <>
-      <Dropdown
-        menu={{ items }}
-        trigger={["click"]}
-        placement="bottomRight"
-        arrow
-      >
-        <Space>
-          <MoreOutlined />
-        </Space>
-      </Dropdown>
-    </>
+    <Dropdown
+      menu={{ items }}
+      trigger={["click"]}
+      placement="bottomRight"
+      arrow
+    >
+      <Space style={{ paddingRight: "5px", paddingLeft: "5px" }}>
+        <MoreOutlined />
+      </Space>
+    </Dropdown>
   );
 }
+
+const EditDepartmentFrom = function(props) {
+  const form = props.form;
+  const department = props.content;
+  const [updateOneDepartment, departmentList] = props.listState;
+  const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
+  useEffect(() => {
+    form.setFieldsValue({
+      Id: department.Id,
+      Name: department.Name,
+      Status: department.Status,
+      ManagerId: department.ManagerId,
+    });
+    GetManyEmployee()
+      .then((response) => {
+        const { Status, Description, ResponseData } = response;
+        if (Status === 1) {
+          setCurrentEmployeeList(ResponseData);
+          form.setFieldsValue({ ManagerId: department.ManagerId });
+          return;
+        }
+        notification.error({
+          title: "Có lỗi",
+          description:
+            "Truy vấn danh sách nhân viên không thành công. " + Description,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        notification.error({
+          title: "Có lỗi",
+          description: "Truy vấn danh sách nhân viên không thành công.",
+        });
+      });
+  }, [department]);
+  const onSubmit = (values) => {
+    UpdateOneDepartment(values)
+      .then((response) => {
+        const { Status, Description, ResponseData } = response;
+        if (Status === 1) {
+          notification.success({
+            description: "Chỉnh sửa thành công",
+          });
+          var manager = currentEmployeeList.find(
+            (employee) => employee.Id === values.ManagerId
+          );
+          values.ManagerName = `${manager.FirstName} ${manager.LastName}`;
+          updateOneDepartment(values);
+          return;
+        }
+        notification.error({
+          title: "Có lỗi",
+          description:
+            "Truy vấn danh sách nhân viên không thành công. " + Description,
+        });
+      })
+      .catch((error) => {
+        if (error.response) {
+          notification.error({
+            title: "Request có lỗi.",
+            message: `Data: [${error.response.data}], Status [${error.response.status}]`,
+          });
+        } else if (error.request) {
+          notification.error({
+            title: "Response có lỗi.",
+            message: error.response,
+          });
+        } else {
+          notification.error({
+            title: "Có lỗi xảy ra",
+            description: error.message,
+          });
+        }
+      });
+  };
+  return (
+    <Form
+      form={form}
+      name="basic"
+      labelCol={{
+        span: 8,
+      }}
+      onFinish={onSubmit}
+      autoComplete="off"
+      layout="vertical"
+    >
+      <Form.Item
+        hasFeedback
+        labelCol={24}
+        label="Mã Phòng Ban"
+        name="Id"
+        rules={[
+          {
+            required: true,
+            message: "Mã Phòng Ban là trường bắt buộc.",
+          },
+        ]}
+      >
+        <Input readOnly />
+      </Form.Item>
+      <Form.Item
+        hasFeedback
+        labelCol={24}
+        label="Tên"
+        name="Name"
+        rules={[
+          {
+            required: true,
+            message: "Tên là trường bắt buộc.",
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        hasFeedback
+        labelCol={24}
+        label="Trưởng phòng"
+        name="ManagerId"
+        rules={[
+          {
+            required: true,
+            message: "Trưởng phòng là trường bắt buộc.",
+          },
+        ]}
+      >
+        <Select>
+          {currentEmployeeList.map((employee, index) => (
+            <Select.Option
+              key={index}
+              value={employee.Id}
+            >{`${employee.FirstName} ${employee.LastName}`}</Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
+      <Form.Item
+        hasFeedback
+        labelCol={24}
+        label="Trạng thái"
+        name="Status"
+        rules={[
+          {
+            required: true,
+            message: "Trạng thái là trường bắt buộc.",
+          },
+        ]}
+      >
+        <Select>
+          <Select.Option value="1">Hoạt động</Select.Option>
+          <Select.Option value="0">Không hoạt động</Select.Option>
+        </Select>
+      </Form.Item>
+    </Form>
+  );
+};
+
+const AddDepartmentFrom = function(props) {
+  const form = props.form;
+  const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
+  const [insertOneDepartment, departmentList] = props.listState;
+
+  const onSubmit = (values) => {
+    CreateOneDepartment(values)
+      .then((response) => {
+        const { Status, Description, ResponseData } = response;
+        if (Status === 1) {
+          notification.success({
+            description: "Thêm phòng ban thành công.",
+          });
+          values.Id = ResponseData.Id;
+          var manager = currentEmployeeList.find(
+            (employee) => employee.Id === values.ManagerId
+          );
+          values.ManagerName = `${manager.FirstName} ${manager.LastName}`;
+          insertOneDepartment(values);
+          return;
+        }
+        notification.error({
+          description: "Thêm phòng ban không thành công. " + Description,
+        });
+        return;
+      })
+      .catch((error) => {
+        console.error(error);
+        notification.error({
+          title: "Có lỗi",
+          description: "Truy vấn danh sách nhân viên không thành công.",
+        });
+      });
+  };
+
+  useEffect(() => {
+    GetManyEmployee()
+      .then((response) => {
+        const { Status, Description, ResponseData } = response;
+        if (Status === 1) {
+          setCurrentEmployeeList(ResponseData);
+          return;
+        }
+        notification.error({
+          title: "Có lỗi",
+          description:
+            "Truy vấn danh sách nhân viên không thành công. " + Description,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        notification.error({
+          title: "Có lỗi",
+          description: "Truy vấn danh sách nhân viên không thành công.",
+        });
+      });
+  }, []);
+
+  return (
+    <Form
+      form={form}
+      name="basic"
+      labelCol={{
+        span: 8,
+      }}
+      onFinish={onSubmit}
+      autoComplete="off"
+      layout="vertical"
+    >
+      <Form.Item
+        hasFeedback
+        labelCol={24}
+        label="Tên"
+        name="Name"
+        rules={[
+          {
+            required: true,
+            message: "Tên là trường bắt buộc.",
+          },
+          {
+            validator: (_, value) => {
+              var exist = departmentList.find(
+                (department) => department.Name == value
+              );
+              if (!exist) return Promise.resolve();
+              return Promise.reject(
+                new Error(`${value} đã có trong danh sách phòng ban.`)
+              );
+            },
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        hasFeedback
+        labelCol={24}
+        label="Trưởng phòng"
+        name="ManagerId"
+        rules={[
+          {
+            required: true,
+            message: "Trưởng phòng là trường bắt buộc.",
+          },
+        ]}
+      >
+        <Select>
+          {currentEmployeeList.map((employee, index) => (
+            <Select.Option
+              key={index}
+              value={employee.Id}
+            >{`${employee.Id} - ${employee.FirstName} ${employee.LastName}`}</Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
+      <Form.Item
+        hasFeedback
+        labelCol={24}
+        label="Trạng thái"
+        name="Status"
+        initialValue="1"
+        rules={[
+          {
+            required: true,
+            message: "Trạng thái là trường bắt buộc.",
+          },
+        ]}
+      >
+        <Select>
+          <Select.Option value="1">Hoạt động</Select.Option>
+          <Select.Option value="0">Không hoạt động</Select.Option>
+        </Select>
+      </Form.Item>
+    </Form>
+  );
+};
 
 export { AllDepartmentPage };

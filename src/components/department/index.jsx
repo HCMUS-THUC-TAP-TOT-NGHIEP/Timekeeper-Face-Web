@@ -43,7 +43,6 @@ const DepartmentList = (props) => {
     document.title = "Danh sách phòng ban";
   }, []);
   useEffect(() => {
-    console.info("GetDepartmentList");
     GetDepartmentList()
       .then((response) => {
         const { Status, Description, ResponseData } = response;
@@ -91,7 +90,7 @@ const DepartmentList = (props) => {
 
   const columns = [
     {
-      message: "Mã",
+      title: "Mã",
       dataIndex: "Id",
       key: "Id",
       width: 150,
@@ -99,21 +98,21 @@ const DepartmentList = (props) => {
       fixed: "left",
     },
     {
-      message: "Tên",
+      title: "Tên",
       dataIndex: "Name",
       key: "Name",
       width: 300,
       sorter: (a, b) => a.Name.localeCompare(b.Name),
     },
     {
-      message: "Trưởng phòng",
+      title: "Trưởng phòng",
       dataIndex: "Manager",
       key: "Manager",
       render: (_, { ManagerId, ManagerName }) =>
         ManagerId ? `${ManagerId} - ${ManagerName}` : "",
     },
     {
-      message: "",
+      title: "",
       dataIndex: "actions",
       key: "actions",
       render: (_, department) => (
@@ -134,10 +133,10 @@ const DepartmentList = (props) => {
         <Col flex="none">
           <Breadcrumb>
             <Breadcrumb.Item>
-              <Link to="/employee/all">Phòng ban</Link>
+              <Link to="/department/all">Phòng ban</Link>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <Link to="/employee/all">Tất cả</Link>
+              <Link to="">Tất cả</Link>
             </Breadcrumb.Item>
           </Breadcrumb>
         </Col>
@@ -336,12 +335,12 @@ const EditDepartmentFrom = function(props) {
         if (error.response) {
           notification.error({
             message: "Request có lỗi.",
-            message: `Data: [${error.response.data}], Status [${error.response.status}]`,
+            description: `Data: [${error.response.data}], Status [${error.response.status}]`,
           });
         } else if (error.request) {
           notification.error({
             message: "Response có lỗi.",
-            message: error.response,
+            description: error.response,
           });
         } else {
           notification.error({

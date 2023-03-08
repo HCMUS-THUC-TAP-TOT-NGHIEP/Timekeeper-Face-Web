@@ -19,6 +19,7 @@ import {
 import MyFooter from "./components/layout/Footer";
 import MyHeader from "./components/layout/Header";
 import MySidebar from "./components/layout/Sidebar";
+import { ShiftList } from "./components/shift";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
           <Route path="/employee/:employeeId" element={<EmployeeProfile />} />
           <Route path="/department" element={<DepartmentList />} />
           <Route path="/department/all" element={<DepartmentList />} />
+          <Route path="/shift-list" element={<ShiftList />} />
         </Route>
         <Route path="/register" exact element={<RegisterPage />} />
         <Route path="/login" exact element={<LoginPage />} />

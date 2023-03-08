@@ -46,7 +46,7 @@ function MySidebar(props) {
                   isActive ? setSelectedKey("2") : undefined
                 }
               >
-                Employee
+                Nhân viên
               </NavLink>
             ),
           },
@@ -60,7 +60,7 @@ function MySidebar(props) {
                   isActive ? setSelectedKey("3") : undefined
                 }
               >
-                Department
+                Phòng ban
               </NavLink>
             ),
           },
@@ -74,7 +74,7 @@ function MySidebar(props) {
                   isActive ? setSelectedKey("4") : undefined
                 }
               >
-                Danh mục ca làm việc
+                Ca làm việc
               </NavLink>
             ),
           },
@@ -83,12 +83,12 @@ function MySidebar(props) {
             icon: <AccessTimeFilledIcon fontSize="large" />,
             label: (
               <NavLink
-                to="/shift"
+                to="/time-attendance"
                 className={({ isActive }) =>
                   isActive ? setSelectedKey("5") : undefined
                 }
               >
-                Time Attendance
+                Chấm công
               </NavLink>
             ),
           },

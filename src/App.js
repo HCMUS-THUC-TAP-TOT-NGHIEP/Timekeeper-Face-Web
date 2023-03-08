@@ -9,7 +9,7 @@ import {
 import LoginPage from "./components/authentication/Login";
 import RegisterPage from "./components/authentication/Register";
 import { Dashboard } from "./components/dashboard";
-import { AllDepartmentPage } from "./components/department";
+import { DepartmentList } from "./components/department";
 import {
   AllEmployeesPage,
   EditEmployeePage,
@@ -35,8 +35,8 @@ function App() {
             element={<EditEmployeePage />}
           />
           <Route path="/employee/:employeeId" element={<EmployeeProfile />} />
-          <Route path="/department" element={<AllDepartmentPage />} />
-          <Route path="/department/all" element={<AllDepartmentPage />} />
+          <Route path="/department" element={<DepartmentList />} />
+          <Route path="/department/all" element={<DepartmentList />} />
         </Route>
         <Route path="/register" exact element={<RegisterPage />} />
         <Route path="/login" exact element={<LoginPage />} />

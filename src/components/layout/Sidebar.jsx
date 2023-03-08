@@ -1,3 +1,4 @@
+import { BarsOutlined } from "@ant-design/icons";
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -65,12 +66,26 @@ function MySidebar(props) {
           },
           {
             key: "4",
+            icon: <BarsOutlined fontSize="large"/>,
+            label: (
+              <NavLink
+                to="/shift-list"
+                className={({ isActive }) =>
+                  isActive ? setSelectedKey("4") : undefined
+                }
+              >
+                Danh mục ca làm việc
+              </NavLink>
+            ),
+          },
+          {
+            key: "5",
             icon: <AccessTimeFilledIcon fontSize="large" />,
             label: (
               <NavLink
-                to="/attendance"
+                to="/shift"
                 className={({ isActive }) =>
-                  isActive ? setSelectedKey("4") : undefined
+                  isActive ? setSelectedKey("5") : undefined
                 }
               >
                 Time Attendance
@@ -78,18 +93,18 @@ function MySidebar(props) {
             ),
           },
           {
-            key: "5",
+            key: "6",
             icon: <NotificationsActiveIcon fontSize="large" />,
             label: (
               <NavLink
                 to="/notification"
                 className={({ isActive }) =>
-                  isActive ? setSelectedKey("5") : undefined
+                  isActive ? setSelectedKey("6") : undefined
                 }
               >
                 <Space>
-                  Notification
-                  <Badge count={0}/>
+                  Thông báo
+                  <Badge count={0} />
                 </Space>
               </NavLink>
             ),

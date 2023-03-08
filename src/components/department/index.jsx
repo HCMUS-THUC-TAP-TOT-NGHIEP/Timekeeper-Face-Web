@@ -27,11 +27,12 @@ import { Link } from "react-router-dom";
 import { GetManyEmployee } from "../employee/api";
 import {
   CreateOneDepartment,
+  DeleteOneDepartment,
   GetDepartmentList,
   UpdateOneDepartment,
 } from "./api";
 
-const AllDepartmentPage = (props) => {
+const DepartmentList = (props) => {
   const [loading, setLoading] = useState(true);
   const [currentDepartmentList, setCurrentDepartmentList] = useState([]);
   const [page, setPage] = useState(1);
@@ -67,7 +68,6 @@ const AllDepartmentPage = (props) => {
     return;
   };
   const insertOneDepartment = (values) => {
-    console.log(values);
     setCurrentDepartmentList([...currentDepartmentList, values]);
   };
   const showCreateForm = () => {
@@ -91,7 +91,7 @@ const AllDepartmentPage = (props) => {
 
   const columns = [
     {
-      title: "Mã",
+      message: "Mã",
       dataIndex: "Id",
       key: "Id",
       width: 150,
@@ -99,21 +99,21 @@ const AllDepartmentPage = (props) => {
       fixed: "left",
     },
     {
-      title: "Tên",
+      message: "Tên",
       dataIndex: "Name",
       key: "Name",
       width: 300,
       sorter: (a, b) => a.Name.localeCompare(b.Name),
     },
     {
-      title: "Trưởng phòng",
+      message: "Trưởng phòng",
       dataIndex: "Manager",
       key: "Manager",
       render: (_, { ManagerId, ManagerName }) =>
         ManagerId ? `${ManagerId} - ${ManagerName}` : "",
     },
     {
-      title: "",
+      message: "",
       dataIndex: "actions",
       key: "actions",
       render: (_, department) => (
@@ -173,40 +173,42 @@ function ActionMenu(props) {
     updateOneDepartment,
   } = props;
   const deleteDepartment = () => {
-    // DeleteOneEmployee({ EmployeeId: Employee.Id })
-    //   .then((response) => {
-    //     const { Status, Description, ResponseData } = response;
-    //     if (Status === 1) {
-    //       notification.success({
-    //         description: "Xóa nhân viên thành công",
-    //       });
-    //       setCurrentEmployeeList(
-    //         currentEmployeeList.filter((a) => a.Id !== Employee.Id)
-    //       );
-    //       return;
-    //     }
-    //     notification.error({
-    //       title: "Xóa nhân viên thất bại",
-    //       description: Description,
-    //     });
-    //   })
-    //   .catch((error) => {
-    //     if (error.response) {
-    //       notification.error({
-    //         title: "Request có lỗi.",
-    //         message: `Data: [${error.response.data}], Status [${error.response.status}]`,
-    //       });
-    //     } else if (error.request) {
-    //       notification.error({
-    //         title: "Response có lỗi.",
-    //         message: error.response,
-    //       });
-    //     } else {
-    //       notification.error({
-    //         description: error.message,
-    //       });
-    //     }
-    //   });
+    DeleteOneDepartment({ Id: department.Id })
+      .then((response) => {
+        const { Status, Description, ResponseData } = response;
+        if (Status === 1) {
+          notification.success({
+            description: `Đã xóa phòng ban ${department.Id} - ${department.Name}`,
+          });
+          setDepartmentList(
+            departmentList.filter((a) => a.Id !== department.Id)
+          );
+          return;
+        }
+        notification.error({
+          message: "Thất bại",
+          description: Description,
+        });
+      })
+      .catch((error) => {
+        console.log(error.response);
+        if (error.response) {
+          notification.error({
+            message: "Có lỗi",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notification.error({
+            message: "Có lỗi.",
+            description: error,
+          });
+        } else {
+          notification.error({
+            message: "Có lỗi.",
+            description: error.message,
+          });
+        }
+      });
   };
 
   const showEditForm = () => {
@@ -296,7 +298,7 @@ const EditDepartmentFrom = function(props) {
           return;
         }
         notification.error({
-          title: "Có lỗi",
+          message: "Có lỗi",
           description:
             "Truy vấn danh sách nhân viên không thành công. " + Description,
         });
@@ -304,7 +306,7 @@ const EditDepartmentFrom = function(props) {
       .catch((error) => {
         console.error(error);
         notification.error({
-          title: "Có lỗi",
+          message: "Có lỗi",
           description: "Truy vấn danh sách nhân viên không thành công.",
         });
       });
@@ -325,7 +327,7 @@ const EditDepartmentFrom = function(props) {
           return;
         }
         notification.error({
-          title: "Có lỗi",
+          message: "Có lỗi",
           description:
             "Truy vấn danh sách nhân viên không thành công. " + Description,
         });
@@ -333,17 +335,17 @@ const EditDepartmentFrom = function(props) {
       .catch((error) => {
         if (error.response) {
           notification.error({
-            title: "Request có lỗi.",
+            message: "Request có lỗi.",
             message: `Data: [${error.response.data}], Status [${error.response.status}]`,
           });
         } else if (error.request) {
           notification.error({
-            title: "Response có lỗi.",
+            message: "Response có lỗi.",
             message: error.response,
           });
         } else {
           notification.error({
-            title: "Có lỗi xảy ra",
+            message: "Có lỗi xảy ra",
             description: error.message,
           });
         }
@@ -459,7 +461,7 @@ const AddDepartmentFrom = function(props) {
       .catch((error) => {
         console.error(error);
         notification.error({
-          title: "Có lỗi",
+          message: "Có lỗi",
           description: "Truy vấn danh sách nhân viên không thành công.",
         });
       });
@@ -474,7 +476,7 @@ const AddDepartmentFrom = function(props) {
           return;
         }
         notification.error({
-          title: "Có lỗi",
+          message: "Có lỗi",
           description:
             "Truy vấn danh sách nhân viên không thành công. " + Description,
         });
@@ -482,7 +484,7 @@ const AddDepartmentFrom = function(props) {
       .catch((error) => {
         console.error(error);
         notification.error({
-          title: "Có lỗi",
+          message: "Có lỗi",
           description: "Truy vấn danh sách nhân viên không thành công.",
         });
       });
@@ -567,4 +569,4 @@ const AddDepartmentFrom = function(props) {
   );
 };
 
-export { AllDepartmentPage };
+export { DepartmentList };

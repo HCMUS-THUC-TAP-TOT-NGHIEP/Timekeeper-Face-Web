@@ -190,7 +190,6 @@ function ActionMenu(props) {
         });
       })
       .catch((error) => {
-        console.log(error.response);
         if (error.response) {
           notification.error({
             message: "Có lỗi",

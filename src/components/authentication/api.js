@@ -16,7 +16,11 @@ export const RegisterAccount = async (requestData) => {
     password: requestData.password,
     firstName: requestData.firstName,
   };
-  var response = await AxiosInstance.post("auth/register", bodyData);
+  var response = await AxiosInstance.post("auth/register", bodyData, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
   return response.data;
 };
 
@@ -25,7 +29,11 @@ export const LoginAccount = async (requestData) => {
     email: requestData.email,
     password: requestData.password,
   };
-  var response = await AxiosInstance.post("auth/login", bodyData);
+  var response = await AxiosInstance.post("auth/login", bodyData, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
   return response.data;
 };
 
@@ -35,6 +43,9 @@ export const RequestResetLink = async (requestData) => {
   };
   var response = await AxiosInstance.get("auth/request/reset-password", {
     params: params,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+    },
   });
   return response.data;
 };
@@ -52,6 +63,7 @@ export const Logout = async () => {
   var access_token = localStorage.getItem("access_token");
   var response = await AxiosInstance.post("auth/logout", null, {
     headers: {
+      "Access-Control-Allow-Origin": "*",
       Authorization: "Bearer " + access_token,
     },
   });

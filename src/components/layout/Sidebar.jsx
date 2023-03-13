@@ -66,7 +66,7 @@ function MySidebar(props) {
           },
           {
             key: "4",
-            icon: <BarsOutlined fontSize="large"/>,
+            icon: <BarsOutlined fontSize="large" />,
             label: (
               <NavLink
                 to="/shift-list"
@@ -79,18 +79,53 @@ function MySidebar(props) {
             ),
           },
           {
-            key: "5",
+            key: "sub1",
             icon: <AccessTimeFilledIcon fontSize="large" />,
-            label: (
-              <NavLink
-                to="/time-attendance"
-                className={({ isActive }) =>
-                  isActive ? setSelectedKey("5") : undefined
-                }
-              >
-                Chấm công
-              </NavLink>
-            ),
+            label: <div>Chấm công</div>,
+            children: [
+              {
+                key: "opt1",
+                icon: <AccessTimeFilledIcon fontSize="large" />,
+                label: (
+                  <NavLink
+                    to=""
+                    className={({ isActive }) =>
+                      isActive ? setSelectedKey("5") : undefined
+                    }
+                  >
+                    Phân ca làm việc
+                  </NavLink>
+                ),
+              },
+              {
+                key: "opt2",
+                icon: <AccessTimeFilledIcon fontSize="large" />,
+                label: (
+                  <NavLink
+                    to=""
+                    className={({ isActive }) =>
+                      isActive ? setSelectedKey("opt2") : undefined
+                    }
+                  >
+                    Bảng chấm công
+                  </NavLink>
+                ),
+              },
+              {
+                key: "opt3",
+                icon: <AccessTimeFilledIcon fontSize="large" />,
+                label: (
+                  <NavLink
+                    to=""
+                    className={({ isActive }) =>
+                      isActive ? setSelectedKey("opt3") : undefined
+                    }
+                  >
+                    Báo cáo đi muộn, về sớm
+                  </NavLink>
+                ),
+              },
+            ],
           },
           {
             key: "6",

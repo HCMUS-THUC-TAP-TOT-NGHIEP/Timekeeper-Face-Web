@@ -20,3 +20,59 @@ export const AssignShift = async (req) => {
   });
   return response.data;
 };
+
+export const GetAssignmentList = async () => {
+  const accessToken = localStorage.getItem("access_token");
+  var response = await AxiosInstance.get("shift/assignment/list", {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + accessToken,
+    },
+  });
+  return response.data;
+};
+
+export const GetAssignmentDetail = async (req) => {
+  const accessToken = localStorage.getItem("access_token");
+  var response = await AxiosInstance.post("shift/assignment/detail", req, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + accessToken,
+    },
+  });
+  return response.data;
+};
+
+export const GetAssignmentType = async () => {
+  const accessToken = localStorage.getItem("access_token");
+  var response = await AxiosInstance.get("shift/assignment/all-type", {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + accessToken,
+    },
+  });
+  return response.data;
+};
+
+export const GetShiftType = async () => {
+  const accessToken = localStorage.getItem("access_token");
+  var response = await AxiosInstance.get("shift/type/list", {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + accessToken,
+    },
+  });
+  return response.data;
+};
+
+export const GetDesignationList = async(accessToken) =>
+{
+  var response = await AxiosInstance.get("designation/list", {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + accessToken,
+    },
+  });
+  return response.data;
+
+}

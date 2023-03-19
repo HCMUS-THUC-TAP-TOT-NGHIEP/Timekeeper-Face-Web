@@ -32,8 +32,9 @@ const items = [
     label: (
       <Link
         onClick={async () => {
-          await Logout();
+          const accessToken = localStorage.getItem("access_token");
           localStorage.removeItem("access_token");
+          Logout(accessToken);
           window.location = "/login";
         }}
       >

@@ -59,8 +59,7 @@ export const ResetPassword = async (requestData) => {
   return response.data;
 };
 
-export const Logout = async () => {
-  var access_token = localStorage.getItem("access_token");
+export const Logout = async (access_token) => {
   var response = await AxiosInstance.post("auth/logout", null, {
     headers: {
       "Access-Control-Allow-Origin": "*",

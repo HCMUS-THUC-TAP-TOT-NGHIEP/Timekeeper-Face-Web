@@ -15,17 +15,39 @@ import {
 import locale from "antd/es/date-picker/locale/vi_VN";
 import TextArea from "antd/es/input/TextArea";
 import { Content } from "antd/es/layout/layout";
-import React from "react";
-import { Link } from "react-router-dom";
-import { AssignShift } from "./api";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  AssignShift,
+  GetAssignmentType,
+  GetDesignationList,
+  GetShiftType,
+} from "./api";
+import dayjs from "dayjs";
+import { GetDepartmentList } from "../department/api";
+import { GetManyEmployee } from "../employee/api";
 
+const dateFormat = "YYYY-MM-DD";
 const ShiftAssignmentPage = (props) => {
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [notify, contextHolder] = notification.useNotification();
+  const [assignmentTypeList, setAssignmentTypeList] = useState([]);
+  const [shiftTypeList, setShiftTypeList] = useState([]);
+  const [departmentList, setDepartmentList] = useState([]);
+  const [designationList, setDesignationList] = useState([]);
+  const [employeeList, setEmployeeList] = useState([]);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
   const assignShift = (values) => {
+    console.log(values);
+    if (values.StartDate) {
+      values.StartDate = dayjs(values.StartDate).format(dateFormat);
+    }
+    if (values.EndDate) {
+      values.EndDate = dayjs(values.EndDate).format(dateFormat);
+    }
     console.log(values);
     AssignShift(values)
       .then((response) => {
@@ -35,6 +57,7 @@ const ShiftAssignmentPage = (props) => {
           notify.success({
             description: "Tạo mới phân ca thành công.",
           });
+          navigate("/shift/assignment/detail/" + ResponseData.Id);
           return;
         }
         notify.error({
@@ -61,6 +84,22 @@ const ShiftAssignmentPage = (props) => {
         }
       });
   };
+  useEffect(() => {
+    async function loadData() {
+      const response1 = await GetAssignmentType();
+      const response2 = await GetShiftType();
+      const response3 = await GetDepartmentList();
+      const response4 = await GetDesignationList();
+      const response5 = await GetManyEmployee();
+      console.log("response5", response5);
+      setAssignmentTypeList(response1.ResponseData);
+      setShiftTypeList(response2.ResponseData);
+      setDepartmentList(response3.ResponseData);
+      setDesignationList(response4.ResponseData);
+      setEmployeeList(response5.ResponseData);
+    }
+    loadData();
+  }, []);
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}
@@ -121,16 +160,10 @@ const ShiftAssignmentPage = (props) => {
                       .toLowerCase()
                       .includes(input.toLowerCase());
                   }}
-                  options={[
-                    {
-                      value: 1,
-                      label: "Phân ca cho phòng ban, vị trí",
-                    },
-                    {
-                      value: 2,
-                      label: "Phân ca cho nhân viên",
-                    },
-                  ]}
+                  options={assignmentTypeList.map((ob) => ({
+                    value: ob.Id,
+                    label: ob.Name,
+                  }))}
                 />
               </Form.Item>
             </Col>
@@ -156,20 +189,10 @@ const ShiftAssignmentPage = (props) => {
                       .toLowerCase()
                       .includes(input.toLowerCase());
                   }}
-                  options={[
-                    {
-                      value: 1,
-                      label: "Ca hành chính",
-                    },
-                    {
-                      value: 2,
-                      label: "Ca lễ",
-                    },
-                    {
-                      value: 3,
-                      label: "Ca kíp",
-                    },
-                  ]}
+                  options={shiftTypeList.map((ob) => ({
+                    value: ob.Id,
+                    label: ob.Description,
+                  }))}
                 />
               </Form.Item>
             </Col>
@@ -186,28 +209,10 @@ const ShiftAssignmentPage = (props) => {
                       .includes(input.toLowerCase());
                   }}
                   mode="multiple"
-                  options={[
-                    {
-                      value: 0,
-                      label: "Tất cả",
-                    },
-                    {
-                      value: 1,
-                      label: "HR - Nhân sự",
-                    },
-                    {
-                      value: 7,
-                      label: "Marketing",
-                    },
-                    {
-                      value: 2,
-                      label: "Phòng Lập trình",
-                    },
-                    {
-                      value: 13,
-                      label: "Bảo hành",
-                    },
-                  ]}
+                  options={departmentList.map((ob) => ({
+                    value: ob.Id,
+                    label: ob.Name,
+                  }))}
                 />
               </Form.Item>
             </Col>
@@ -224,31 +229,34 @@ const ShiftAssignmentPage = (props) => {
                       .includes(input.toLowerCase());
                   }}
                   mode="multiple"
-                  options={[
-                    {
-                      value: 1,
-                      label: "Giám đốc",
-                    },
-                    {
-                      value: 2,
-                      label: "Web design",
-                    },
-                    {
-                      value: 3,
-                      label: "Trưởng phòng",
-                    },
-                    {
-                      value: 4,
-                      label: "Mobile Developer",
-                    },
-                    {
-                      value: 5,
-                      label: "QC",
-                    },
-                  ]}
+                  options={designationList.map((ob) => ({
+                    value: ob.Id,
+                    label: ob.Name,
+                  }))}
                 />
               </Form.Item>
             </Col>
+            <Col xs={24} key="5">
+              <Form.Item label="Chọn nhân viên" name="EmployeeId">
+                <Select
+                  showSearch
+                  placeholder="Chọn nhân viên"
+                  optionFilterProp="children"
+                  filterOption={(input, option) => {
+                    if (!option) return false;
+                    return (option.label || "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase());
+                  }}
+                  mode="multiple"
+                  options={employeeList.map((ob) => ({
+                    value: ob.Id,
+                    label: `${ob.Id} - ${ob.FirstName} ${ob.LastName}`,
+                  }))}
+                />
+              </Form.Item>
+            </Col>
+
             <Col xs={24} sm={12} key="6">
               <Form.Item
                 label="Từ ngày"

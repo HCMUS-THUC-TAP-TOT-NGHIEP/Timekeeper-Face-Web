@@ -13,9 +13,14 @@ import "./style.css";
 function MySidebar(props) {
   const [selectedKey, setSelectedKey] = useState("1");
   const { collapsed } = props;
-
   return (
-    <Sider trigger={null} collapsible collapsed={collapsed}>
+    <Sider
+      trigger={null}
+      collapsible
+      collapsed={collapsed}
+      breakpoint="lg"
+      collapsedWidth="0"
+    >
       <div className="logo" />
       <Menu
         theme="dark"
@@ -111,7 +116,6 @@ function MySidebar(props) {
                   </NavLink>
                 ),
               },
-
             ],
           },
           {
@@ -121,7 +125,6 @@ function MySidebar(props) {
             children: [
               {
                 key: "sub2-opt1",
-                icon: <AccessTimeFilledIcon fontSize="large" />,
                 label: (
                   <NavLink
                     to=""
@@ -135,7 +138,6 @@ function MySidebar(props) {
               },
               {
                 key: "sub2-opt2",
-                icon: <AccessTimeFilledIcon fontSize="large" />,
                 label: (
                   <NavLink
                     to=""

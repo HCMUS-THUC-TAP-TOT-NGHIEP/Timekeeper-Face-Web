@@ -82,13 +82,13 @@ export const EditEmployeePage = () => {
       .catch((error) => {
         if (error.response) {
           notification.error({
-            title: "Request có lỗi.",
-            message: `Data: [${error.response.data}], Status [${error.response.status}]`,
+            message: "Request có lỗi.",
+            description: `Data: [${error.response.data}], Status [${error.response.status}]`,
           });
         } else if (error.request) {
           notification.error({
-            title: "Response có lỗi.",
-            message: error.response,
+            message: "Response có lỗi.",
+            description: error.response,
           });
         } else {
           notification.error({
@@ -100,7 +100,7 @@ export const EditEmployeePage = () => {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
-      <Row wrap={false}>
+      <Row gutter={[16, 16]}>
         <Col flex="none">
           <Breadcrumb>
             <Breadcrumb.Item>

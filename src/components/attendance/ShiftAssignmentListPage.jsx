@@ -19,59 +19,23 @@ import {
   theme,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
+import useNotification from "antd/es/notification/useNotification";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { GetAssignmentList } from "./api";
 
-const ShiftAssignmentList = [
-  {
-    Id: 1,
-    Description: "Phân ca tháng 3",
-    StartDate: new Date(),
-    EndDate: new Date(),
-    AssignType: 1,
-    CreatedDate: new Date(),
-    DepartmentId: [1, 2],
-    EmployeeId: [1, 2],
-    DesignationId: [1, 2],
-    key: 1,
-  },
-  {
-    Id: 2,
-    Description: "Phân ca tháng 3",
-    StartDate: new Date(),
-    EndDate: new Date(),
-    AssignType: 2,
-    CreatedDate: new Date(),
-    DepartmentId: [1, 2],
-    EmployeeId: [1, 2],
-    DesignationId: [1, 2],
-    key: 2,
-  },
-  {
-    Id: 3,
-    Description: "Phân ca tháng 3",
-    StartDate: new Date(),
-    EndDate: new Date(),
-    AssignType: 1,
-    CreatedDate: new Date(),
-    DepartmentId: [1, 2],
-    EmployeeId: [1, 2],
-    DesignationId: [1, 2],
-    key: 3,
-  },
-];
 const datePattern = "DD/MM/YYYY";
 const ShiftAssignmentListPage = (props) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [tabKey, setTabKey] = useState(0);
   const navigate = useNavigate();
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const [shiftAssignmentList, setShiftAssignmentList] = useState(
-    ShiftAssignmentList
-  );
+  const [shiftAssignmentList, setShiftAssignmentList] = useState([]);
+  const [fullShiftAssignmentList, setFullShiftAssignmentList] = useState([]);
+  const [notify, contextHolder] = useNotification();
 
   const columns = [
     {
@@ -82,8 +46,8 @@ const ShiftAssignmentListPage = (props) => {
     },
     {
       title: "Kiểu phân ca",
-      dataIndex: "AssignType",
-      key: "AssignType",
+      dataIndex: "ShiftDescription",
+      key: "ShiftDescription",
       width: 80,
     },
     {
@@ -120,14 +84,49 @@ const ShiftAssignmentListPage = (props) => {
   ];
   useEffect(() => {
     document.title = "Bảng phân ca";
+    GetAssignmentList()
+      .then((response) => {
+        console.log(response);
+        const { Status, ResponseData, Description } = response;
+        if (Status === 1) {
+          setFullShiftAssignmentList(ResponseData);
+          setShiftAssignmentList(ResponseData);
+          return;
+        }
+        notify.error({
+          message: "Có lỗi",
+          description: Description,
+        });
+      })
+      .catch((error) => {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi.",
+            description: error.message,
+          });
+        }
+      })
+      .finally((done) => {
+        setLoading(false);
+      });
   }, []);
   const changeTabs = (activeKey) => {
     setTabKey(activeKey);
     if (activeKey == 0) {
-      setShiftAssignmentList(ShiftAssignmentList);
+      setShiftAssignmentList(fullShiftAssignmentList);
     } else {
       setShiftAssignmentList(
-        ShiftAssignmentList.filter((a) => a.AssignType == activeKey)
+        fullShiftAssignmentList.filter((a) => a.AssignType == activeKey)
       );
     }
   };
@@ -190,6 +189,7 @@ const ShiftAssignmentListPage = (props) => {
           />
         </Skeleton>
       </Content>
+      {contextHolder}
     </Space>
   );
 };

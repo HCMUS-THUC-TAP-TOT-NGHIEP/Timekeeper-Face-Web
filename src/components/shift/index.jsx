@@ -41,6 +41,7 @@ const ShiftList = function(props) {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [form] = Form.useForm();
+  const [notify, contextHolder] = notification.useNotification();
 
   useEffect(() => {
     document.title = "Danh mục ca làm việc";
@@ -51,11 +52,30 @@ const ShiftList = function(props) {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
           setCurrentShiftList(ResponseData);
-          setLoading(false);
           return;
         }
       })
-      .catch((error) => {});
+      .catch((error) => {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi.",
+            description: error.message,
+          });
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [perPage, page]);
 
   const columns = [
@@ -187,6 +207,7 @@ const ShiftList = function(props) {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
+      {contextHolder}
       <Row wrap={false}>
         <Col flex="none">
           <Breadcrumb>
@@ -633,7 +654,9 @@ const EditShiftFrom = (props) => {
           notification.success({
             description: "Chỉnh sửa thành công",
           });
-          values.TypeText = shiftTypeList.find(s => s.Id == values.Type).Description;
+          values.TypeText = shiftTypeList.find(
+            (s) => s.Id == values.Type
+          ).Description;
           updateOneShift(values);
           return;
         }

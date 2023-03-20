@@ -75,3 +75,14 @@ export const GetDesignationList = async (accessToken) => {
   });
   return response.data;
 };
+
+export const UpdateShiftAssignment = async (req) => {
+  const accessToken = localStorage.getItem("access_token");
+  var response = await AxiosInstance.post("shift/assignment/update", req, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + accessToken,
+    },
+  });
+  return response.data;
+};

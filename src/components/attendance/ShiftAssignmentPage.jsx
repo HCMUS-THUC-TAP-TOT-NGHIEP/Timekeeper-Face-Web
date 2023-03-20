@@ -11,23 +11,23 @@ import {
   Select,
   Skeleton,
   Space,
-  theme,
+  theme
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import TextArea from "antd/es/input/TextArea";
 import { Content } from "antd/es/layout/layout";
+import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { GetDepartmentList } from "../department/api";
+import { GetManyEmployee } from "../employee/api";
 import {
   AssignShift,
   GetAssignmentDetail,
   GetAssignmentType,
   GetDesignationList,
-  GetShiftType,
+  GetShiftType, UpdateShiftAssignment
 } from "./api";
-import dayjs from "dayjs";
-import { GetDepartmentList } from "../department/api";
-import { GetManyEmployee } from "../employee/api";
 
 const dateFormat = "YYYY-MM-DD";
 const ShiftAssignmentPage = (props) => {
@@ -302,7 +302,6 @@ const EditShiftAssignmentPage = (props) => {
   const [assignmentTypeList, setAssignmentTypeList] = useState([]);
   const [shiftTypeList, setShiftTypeList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
-  const [designationList, setDesignationList] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [shiftAssignment, setShiftAssignment] = useState({});
@@ -318,40 +317,40 @@ const EditShiftAssignmentPage = (props) => {
       values.EndDate = dayjs(values.EndDate).format(dateFormat);
     }
     console.log(values);
-    // AssignShift(values)
-    //   .then((response) => {
-    //     console.log(response);
-    //     const { Status, ResponseData, Description } = response;
-    //     if (Status === 1) {
-    //       notify.success({
-    //         description: "Tạo mới phân ca thành công.",
-    //       });
-    //       navigate("/shift/assignment/detail/" + ResponseData.Id);
-    //       return;
-    //     }
-    //     notify.error({
-    //       message: "Thất bại",
-    //       description: Description,
-    //     });
-    //   })
-    //   .catch((error) => {
-    //     if (error.response) {
-    //       notify.error({
-    //         message: "Có lỗi",
-    //         description: `[${error.response.statusText}]`,
-    //       });
-    //     } else if (error.request) {
-    //       notify.error({
-    //         message: "Có lỗi.",
-    //         description: error,
-    //       });
-    //     } else {
-    //       notify.error({
-    //         message: "Có lỗi.",
-    //         description: error.message,
-    //       });
-    //     }
-    //   });
+    UpdateShiftAssignment(values)
+      .then((response) => {
+        console.log(response);
+        const { Status, ResponseData, Description } = response;
+        if (Status === 1) {
+          notify.success({
+            description: "Tạo mới phân ca thành công.",
+          });
+          navigate("/shift/assignment/detail/" + ResponseData.Id);
+          return;
+        }
+        notify.error({
+          message: "Thất bại",
+          description: Description,
+        });
+      })
+      .catch((error) => {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi.",
+            description: error.message,
+          });
+        }
+      });
   };
   useEffect(() => {
     async function loadData() {
@@ -371,10 +370,6 @@ const EditShiftAssignmentPage = (props) => {
         if (response.Status != 1) {
           return;
         }
-        const response4 = await GetDesignationList();
-        if (response.Status != 1) {
-          return;
-        }
         const response5 = await GetManyEmployee();
         if (response.Status != 1) {
           return;
@@ -382,22 +377,25 @@ const EditShiftAssignmentPage = (props) => {
         setAssignmentTypeList(response1.ResponseData);
         setShiftTypeList(response2.ResponseData);
         setDepartmentList(response3.ResponseData);
-        setDesignationList(response4.ResponseData);
         setEmployeeList(response5.ResponseData);
         setShiftAssignment(response.ResponseData);
+        console.log(
+          response.ResponseData.Detail.filter((s) => s.TargetType == 1)
+        );
         form.setFieldsValue({
           Description: response.ResponseData.Description,
           AssignType: response.ResponseData.AssignType,
           ShiftId: response.ResponseData.ShiftId,
-          // StartDate: dayjs(response.ResponseData.StartDate, 'YYYY-MM-DD').format(dateFormat),
-          // EndDate: dayjs(response.ResponseData.EndDate, 'YYYY-MM-DD').format(dateFormat),
+          StartDate: dayjs(response.ResponseData.StartDate, "YYYY-MM-DD"),
+          EndDate: dayjs(response.ResponseData.EndDate, "YYYY-MM-DD"),
           Note: response.ResponseData.Note,
           DepartmentId: response.ResponseData.Detail.filter(
             (s) => s.TargetType == 1
-          ),
-          DepartmentId: response.ResponseData.Detail.filter(
+          ).map((t) => t.Target),
+          DepartmentId: [2],
+          EmployeeId: response.ResponseData.Detail.filter(
             (s) => s.TargetType == 2
-          ),
+          ).map((t) => t.Target),
         });
       } catch (error) {
         if (error.response) {
@@ -471,6 +469,7 @@ const EditShiftAssignmentPage = (props) => {
                   ]}
                 >
                   <Select
+                    disabled
                     showSearch
                     placeholder="Chọn kiểu phân ca"
                     optionFilterProp="children"
@@ -500,6 +499,7 @@ const EditShiftAssignmentPage = (props) => {
                   ]}
                 >
                   <Select
+                    disabled
                     showSearch
                     placeholder="Chọn loại ca"
                     optionFilterProp="children"
@@ -568,6 +568,7 @@ const EditShiftAssignmentPage = (props) => {
                   ]}
                 >
                   <DatePicker
+                    disabled
                     allowClear
                     format="DD/MM/YYYY"
                     locale={locale}
@@ -624,3 +625,4 @@ const EditShiftAssignmentPage = (props) => {
   );
 };
 export { ShiftAssignmentPage, EditShiftAssignmentPage };
+

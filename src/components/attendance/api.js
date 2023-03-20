@@ -40,6 +40,7 @@ export const GetAssignmentDetail = async (req) => {
       Authorization: "Bearer " + accessToken,
     },
   });
+  console.log(response.data);
   return response.data;
 };
 
@@ -65,8 +66,7 @@ export const GetShiftType = async () => {
   return response.data;
 };
 
-export const GetDesignationList = async(accessToken) =>
-{
+export const GetDesignationList = async (accessToken) => {
   var response = await AxiosInstance.get("designation/list", {
     headers: {
       "Access-Control-Allow-Origin": "*",
@@ -74,5 +74,4 @@ export const GetDesignationList = async(accessToken) =>
     },
   });
   return response.data;
-
-}
+};

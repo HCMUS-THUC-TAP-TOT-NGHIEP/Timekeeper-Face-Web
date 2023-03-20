@@ -599,29 +599,11 @@ const EditShiftFrom = (props) => {
       Description: shift.Description,
       StartTime: dayjs(shift.StartTime, timePattern),
       FinishTime: dayjs(shift.FinishTime, timePattern),
-      BreakAt: dayjs(shift.BreakAt, timePattern),
-      BreakEnd: dayjs(shift.BreakEnd, timePattern),
     });
-    // GetShiftList()
-    //   .then((response) => {
-    //     const { Status, Description, ResponseData } = response;
-    //     if (Status === 1) {
-    //       setCurrentShiftList(ResponseData);
-    //       return;
-    //     }
-    //     notification.error({
-    //       message: "Có lỗi",
-    //       description:
-    //         "Truy vấn danh sách nhân viên không thành công. " + Description,
-    //     });
-    //   })
-    //   .catch((error) => {
-    //     console.error(error);
-    //     notification.error({
-    //       message: "Có lỗi",
-    //       description: "Truy vấn danh sách nhân viên không thành công.",
-    //     });
-    // });
+    if (shift.BreakAt)
+      form.setFieldsValue({ BreakAt: dayjs(shift.BreakAt, timePattern) });
+    if (shift.BreakEnd)
+      form.setFieldsValue({ BreakEnd: dayjs(shift.BreakEnd, timePattern) });
   }, [shift]);
   useEffect(() => {
     GetShiftTypeList()
@@ -638,6 +620,7 @@ const EditShiftFrom = (props) => {
       .catch((error) => {});
   }, []);
   const onSubmit = (values) => {
+    console.log(values);
     values.StartTime = dayjs(values.StartTime).format(timePattern);
     values.FinishTime = dayjs(values.FinishTime).format(timePattern);
     if (values.BreakAt) {

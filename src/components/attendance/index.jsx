@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { ShiftAssignmentPage } from "./ShiftAssignmentPage";
+import {
+  ShiftAssignmentPage,
+  EditShiftAssignmentPage,
+} from "./ShiftAssignmentPage";
 import { ShiftAssignmentListPage } from "./ShiftAssignmentListPage";
 import { ShiftAssignmentDetail } from "./ShiftAssignmentDetail";
 
@@ -16,4 +19,5 @@ export {
   ShiftAssignmentPage,
   ShiftAssignmentListPage,
   ShiftAssignmentDetail,
+  EditShiftAssignmentPage,
 };

@@ -2,6 +2,7 @@ import { Layout } from "antd";
 import React, { useState } from "react";
 import { Outlet, Route, Routes } from "react-router";
 import {
+  EditShiftAssignmentPage,
   ShiftAssignmentDetail,
   ShiftAssignmentListPage,
   ShiftAssignmentPage,
@@ -48,6 +49,10 @@ function App() {
           <Route path="shift" element={<ShiftManagementIndex />}>
             <Route path="" element={<ShiftList />} />
             <Route path="assignment" element={<ShiftAssignmentPage />} />
+            <Route
+              path="assignment/edit/:id"
+              element={<EditShiftAssignmentPage />}
+            />
             <Route
               path="assignment/list"
               element={<ShiftAssignmentListPage />}

@@ -147,7 +147,7 @@ const ShiftAssignmentListPage = (props) => {
           <Space wrap>
             <Button
               type="primary"
-              onClick={() => navigate("/shift/add")}
+              onClick={() => navigate("/shift/assignment")}
               icon={<PlusOutlined />}
             >
               Tạo phân ca làm việc mới
@@ -164,7 +164,7 @@ const ShiftAssignmentListPage = (props) => {
           },
           {
             key: 1,
-            label: "Phân ca theo phòng ban, vị trí",
+            label: "Phân ca theo phòng ban",
           },
           {
             key: 2,
@@ -210,9 +210,11 @@ const ActionMenu = (props) => {
 
     {
       label: (
-        <Space onClick={null}>
-          <EditFilled />
-          Chỉnh sửa
+        <Space>
+          <Link to={`/shift/assignment/edit/${shiftAssignment.Id}`}>
+            <EditFilled />
+            Chỉnh sửa
+          </Link>
         </Space>
       ),
       key: "1",

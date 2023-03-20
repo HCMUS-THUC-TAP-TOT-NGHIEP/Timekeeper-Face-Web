@@ -25,8 +25,7 @@ const dateFormat = "DD/MM/YYYY";
 
 const _TargeType = {
   ByDepartment: 1,
-  ByDesignation: 2,
-  ByEmployee: 3,
+  ByEmployee: 2,
 };
 
 const ShiftAssignmentDetail = (props) => {
@@ -36,35 +35,17 @@ const ShiftAssignmentDetail = (props) => {
     token: { colorBgContainer },
   } = theme.useToken();
   const [shiftAssignment, setShiftAssignment] = useState({
-    Id: 3,
-    Description: "Phân ca tháng 3",
-    StartDate: new Date(),
-    EndDate: new Date(),
-    AssignType: 1,
-    CreatedDate: new Date(),
-    Note: "",
-    Detail: [
-      {
-        Target: 1,
-        TargetDescription: "ByEmployee",
-        TargetType: _TargeType.ByEmployee,
-      },
-      {
-        Target: 2,
-        TargetDescription: "ByDesignation",
-        TargetType: _TargeType.ByDesignation,
-      },
-      {
-        Target: 3,
-        TargetDescription: "ByDepartment",
-        TargetType: _TargeType.ByDepartment,
-      },
-      {
-        Target: 4,
-        TargetDescription: "ByDepartment",
-        TargetType: _TargeType.ByDepartment,
-      },
-    ],
+    AssignType: undefined,
+    AssignmentTypeName: undefined,
+    CreatedAt: undefined,
+    CreatedBy: undefined,
+    Description: undefined,
+    Detail: [],
+    EndDate: undefined,
+    Id: undefined,
+    Note: undefined,
+    ShiftId: undefined,
+    StartDate: undefined,
   });
   const [notify, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(true);
@@ -192,34 +173,8 @@ const ShiftAssignmentDetail = (props) => {
                     },
                   ]}
                   dataSource={shiftAssignment.Detail.filter(
-                    (s) => s.TargetType == _TargeType.ByDepartment
-                  )}
-                />
-              ),
-            },
-            {
-              key: 3,
-              label: "Vị trí",
-              children: (
-                <Table
-                  columns={[
-                    {
-                      title: "Mã",
-                      width: 10,
-                      dataIndex: "Target",
-                      key: "Target",
-                      fixed: "left",
-                    },
-
-                    {
-                      title: "Vị trí",
-                      width: 100,
-                      dataIndex: "TargetDescription",
-                      key: "TargetDescription",
-                    },
-                  ]}
-                  dataSource={shiftAssignment.Detail.filter(
-                    (s) => s.TargetType == _TargeType.ByDesignation
+                    (s) =>
+                      s.TargetType && s.TargetType == _TargeType.ByDepartment
                   )}
                 />
               ),
@@ -246,7 +201,7 @@ const ShiftAssignmentDetail = (props) => {
                     },
                   ]}
                   dataSource={shiftAssignment.Detail.filter(
-                    (s) => s.TargetType == _TargeType.ByEmployee
+                    (s) => s.TargetType && s.TargetType == _TargeType.ByEmployee
                   )}
                 />
               ),

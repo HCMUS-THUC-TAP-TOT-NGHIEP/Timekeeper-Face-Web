@@ -26,6 +26,7 @@ import {
   GetAssignmentDetail,
   GetAssignmentType,
   GetDesignationList,
+  GetShiftList,
   GetShiftType, UpdateShiftAssignment
 } from "./api";
 
@@ -35,7 +36,7 @@ const ShiftAssignmentPage = (props) => {
   const [form] = Form.useForm();
   const [notify, contextHolder] = notification.useNotification();
   const [assignmentTypeList, setAssignmentTypeList] = useState([]);
-  const [shiftTypeList, setShiftTypeList] = useState([]);
+  const [shiftList, setShiftList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
   const [designationList, setDesignationList] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
@@ -89,12 +90,12 @@ const ShiftAssignmentPage = (props) => {
   useEffect(() => {
     async function loadData() {
       const response1 = await GetAssignmentType();
-      const response2 = await GetShiftType();
+      const response2 = await GetShiftList();
       const response3 = await GetDepartmentList();
       const response4 = await GetDesignationList();
       const response5 = await GetManyEmployee();
       setAssignmentTypeList(response1.ResponseData);
-      setShiftTypeList(response2.ResponseData);
+      setShiftList(response2.ResponseData);
       setDepartmentList(response3.ResponseData);
       setDesignationList(response4.ResponseData);
       setEmployeeList(response5.ResponseData);
@@ -190,7 +191,7 @@ const ShiftAssignmentPage = (props) => {
                       .toLowerCase()
                       .includes(input.toLowerCase());
                   }}
-                  options={shiftTypeList.map((ob) => ({
+                  options={shiftList.map((ob) => ({
                     value: ob.Id,
                     label: ob.Description,
                   }))}
@@ -300,7 +301,7 @@ const EditShiftAssignmentPage = (props) => {
   const [form] = Form.useForm();
   const [notify, contextHolder] = notification.useNotification();
   const [assignmentTypeList, setAssignmentTypeList] = useState([]);
-  const [shiftTypeList, setShiftTypeList] = useState([]);
+  const [shiftList, setShiftList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -323,7 +324,7 @@ const EditShiftAssignmentPage = (props) => {
         const { Status, ResponseData, Description } = response;
         if (Status === 1) {
           notify.success({
-            description: "Tạo mới phân ca thành công.",
+            description: "Cập nhật phân ca thành công.",
           });
           navigate("/shift/assignment/detail/" + ResponseData.Id);
           return;
@@ -363,7 +364,7 @@ const EditShiftAssignmentPage = (props) => {
         if (response.Status != 1) {
           return;
         }
-        const response2 = await GetShiftType();
+        const response2 = await GetShiftList();
         if (response.Status != 1) {
         }
         const response3 = await GetDepartmentList();
@@ -375,7 +376,7 @@ const EditShiftAssignmentPage = (props) => {
           return;
         }
         setAssignmentTypeList(response1.ResponseData);
-        setShiftTypeList(response2.ResponseData);
+        setShiftList(response2.ResponseData);
         setDepartmentList(response3.ResponseData);
         setEmployeeList(response5.ResponseData);
         setShiftAssignment(response.ResponseData);
@@ -383,6 +384,7 @@ const EditShiftAssignmentPage = (props) => {
           response.ResponseData.Detail.filter((s) => s.TargetType == 1)
         );
         form.setFieldsValue({
+          Id: response.ResponseData.Id,
           Description: response.ResponseData.Description,
           AssignType: response.ResponseData.AssignType,
           ShiftId: response.ResponseData.ShiftId,
@@ -441,6 +443,16 @@ const EditShiftAssignmentPage = (props) => {
         <Form form={form} layout="vertical" onFinish={assignShift}>
           <Row gutter={24}>
             <Skeleton loading={loading} active={loading}>
+            <Col xs={24} sm={12} key="0">
+                <Form.Item
+                  label="Mã"
+                  name="Id"
+                  required
+                >
+                  <Input disabled placeholder="Nhập tiêu đề" />
+                </Form.Item>
+              </Col>
+
               <Col xs={24} sm={12} key="1">
                 <Form.Item
                   label="Tiêu đề"
@@ -509,7 +521,7 @@ const EditShiftAssignmentPage = (props) => {
                         .toLowerCase()
                         .includes(input.toLowerCase());
                     }}
-                    options={shiftTypeList.map((ob) => ({
+                    options={shiftList.map((ob) => ({
                       value: ob.Id,
                       label: ob.Description,
                     }))}

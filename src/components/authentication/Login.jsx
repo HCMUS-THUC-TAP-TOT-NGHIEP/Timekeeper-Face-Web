@@ -1,6 +1,5 @@
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { LoadingButton } from "@mui/lab";
 import {
   Container,
   Grid,
@@ -9,9 +8,9 @@ import {
   Link,
   Paper,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
-import { notification, Spin } from "antd";
+import { Button, notification } from "antd";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -181,17 +180,29 @@ const LoginPage = ({ handleChange }) => {
                     </div>
 
                     <Grid item p={1}>
-                      <LoadingButton
+                      {/* <LoadingButton
                         type="submit"
                         color="primary"
                         variant="contained"
                         loadingPosition="start"
+                        startIcon={null}
                         style={btnstyle}
                         fullWidth
                         loading={loading}
                       >
                         {isSubmitting ? "Loading" : "Log in"}
-                      </LoadingButton>
+                      </LoadingButton> */}
+                      <Button
+                        htmlType="submit"
+                        type="primary"
+                        variant="contained"
+                        loadingPosition="start"
+                        style={{ width: "100%" }}
+                        loading={loading}
+                        size="large"
+                      >
+                        Log In
+                      </Button>
                     </Grid>
                   </Form>
                 )}

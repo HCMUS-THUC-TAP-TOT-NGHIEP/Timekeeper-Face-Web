@@ -55,9 +55,9 @@ export const GetAssignmentType = async () => {
   return response.data;
 };
 
-export const GetShiftType = async () => {
+export const GetShiftList = async () => {
   const accessToken = localStorage.getItem("access_token");
-  var response = await AxiosInstance.get("shift/type/list", {
+  var response = await AxiosInstance.get("shift/list", {
     headers: {
       "Access-Control-Allow-Origin": "*",
       Authorization: "Bearer " + accessToken,

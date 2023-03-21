@@ -95,13 +95,6 @@ const ShiftList = function(props) {
       sorter: (a, b) => a.Description.localeCompare(b.Description),
     },
     {
-      title: "Phân loại",
-      dataIndex: "Type",
-      key: "Type",
-      render: (_, { TypeText }) => TypeText,
-      width: 150,
-    },
-    {
       title: "Giờ vào",
       dataIndex: "StartTime",
       key: "StartTime",

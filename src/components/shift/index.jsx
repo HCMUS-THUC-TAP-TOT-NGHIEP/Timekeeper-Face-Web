@@ -235,19 +235,6 @@ const ShiftList = function(props) {
 const AddShiftForm = (props) => {
   const form = props.form;
   const [insertOneShift, currentShiftList] = props.listState;
-  const [shiftTypeList, setShiftTypeList] = useState([]);
-  useEffect(() => {
-    GetShiftTypeList()
-      .then((response) => {
-        const { Status, Description, ResponseData } = response;
-        if (Status === 1) {
-          setShiftTypeList(ResponseData);
-          return;
-        }
-      })
-      .catch((error) => {});
-  }, []);
-
   const onSubmit = (values) => {
     const patternTime = "HH:mm:ss";
     values.StartTime = dayjs(values.StartTime).format(patternTime);
@@ -266,12 +253,6 @@ const AddShiftForm = (props) => {
             description: "Ca làm việc mới đã được tạo",
           });
           values.Id = ResponseData.Id;
-          var type = shiftTypeList.find(
-            (shiftType) => shiftType.Id === values.ShiftType
-          );
-          if (type) {
-            values.TypeText = type.Description;
-          }
           insertOneShift(values);
           return;
         }
@@ -320,28 +301,6 @@ const AddShiftForm = (props) => {
           lg: 32,
         }}
       >
-        <Col xs={24}>
-          <Form.Item
-            hasFeedback
-            labelCol={24}
-            label="Loại ca"
-            name="ShiftType"
-            rules={[
-              {
-                required: true,
-                message: "Loại ca là trường bắt buộc.",
-              },
-            ]}
-          >
-            <Select placeholder="Chọn loại ca">
-              {shiftTypeList.map((shiftType) => (
-                <Select.Option key={shiftType.Id} value={shiftType.Id}>
-                  {shiftType.Description}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
         <Col xs={24}>
           <Form.Item
             hasFeedback
@@ -583,8 +542,6 @@ const EditShiftFrom = (props) => {
   const form = props.form;
   const shift = props.content;
   const [updateOneShift, shiftList] = props.listState;
-  const [currentShiftList, setCurrentShiftList] = useState([]);
-  const [shiftTypeList, setShiftTypeList] = useState([]);
   const timePattern = "HH:mm:ss";
   useEffect(() => {
     form.setFieldsValue({
@@ -598,20 +555,6 @@ const EditShiftFrom = (props) => {
     if (shift.BreakEnd)
       form.setFieldsValue({ BreakEnd: dayjs(shift.BreakEnd, timePattern) });
   }, [shift]);
-  useEffect(() => {
-    GetShiftTypeList()
-      .then((response) => {
-        const { Status, Description, ResponseData } = response;
-        if (Status === 1) {
-          setShiftTypeList(ResponseData);
-          form.setFieldsValue({
-            Type: shift.Type,
-          });
-          return;
-        }
-      })
-      .catch((error) => {});
-  }, []);
   const onSubmit = (values) => {
     console.log(values);
     values.StartTime = dayjs(values.StartTime).format(timePattern);
@@ -630,9 +573,6 @@ const EditShiftFrom = (props) => {
           notification.success({
             description: "Chỉnh sửa thành công",
           });
-          values.TypeText = shiftTypeList.find(
-            (s) => s.Id == values.Type
-          ).Description;
           updateOneShift(values);
           return;
         }
@@ -695,29 +635,6 @@ const EditShiftFrom = (props) => {
             ]}
           >
             <Input readOnly />
-          </Form.Item>
-        </Col>
-
-        <Col xs={24}>
-          <Form.Item
-            hasFeedback
-            labelCol={24}
-            label="Loại ca"
-            name="Type"
-            rules={[
-              {
-                required: true,
-                message: "Loại ca là trường bắt buộc.",
-              },
-            ]}
-          >
-            <Select placeholder="Chọn loại ca">
-              {shiftTypeList.map((shiftType) => (
-                <Select.Option key={shiftType.Id} value={shiftType.Id}>
-                  {shiftType.Description}
-                </Select.Option>
-              ))}
-            </Select>
           </Form.Item>
         </Col>
         <Col xs={24}>

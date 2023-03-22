@@ -3,26 +3,20 @@ import {
   DeleteFilled,
   EditFilled,
   EditTwoTone,
-  InfoCircleTwoTone,
-  MoreOutlined,
+  InfoCircleTwoTone
 } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
-  Col,
-  Dropdown,
-  Form,
-  Input,
-  message,
-  Modal,
+  Col, Form,
+  Input, Modal,
   notification,
   Popconfirm,
-  Row,
-  Select,
-  Skeleton,
+  Row, Skeleton,
   Space,
   Table,
   TimePicker,
+  Tooltip
 } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
@@ -30,9 +24,7 @@ import { Link } from "react-router-dom";
 import {
   CreateNewShift,
   DeleteShift,
-  GetShiftList,
-  GetShiftTypeList,
-  UpdateShift,
+  GetShiftList, UpdateShift
 } from "./api";
 
 const ShiftList = function(props) {
@@ -83,7 +75,6 @@ const ShiftList = function(props) {
       title: "Mã",
       dataIndex: "Id",
       key: "Id",
-      width: 50,
       sorter: (a, b) => a.Id - b.Id,
       fixed: "left",
     },
@@ -91,7 +82,6 @@ const ShiftList = function(props) {
       title: "Mô tả",
       dataIndex: "Description",
       key: "Description",
-      width: 200,
       sorter: (a, b) => a.Description.localeCompare(b.Description),
     },
     {
@@ -104,13 +94,11 @@ const ShiftList = function(props) {
         }
         return "";
       },
-      width: 150,
     },
     {
       title: "Giờ ra",
       dataIndex: "FinishTime",
       key: "FinishTime",
-      width: 150,
       render: (_, { FinishTime }) => {
         if (FinishTime) {
           return FinishTime;
@@ -128,7 +116,6 @@ const ShiftList = function(props) {
         }
         return "";
       },
-      width: 150,
     },
     {
       title: "Kết thúc nghỉ",
@@ -140,14 +127,7 @@ const ShiftList = function(props) {
         }
         return "";
       },
-      width: 150,
     },
-    // {
-    //   title: "Tình trạng",
-    //   dataIndex: "StatusText",
-    //   key: "StatusText",
-    //   width: 100,
-    // },
     {
       title: "",
       dataIndex: "actions",
@@ -160,8 +140,6 @@ const ShiftList = function(props) {
           updateOneShift={updateOneShift}
         />
       ),
-      width: 50,
-      fixed: "right",
     },
   ];
   const insertOneShift = (values) => {
@@ -492,49 +470,34 @@ function ActionMenu(props) {
     });
   };
 
-  const items = [
-    {
-      label: (
-        <Space onClick={showEditForm}>
-          <EditFilled />
-          Chỉnh sửa
-        </Space>
-      ),
-      key: "0",
-    },
-    {
-      label: (
-        <Popconfirm
-          title={`Xóa ca làm việc ID ${shift.Id}`}
-          description={`Bạn có chắc muốn xóa ID ${shift.Id} - ${shift.Description}?`}
-          okText="Yes"
-          okType="danger"
-          cancelText="No"
-          placement="top"
-          onConfirm={deleteShift}
-        >
-          <a href="#" style={{ display: "block" }}>
-            <Space>
-              <DeleteFilled key="1" />
-              Xóa
-            </Space>
-          </a>
-        </Popconfirm>
-      ),
-      key: "1",
-    },
-  ];
   return (
-    <Dropdown
-      menu={{ items }}
-      trigger={["click"]}
-      placement="bottomRight"
-      arrow
-    >
-      <Space style={{ paddingRight: "5px", paddingLeft: "5px" }}>
-        <MoreOutlined />
+    <Space align="center" size="middle" wrap>
+      <Space size="middle"
+        onClick={showEditForm}
+        style={{ padding: 4, margin: 1, cursor: "pointer" }}
+      >
+        <Tooltip title="Chỉnh sửa">
+          <EditFilled />
+        </Tooltip>
       </Space>
-    </Dropdown>
+      <Popconfirm
+        title={`Xóa ca làm việc ID ${shift.Id}`}
+        description={`Bạn có chắc muốn xóa ID ${shift.Id} - ${shift.Description}?`}
+        okText="Yes"
+        okType="danger"
+        cancelText="No"
+        placement="top"
+        onConfirm={deleteShift}
+        icon={<DeleteFilled />}
+      >
+        <Tooltip title="Xóa">
+          <DeleteFilled
+            key="1"
+            style={{ padding: 4, margin: 1, cursor: "pointer" }}
+          />
+        </Tooltip>
+      </Popconfirm>
+    </Space>
   );
 }
 
@@ -737,3 +700,4 @@ const EditShiftFrom = (props) => {
 };
 
 export { ShiftList };
+

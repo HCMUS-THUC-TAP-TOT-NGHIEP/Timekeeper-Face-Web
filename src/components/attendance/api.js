@@ -86,3 +86,8 @@ export const UpdateShiftAssignment = async (req) => {
   });
   return response.data;
 };
+
+export const _TargeType = {
+  ByDepartment: 1,
+  ByEmployee: 2,
+};

@@ -18,15 +18,10 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { PlusOutlined } from "@ant-design/icons";
-import { GetAssignmentDetail } from "./api";
+import { GetAssignmentDetail, _TargeType } from "./api";
 const { Title } = Typography;
 
 const dateFormat = "DD/MM/YYYY";
-
-const _TargeType = {
-  ByDepartment: 1,
-  ByEmployee: 2,
-};
 
 const ShiftAssignmentDetail = (props) => {
   const { id } = useParams();
@@ -124,7 +119,14 @@ const ShiftAssignmentDetail = (props) => {
                 xs: 1,
               }}
               title={shiftAssignment.Description}
-              extra={<Button type="primary">Chỉnh sửa</Button>}
+              extra={
+                <Button
+                  onClick={() => navigate(`/shift/assignment/edit/${id}`)}
+                  type="primary"
+                >
+                  Chỉnh sửa
+                </Button>
+              }
             >
               <Descriptions.Item label="Tiêu đề">
                 {shiftAssignment.Description}

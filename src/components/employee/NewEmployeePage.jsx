@@ -45,7 +45,7 @@ export const NewEmployeePage = (props) => {
           return;
         }
         notification.error({
-          title: "Thêm thông tin nhân viên mới thất bại",
+          title: "Thêm thông tin nhân viên mới Không thành công",
           description: Description,
         });
       })

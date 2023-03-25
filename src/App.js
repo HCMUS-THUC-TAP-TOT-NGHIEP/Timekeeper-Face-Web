@@ -1,6 +1,7 @@
 import { Layout } from "antd";
 import React, { useState } from "react";
 import { Outlet, Route, Routes } from "react-router";
+import { AccountIndexPage, AccountListPage } from "./components/account";
 import {
   EditShiftAssignmentPage,
   ShiftAssignmentDetail,
@@ -35,6 +36,9 @@ function App() {
         <Route path="/" element={<CustomLayout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/manage/account" element={<AccountIndexPage />}>
+            <Route path="" exact element={<AccountListPage />} />
+          </Route>
           <Route path="/employee" element={<AllEmployeesPage />} />
           <Route path="/employee/all" element={<AllEmployeesPage />} />
           <Route path="/employee/add" element={<NewEmployeePage />} />

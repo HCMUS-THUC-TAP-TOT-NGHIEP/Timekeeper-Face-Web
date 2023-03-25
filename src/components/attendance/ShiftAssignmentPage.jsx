@@ -67,7 +67,7 @@ const ShiftAssignmentPage = (props) => {
           return;
         }
         notify.error({
-          message: "Thất bại",
+          message: "Không thành công",
           description: Description,
         });
       })
@@ -346,7 +346,7 @@ const EditShiftAssignmentPage = (props) => {
           return;
         }
         notify.error({
-          message: "Thất bại",
+          message: "Không thành công",
           description: Description,
         });
       })

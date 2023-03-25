@@ -2,7 +2,7 @@ import {
   DeleteFilled,
   EditFilled,
   EyeFilled,
-  MoreOutlined
+  MoreOutlined,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -14,7 +14,7 @@ import {
   Row,
   Skeleton,
   Space,
-  Table
+  Table,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -42,6 +42,9 @@ export const AllEmployeesPage = (props) => {
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
+          for (var ob of ResponseData) {
+            ob.key = ob.Id;
+          }
           setCurrentEmployeeList(ResponseData);
           setLoading(false);
           return;
@@ -228,7 +231,7 @@ function ActionMenu(props) {
           return;
         }
         notification.error({
-          title: "Xóa nhân viên thất bại",
+          title: "Xóa nhân viên Không thành công",
           description: Description,
         });
       })

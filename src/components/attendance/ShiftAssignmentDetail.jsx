@@ -51,7 +51,7 @@ const ShiftAssignmentDetail = (props) => {
         const { Status, ResponseData, Description } = response;
         if (Status !== 1) {
           notify.error({
-            message: "Thất bại",
+            message: "Không thành công",
             description: Description,
           });
           return;

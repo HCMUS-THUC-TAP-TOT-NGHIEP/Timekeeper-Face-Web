@@ -75,7 +75,7 @@ export const EditEmployeePage = () => {
           return;
         }
         notification.error({
-          title: "Cập nhật thất bại",
+          title: "Cập nhật Không thành công",
           description: Description,
         });
       })

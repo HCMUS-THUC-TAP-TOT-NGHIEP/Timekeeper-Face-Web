@@ -86,7 +86,6 @@ const ShiftAssignmentListPage = (props) => {
     document.title = "Bảng phân ca";
     GetAssignmentList()
       .then((response) => {
-        console.log(response);
         const { Status, ResponseData, Description } = response;
         if (Status === 1) {
           setFullShiftAssignmentList(ResponseData);

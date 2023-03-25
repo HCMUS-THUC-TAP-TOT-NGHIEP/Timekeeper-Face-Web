@@ -40,3 +40,13 @@ export const DeleteUser = async (req) => {
   });
   return response.data;
 };
+
+export const UpdateUser = async (req) => {
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.put("user/update", req, {
+    headers: {
+      Authorization: "Bearer " + access_token,
+    },
+  });
+  return response.data;
+};

@@ -29,7 +29,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { Link, useNavigate } from "react-router-dom";
 import Config from "../../constant";
-import { AddNewUser, DeleteUser, GetAccountList } from "./api";
+import { AddNewUser, DeleteUser, GetAccountList, UpdateUser } from "./api";
 
 export const AccountListPage = (props) => {
   const navigate = useNavigate();
@@ -193,6 +193,16 @@ export const AccountListPage = (props) => {
       accountList.filter((account) => account.Username != value.Username)
     );
   };
+  const editAccount = (value) => {
+    const updatedList = accountList.map((account) => {
+      if (account.Id == value.Id) {
+        return value;
+      } else {
+        return account;
+      }
+    });
+    setAccountList(updatedList);
+  };
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}
@@ -323,9 +333,11 @@ export const AccountListPage = (props) => {
                 <Tooltip title="Xem nhanh">
                   <Button type="text" icon={<EyeOutlined />} />
                 </Tooltip>
-                <Tooltip title="Chỉnh sửa">
-                  <Button type="text" icon={<EditOutlined />} />
-                </Tooltip>
+                <EditAccount
+                  form={form}
+                  account={record}
+                  editAccount={editAccount}
+                />
                 {/* <Tooltip title="Xóa">
                   <Button type="text" icon={<DeleteOutlined />} />
                 </Tooltip> */}
@@ -616,10 +628,100 @@ export const DeleteAccountForm = (props) => {
   );
 };
 
+export const EditAccount = (props) => {
+  const { account, editAccount, form, ...other } = props;
+  const [modal, contextHolder] = Modal.useModal();
+  const [loading, setLoading] = useState(false);
+  const showEditForm = () => {
+    modal.confirm({
+      title: "Chỉnh sửa người dùng",
+      icon: <FormOutlined />,
+      closable: true,
+      content: (
+        <EditAccountForm
+          modal={modal}
+          form={form}
+          account={account}
+          setLoading={setLoading}
+          editAccount={editAccount}
+        />
+      ),
+      onOk(e) {
+        form.submit();
+      },
+      onCancel() {},
+      okButtonProps: { loading: loading },
+      width: 600,
+    });
+  };
+  return (
+    <Space>
+      <Tooltip title="Chỉnh sửa">
+        <Button type="text" icon={<EditOutlined />} onClick={showEditForm} />
+      </Tooltip>
+      {contextHolder}
+    </Space>
+  );
+};
+
 export const EditAccountForm = (props) => {
-  const { form, insertAccount, setLoading } = props;
+  const { form, setLoading, account, editAccount } = props;
   const [notify, contextHolder] = notification.useNotification();
-  const modifyAccount = async (values) => {};
+  const modifyAccount = async (values) => {
+    var success = false;
+    setLoading(true);
+    UpdateUser(values)
+      .then((response) => {
+        const { Status, ResponseData, Description } = response;
+        if (Status === 1) {
+          notify.success({
+            message: "Đã cập nhật tài khoản " + account.Username,
+          });
+          account.Name = values.Name;
+          account.EmailAddress = values.EmailAddress;
+          editAccount(account);
+          success = true;
+          return;
+        }
+        notify.error({
+          message: "Không thành công",
+          description: Description,
+        });
+      })
+      .catch((error) => {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi.",
+            description: error.message,
+          });
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+        if (success) {
+          setTimeout(() => {
+            Modal.destroyAll();
+          }, 1000);
+        }
+      });
+  };
+  useEffect(() => {
+    form.setFieldsValue({
+      Username: account.Username,
+      EmailAddress: account.EmailAddress,
+      Name: account.Name,
+    });
+  }, []);
   return (
     <>
       {contextHolder}
@@ -642,7 +744,7 @@ export const EditAccountForm = (props) => {
                 },
               ]}
             >
-              <Input placeholder="Username" />
+              <Input placeholder="Username" disabled />
             </Form.Item>
           </Col>
           <Col xs={24} md={24}>
@@ -680,49 +782,6 @@ export const EditAccountForm = (props) => {
               ]}
             >
               <Input placeholder="Nhập Họ tên" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={24}>
-            <Form.Item
-              label="Mật khẩu"
-              name="Password"
-              required
-              rules={[
-                {
-                  min: 8,
-                  message: "Mật khẩu phải tối thiểu 8 ký tự",
-                },
-                {
-                  max: 20,
-                  message: "Mật khẩu có tối đa 20 ký tự",
-                },
-              ]}
-            >
-              <Input.Password placeholder="Nhập mật khẩu" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={24}>
-            <Form.Item
-              label="Nhắc lại mật khẩu"
-              name="Confirm"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhắc lại mật khẩu của bạn",
-                },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("Password") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(
-                      new Error("Mật khẩu không khớp nhau.")
-                    );
-                  },
-                }),
-              ]}
-            >
-              <Input.Password />
             </Form.Item>
           </Col>
         </Row>

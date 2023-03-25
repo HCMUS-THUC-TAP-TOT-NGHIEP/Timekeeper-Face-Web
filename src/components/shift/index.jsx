@@ -424,7 +424,7 @@ function ActionMenu(props) {
           return;
         }
         notification.error({
-          message: "Thất bại",
+          message: "Không thành công",
           description: Description,
         });
       })

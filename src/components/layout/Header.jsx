@@ -1,7 +1,7 @@
 import {
   DownOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined
+  MenuUnfoldOutlined,
 } from "@ant-design/icons";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -13,7 +13,7 @@ import {
   Skeleton,
   Space,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import { Header } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
@@ -32,8 +32,9 @@ const items = [
     label: (
       <Link
         onClick={async () => {
-          await Logout();
+          const accessToken = localStorage.getItem("access_token");
           localStorage.removeItem("access_token");
+          Logout(accessToken);
           window.location = "/login";
         }}
       >
@@ -63,7 +64,11 @@ function MyHeader(props) {
         }
         navigate("/login");
       })
-      .catch((error) => {});
+      .catch((error) => {
+        console.log(error);
+        localStorage.removeItem("access_token");
+        navigate("/login");
+      });
   }, []);
   return (
     <Header

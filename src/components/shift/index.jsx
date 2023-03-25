@@ -3,26 +3,20 @@ import {
   DeleteFilled,
   EditFilled,
   EditTwoTone,
-  InfoCircleTwoTone,
-  MoreOutlined,
+  InfoCircleTwoTone
 } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
-  Col,
-  Dropdown,
-  Form,
-  Input,
-  message,
-  Modal,
+  Col, Form,
+  Input, Modal,
   notification,
   Popconfirm,
-  Row,
-  Select,
-  Skeleton,
+  Row, Skeleton,
   Space,
   Table,
   TimePicker,
+  Tooltip
 } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
@@ -30,9 +24,7 @@ import { Link } from "react-router-dom";
 import {
   CreateNewShift,
   DeleteShift,
-  GetShiftList,
-  GetShiftTypeList,
-  UpdateShift,
+  GetShiftList, UpdateShift
 } from "./api";
 
 const ShiftList = function(props) {
@@ -41,6 +33,7 @@ const ShiftList = function(props) {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [form] = Form.useForm();
+  const [notify, contextHolder] = notification.useNotification();
 
   useEffect(() => {
     document.title = "Danh mục ca làm việc";
@@ -51,11 +44,30 @@ const ShiftList = function(props) {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
           setCurrentShiftList(ResponseData);
-          setLoading(false);
           return;
         }
       })
-      .catch((error) => {});
+      .catch((error) => {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi.",
+            description: error.message,
+          });
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [perPage, page]);
 
   const columns = [
@@ -63,7 +75,6 @@ const ShiftList = function(props) {
       title: "Mã",
       dataIndex: "Id",
       key: "Id",
-      width: 50,
       sorter: (a, b) => a.Id - b.Id,
       fixed: "left",
     },
@@ -71,15 +82,7 @@ const ShiftList = function(props) {
       title: "Mô tả",
       dataIndex: "Description",
       key: "Description",
-      width: 200,
       sorter: (a, b) => a.Description.localeCompare(b.Description),
-    },
-    {
-      title: "Phân loại",
-      dataIndex: "Type",
-      key: "Type",
-      render: (_, { TypeText }) => TypeText,
-      width: 150,
     },
     {
       title: "Giờ vào",
@@ -91,13 +94,11 @@ const ShiftList = function(props) {
         }
         return "";
       },
-      width: 150,
     },
     {
       title: "Giờ ra",
       dataIndex: "FinishTime",
       key: "FinishTime",
-      width: 150,
       render: (_, { FinishTime }) => {
         if (FinishTime) {
           return FinishTime;
@@ -115,7 +116,6 @@ const ShiftList = function(props) {
         }
         return "";
       },
-      width: 150,
     },
     {
       title: "Kết thúc nghỉ",
@@ -127,14 +127,7 @@ const ShiftList = function(props) {
         }
         return "";
       },
-      width: 150,
     },
-    // {
-    //   title: "Tình trạng",
-    //   dataIndex: "StatusText",
-    //   key: "StatusText",
-    //   width: 100,
-    // },
     {
       title: "",
       dataIndex: "actions",
@@ -147,8 +140,6 @@ const ShiftList = function(props) {
           updateOneShift={updateOneShift}
         />
       ),
-      width: 50,
-      fixed: "right",
     },
   ];
   const insertOneShift = (values) => {
@@ -187,6 +178,7 @@ const ShiftList = function(props) {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
+      {contextHolder}
       <Row wrap={false}>
         <Col flex="none">
           <Breadcrumb>
@@ -221,19 +213,6 @@ const ShiftList = function(props) {
 const AddShiftForm = (props) => {
   const form = props.form;
   const [insertOneShift, currentShiftList] = props.listState;
-  const [shiftTypeList, setShiftTypeList] = useState([]);
-  useEffect(() => {
-    GetShiftTypeList()
-      .then((response) => {
-        const { Status, Description, ResponseData } = response;
-        if (Status === 1) {
-          setShiftTypeList(ResponseData);
-          return;
-        }
-      })
-      .catch((error) => {});
-  }, []);
-
   const onSubmit = (values) => {
     const patternTime = "HH:mm:ss";
     values.StartTime = dayjs(values.StartTime).format(patternTime);
@@ -252,12 +231,6 @@ const AddShiftForm = (props) => {
             description: "Ca làm việc mới đã được tạo",
           });
           values.Id = ResponseData.Id;
-          var type = shiftTypeList.find(
-            (shiftType) => shiftType.Id === values.ShiftType
-          );
-          if (type) {
-            values.TypeText = type.Description;
-          }
           insertOneShift(values);
           return;
         }
@@ -306,28 +279,6 @@ const AddShiftForm = (props) => {
           lg: 32,
         }}
       >
-        <Col xs={24}>
-          <Form.Item
-            hasFeedback
-            labelCol={24}
-            label="Loại ca"
-            name="ShiftType"
-            rules={[
-              {
-                required: true,
-                message: "Loại ca là trường bắt buộc.",
-              },
-            ]}
-          >
-            <Select placeholder="Chọn loại ca">
-              {shiftTypeList.map((shiftType) => (
-                <Select.Option key={shiftType.Id} value={shiftType.Id}>
-                  {shiftType.Description}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
         <Col xs={24}>
           <Form.Item
             hasFeedback
@@ -519,49 +470,34 @@ function ActionMenu(props) {
     });
   };
 
-  const items = [
-    {
-      label: (
-        <Space onClick={showEditForm}>
-          <EditFilled />
-          Chỉnh sửa
-        </Space>
-      ),
-      key: "0",
-    },
-    {
-      label: (
-        <Popconfirm
-          title={`Xóa ca làm việc ID ${shift.Id}`}
-          description={`Bạn có chắc muốn xóa ID ${shift.Id} - ${shift.Description}?`}
-          okText="Yes"
-          okType="danger"
-          cancelText="No"
-          placement="top"
-          onConfirm={deleteShift}
-        >
-          <a href="#" style={{ display: "block" }}>
-            <Space>
-              <DeleteFilled key="1" />
-              Xóa
-            </Space>
-          </a>
-        </Popconfirm>
-      ),
-      key: "1",
-    },
-  ];
   return (
-    <Dropdown
-      menu={{ items }}
-      trigger={["click"]}
-      placement="bottomRight"
-      arrow
-    >
-      <Space style={{ paddingRight: "5px", paddingLeft: "5px" }}>
-        <MoreOutlined />
+    <Space align="center" size="middle" wrap>
+      <Space size="middle"
+        onClick={showEditForm}
+        style={{ padding: 4, margin: 1, cursor: "pointer" }}
+      >
+        <Tooltip title="Chỉnh sửa">
+          <EditFilled />
+        </Tooltip>
       </Space>
-    </Dropdown>
+      <Popconfirm
+        title={`Xóa ca làm việc ID ${shift.Id}`}
+        description={`Bạn có chắc muốn xóa ID ${shift.Id} - ${shift.Description}?`}
+        okText="Yes"
+        okType="danger"
+        cancelText="No"
+        placement="top"
+        onConfirm={deleteShift}
+        icon={<DeleteFilled />}
+      >
+        <Tooltip title="Xóa">
+          <DeleteFilled
+            key="1"
+            style={{ padding: 4, margin: 1, cursor: "pointer" }}
+          />
+        </Tooltip>
+      </Popconfirm>
+    </Space>
   );
 }
 
@@ -569,8 +505,6 @@ const EditShiftFrom = (props) => {
   const form = props.form;
   const shift = props.content;
   const [updateOneShift, shiftList] = props.listState;
-  const [currentShiftList, setCurrentShiftList] = useState([]);
-  const [shiftTypeList, setShiftTypeList] = useState([]);
   const timePattern = "HH:mm:ss";
   useEffect(() => {
     form.setFieldsValue({
@@ -578,45 +512,14 @@ const EditShiftFrom = (props) => {
       Description: shift.Description,
       StartTime: dayjs(shift.StartTime, timePattern),
       FinishTime: dayjs(shift.FinishTime, timePattern),
-      BreakAt: dayjs(shift.BreakAt, timePattern),
-      BreakEnd: dayjs(shift.BreakEnd, timePattern),
     });
-    // GetShiftList()
-    //   .then((response) => {
-    //     const { Status, Description, ResponseData } = response;
-    //     if (Status === 1) {
-    //       setCurrentShiftList(ResponseData);
-    //       return;
-    //     }
-    //     notification.error({
-    //       message: "Có lỗi",
-    //       description:
-    //         "Truy vấn danh sách nhân viên không thành công. " + Description,
-    //     });
-    //   })
-    //   .catch((error) => {
-    //     console.error(error);
-    //     notification.error({
-    //       message: "Có lỗi",
-    //       description: "Truy vấn danh sách nhân viên không thành công.",
-    //     });
-    // });
+    if (shift.BreakAt)
+      form.setFieldsValue({ BreakAt: dayjs(shift.BreakAt, timePattern) });
+    if (shift.BreakEnd)
+      form.setFieldsValue({ BreakEnd: dayjs(shift.BreakEnd, timePattern) });
   }, [shift]);
-  useEffect(() => {
-    GetShiftTypeList()
-      .then((response) => {
-        const { Status, Description, ResponseData } = response;
-        if (Status === 1) {
-          setShiftTypeList(ResponseData);
-          form.setFieldsValue({
-            Type: shift.Type,
-          });
-          return;
-        }
-      })
-      .catch((error) => {});
-  }, []);
   const onSubmit = (values) => {
+    console.log(values);
     values.StartTime = dayjs(values.StartTime).format(timePattern);
     values.FinishTime = dayjs(values.FinishTime).format(timePattern);
     if (values.BreakAt) {
@@ -633,7 +536,6 @@ const EditShiftFrom = (props) => {
           notification.success({
             description: "Chỉnh sửa thành công",
           });
-          values.TypeText = shiftTypeList.find(s => s.Id == values.Type).Description;
           updateOneShift(values);
           return;
         }
@@ -696,29 +598,6 @@ const EditShiftFrom = (props) => {
             ]}
           >
             <Input readOnly />
-          </Form.Item>
-        </Col>
-
-        <Col xs={24}>
-          <Form.Item
-            hasFeedback
-            labelCol={24}
-            label="Loại ca"
-            name="Type"
-            rules={[
-              {
-                required: true,
-                message: "Loại ca là trường bắt buộc.",
-              },
-            ]}
-          >
-            <Select placeholder="Chọn loại ca">
-              {shiftTypeList.map((shiftType) => (
-                <Select.Option key={shiftType.Id} value={shiftType.Id}>
-                  {shiftType.Description}
-                </Select.Option>
-              ))}
-            </Select>
           </Form.Item>
         </Col>
         <Col xs={24}>
@@ -821,3 +700,4 @@ const EditShiftFrom = (props) => {
 };
 
 export { ShiftList };
+

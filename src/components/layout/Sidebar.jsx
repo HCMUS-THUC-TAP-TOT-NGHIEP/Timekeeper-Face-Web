@@ -13,9 +13,14 @@ import "./style.css";
 function MySidebar(props) {
   const [selectedKey, setSelectedKey] = useState("1");
   const { collapsed } = props;
-
   return (
-    <Sider trigger={null} collapsible collapsed={collapsed}>
+    <Sider
+      trigger={null}
+      collapsible
+      collapsed={collapsed}
+      breakpoint="lg"
+      collapsedWidth="0"
+    >
       <div className="logo" />
       <Menu
         theme="dark"
@@ -65,32 +70,32 @@ function MySidebar(props) {
             ),
           },
           {
-            key: "4",
-            icon: <BarsOutlined fontSize="large" />,
-            label: (
-              <NavLink
-                to="/shift-list"
-                className={({ isActive }) =>
-                  isActive ? setSelectedKey("4") : undefined
-                }
-              >
-                Ca làm việc
-              </NavLink>
-            ),
-          },
-          {
             key: "sub1",
-            icon: <AccessTimeFilledIcon fontSize="large" />,
-            label: <div>Chấm công</div>,
+            icon: <BarsOutlined fontSize="large" />,
+            label: <div>Ca làm việc</div>,
             children: [
               {
-                key: "opt1",
-                icon: <AccessTimeFilledIcon fontSize="large" />,
+                key: "sub1-opt1",
+                // icon: <AccessTimeFilledIcon fontSize="large" />,
                 label: (
                   <NavLink
-                    to=""
+                    to="/shift"
                     className={({ isActive }) =>
-                      isActive ? setSelectedKey("5") : undefined
+                      isActive ? setSelectedKey("sub1-opt1") : undefined
+                    }
+                  >
+                    Danh mục ca làm việc
+                  </NavLink>
+                ),
+              },
+              {
+                key: "sub1-opt2",
+                // icon: <AccessTimeFilledIcon fontSize="large" />,
+                label: (
+                  <NavLink
+                    to="/shift/assignment"
+                    className={({ isActive }) =>
+                      isActive ? setSelectedKey("sub1-opt2") : undefined
                     }
                   >
                     Phân ca làm việc
@@ -98,13 +103,33 @@ function MySidebar(props) {
                 ),
               },
               {
-                key: "opt2",
-                icon: <AccessTimeFilledIcon fontSize="large" />,
+                key: "sub1-opt3",
+                // icon: <AccessTimeFilledIcon fontSize="large" />,
+                label: (
+                  <NavLink
+                    to="/shift/assignment/list"
+                    className={({ isActive }) =>
+                      isActive ? setSelectedKey("sub1-opt3") : undefined
+                    }
+                  >
+                    Bảng phân ca làm việc
+                  </NavLink>
+                ),
+              },
+            ],
+          },
+          {
+            key: "sub2",
+            icon: <AccessTimeFilledIcon fontSize="large" />,
+            label: <div>Chấm công</div>,
+            children: [
+              {
+                key: "sub2-opt1",
                 label: (
                   <NavLink
                     to=""
                     className={({ isActive }) =>
-                      isActive ? setSelectedKey("opt2") : undefined
+                      isActive ? setSelectedKey("sub2-opt1") : undefined
                     }
                   >
                     Bảng chấm công
@@ -112,13 +137,12 @@ function MySidebar(props) {
                 ),
               },
               {
-                key: "opt3",
-                icon: <AccessTimeFilledIcon fontSize="large" />,
+                key: "sub2-opt2",
                 label: (
                   <NavLink
                     to=""
                     className={({ isActive }) =>
-                      isActive ? setSelectedKey("opt3") : undefined
+                      isActive ? setSelectedKey("sub2-opt2") : undefined
                     }
                   >
                     Báo cáo đi muộn, về sớm

@@ -4,9 +4,10 @@ import {
   Button,
   Card,
   Col,
-  Descriptions, Row,
+  Descriptions,
+  Row,
   Skeleton,
-  Space
+  Space,
 } from "antd";
 import Meta from "antd/es/card/Meta";
 import React, { useEffect, useState } from "react";
@@ -42,7 +43,7 @@ export const EmployeeProfile = (props) => {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
-      <Row wrap={false}>
+      <Row>
         <Col flex="none">
           <Breadcrumb>
             <Breadcrumb.Item>
@@ -88,45 +89,44 @@ export const EmployeeProfile = (props) => {
                 {currentEmployee.FirstName}
               </Avatar>
             }
-            description=<Row style={{ width: "100%" }}>
-              <Col span={12}>
-                <Descriptions
-                  column={1}
-                  title={`${currentEmployee.LastName} ${currentEmployee.FirstName}`}
-                >
-                  <Descriptions.Item label="ID">
-                    {currentEmployee.Id}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Phòng ban/ Nhóm">
-                    UI/UX Design Team
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Vị trí">
-                    {currentEmployee.Position}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Ngày vào">
-                    {new Date(
-                      Date.parse(currentEmployee.JoinDate)
-                    ).toLocaleDateString()}
-                  </Descriptions.Item>
-                </Descriptions>
-              </Col>
-              <Col span={12}>
-                <Descriptions column={1}>
-                  <Descriptions.Item label="ĐTDĐ">
-                    {currentEmployee.MobilePhone}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Địa chỉ">
-                    {currentEmployee.Address}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Email">
-                    {currentEmployee.Email}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Giới tính">
-                    {currentEmployee.Gender ? "Nam" : "Nữ"}
-                  </Descriptions.Item>
-                </Descriptions>
-              </Col>
-            </Row>
+            description=<Descriptions
+              column={{
+                xxl: 2,
+                xl: 2,
+                lg: 2,
+                md: 1,
+                sm: 1,
+                xs: 1,
+              }}
+              title={`${currentEmployee.LastName} ${currentEmployee.FirstName}`}
+            >
+              <Descriptions.Item label="ID">
+                {currentEmployee.Id}
+              </Descriptions.Item>
+              <Descriptions.Item label="Phòng ban/ Nhóm">
+                UI/UX Design Team
+              </Descriptions.Item>
+              <Descriptions.Item label="Vị trí">
+                {currentEmployee.Position}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngày vào">
+                {new Date(
+                  Date.parse(currentEmployee.JoinDate)
+                ).toLocaleDateString()}
+              </Descriptions.Item>
+              <Descriptions.Item label="ĐTDĐ">
+                {currentEmployee.MobilePhone}
+              </Descriptions.Item>
+              <Descriptions.Item label="Địa chỉ">
+                {currentEmployee.Address}
+              </Descriptions.Item>
+              <Descriptions.Item label="Email">
+                {currentEmployee.Email}
+              </Descriptions.Item>
+              <Descriptions.Item label="Giới tính">
+                {currentEmployee.Gender ? "Nam" : "Nữ"}
+              </Descriptions.Item>
+            </Descriptions>
           />
         </Skeleton>
       </Card>

@@ -1,5 +1,6 @@
 import {
   DownOutlined,
+  KeyOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from "@ant-design/icons";
@@ -29,6 +30,11 @@ const items = [
   },
   {
     key: "2",
+    label: <Link to="/profile/changepwd">Đổi mật khẩu</Link>,
+    icon: <KeyOutlined style={{ fontSize: "16px" }} />,
+  },
+  {
+    key: "3",
     label: (
       <Link
         onClick={async () => {
@@ -38,7 +44,7 @@ const items = [
           window.location = "/login";
         }}
       >
-        Log Out
+        Đăng xuất
       </Link>
     ),
     icon: <LogoutIcon style={{ fontSize: "16px" }} />,

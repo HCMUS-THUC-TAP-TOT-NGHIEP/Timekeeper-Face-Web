@@ -26,6 +26,7 @@ import {
 } from "./components/employee";
 import MyFooter from "./components/layout/Footer";
 import MyHeader from "./components/layout/Header";
+import NoMatch from "./components/layout/NoMatch";
 import MySidebar from "./components/layout/Sidebar";
 import { ShiftList } from "./components/shift";
 
@@ -76,6 +77,7 @@ function App() {
           element={<ResetPasswordPage />}
         />
         <Route path="/changepwd" exact element={<ChangePasswordPage />} />
+        <Route path="*" element={<NoMatch />} />
       </Routes>
     </>
   );

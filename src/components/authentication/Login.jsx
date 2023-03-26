@@ -8,7 +8,7 @@ import {
   Link,
   Paper,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
 import { Button, notification } from "antd";
 import { ErrorMessage, Field, Form, Formik } from "formik";
@@ -48,16 +48,10 @@ const LoginPage = ({ handleChange }) => {
     password: "",
   };
   const validationSchema = Yup.object().shape({
-    email: Yup.string()
-      .email("please enter valid email")
-      .required("Email is required"),
+    email: Yup.string().required("Vui lòng nhập username hoặc email."),
     password: Yup.string()
-      .min(8, "Minimum characters should be 8")
-      .matches(
-        passwordRegExp,
-        "Password must have one upper, lower case, number"
-      )
-      .required("Password is required"),
+      .min(8, "Mật khẩu tối thiểu 8 ký tự.")
+      .required("Vui lòng nhập mật khẩu."),
   });
   const onSubmit = (values) => {
     setLoading(true);
@@ -129,9 +123,9 @@ const LoginPage = ({ handleChange }) => {
                       <Grid item p={1}>
                         <Field
                           as={TextField}
-                          label="Email"
+                          label="Username hoặc email"
                           name="email"
-                          placeholder="Enter email"
+                          placeholder="Nhập username hoặc email"
                           fullWidth
                           helperText={
                             <ErrorMessage

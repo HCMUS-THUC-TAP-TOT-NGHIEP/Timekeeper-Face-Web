@@ -1,23 +1,21 @@
+import { PlusOutlined } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
   Col,
-  Descriptions,
-  List,
-  notification,
+  Descriptions, notification,
   Row,
   Skeleton,
   Space,
   Table,
   Tabs,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import { Content } from "antd/es/layout/layout";
+import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import dayjs from "dayjs";
-import { PlusOutlined } from "@ant-design/icons";
 import { GetAssignmentDetail, _TargeType } from "./api";
 const { Title } = Typography;
 
@@ -216,3 +214,4 @@ const ShiftAssignmentDetail = (props) => {
 };
 
 export { ShiftAssignmentDetail };
+

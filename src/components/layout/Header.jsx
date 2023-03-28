@@ -62,7 +62,7 @@ function MyHeader(props) {
   useEffect(() => {
     getUserInfo()
       .then((response) => {
-        const { Status, Description, ResponseData } = response;
+        const { Status, ResponseData } = response;
         if (Status === 1) {
           setUserInfo(ResponseData);
           setActive(false);
@@ -113,7 +113,7 @@ function MyHeader(props) {
             placement="bottomRight"
             trigger="click"
           >
-            <Space>
+            <span>
               <Avatar
                 size={{
                   xs: 24,
@@ -121,12 +121,10 @@ function MyHeader(props) {
                   md: 40,
                 }}
               >
-                <Skeleton loading={active} active={active}>
-                  {userInfo ? userInfo.email[0] + userInfo.email[1] : ""}
-                </Skeleton>
+                {userInfo ? userInfo.email[0] + userInfo.email[1] : ""}
               </Avatar>
               <DownOutlined fontSize="small" />
-            </Space>
+            </span>
           </Dropdown>
         </Col>
       </Row>

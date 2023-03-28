@@ -286,12 +286,10 @@ function ActionMenu(props) {
           placement="top"
           onConfirm={deleteEmployee}
         >
-          <a href="#" style={{ display: "block" }}>
-            <Space>
-              <DeleteFilled key="1" />
-              Xóa
-            </Space>
-          </a>
+          <Space>
+            <DeleteFilled key="1" />
+            Xóa
+          </Space>
         </Popconfirm>
       ),
       key: "1",

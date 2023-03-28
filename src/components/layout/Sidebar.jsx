@@ -5,7 +5,7 @@ import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import { Badge, Menu, Space } from "antd";
 import Sider from "antd/es/layout/Sider";
-import React, { useState } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import "./style.css";
 
@@ -24,21 +24,11 @@ function MySidebar(props) {
       <Menu
         theme="dark"
         mode="inline"
-        // selectedKeys={[selectedKey]}
         items={[
           {
             key: "1",
             icon: <DashboardIcon fontSize="large" />,
-            label: (
-              <NavLink
-                to="/dashboard"
-                // className={({ isActive }) =>
-                //   isActive ? setSelectedKey("1") : undefined
-                // }
-              >
-                Dashboard
-              </NavLink>
-            ),
+            label: <NavLink to="/dashboard">Dashboard</NavLink>,
           },
           {
             key: "group1",
@@ -47,28 +37,12 @@ function MySidebar(props) {
             children: [
               {
                 key: "group1-opt1",
-                label: (
-                  <NavLink
-                    to="/manage/account"
-                    // className={({ isActive }) =>
-                    //   isActive ? setSelectedKey("group2-opt1") : undefined
-                    // }
-                  >
-                    Tài khoản
-                  </NavLink>
-                ),
+                label: <NavLink to="/manage/account">Tài khoản</NavLink>,
               },
               {
                 key: "group1-opt2",
                 label: (
-                  <NavLink
-                    to="/manage/account"
-                    // className={({ isActive }) =>
-                    //   isActive ? setSelectedKey("group2-opt1") : undefined
-                    // }
-                  >
-                    Phân quyền sử dụng
-                  </NavLink>
+                  <NavLink to="/manage/account">Phân quyền sử dụng</NavLink>
                 ),
               },
             ],
@@ -84,9 +58,6 @@ function MySidebar(props) {
                 label: (
                   <NavLink
                     to="/employee"
-                    // className={({ isActive }) =>
-                    //   isActive ? setSelectedKey("group2-opt1") : undefined
-                    // }
                   >
                     Tất cả nhân viên
                   </NavLink>
@@ -97,9 +68,6 @@ function MySidebar(props) {
                 label: (
                   <NavLink
                     to="/department"
-                    // className={({ isActive }) =>
-                    //   isActive ? setSelectedKey("group2-opt2") : undefined
-                    // }
                   >
                     Phòng ban
                   </NavLink>
@@ -114,13 +82,9 @@ function MySidebar(props) {
             children: [
               {
                 key: "group3-opt1",
-                // icon: <AccessTimeFilledIcon fontSize="large" />,
                 label: (
                   <NavLink
                     to="/shift"
-                    // className={({ isActive }) =>
-                    //   isActive ? setSelectedKey("group3-opt1") : undefined
-                    // }
                   >
                     Danh mục ca làm việc
                   </NavLink>
@@ -128,13 +92,9 @@ function MySidebar(props) {
               },
               {
                 key: "group3-opt2",
-                // icon: <AccessTimeFilledIcon fontSize="large" />,
                 label: (
                   <NavLink
                     to="/shift/assignment"
-                    // className={({ isActive }) =>
-                    //   isActive ? setSelectedKey("group3-opt2") : undefined
-                    // }
                   >
                     Phân ca làm việc
                   </NavLink>
@@ -142,13 +102,9 @@ function MySidebar(props) {
               },
               {
                 key: "group3-opt3",
-                // icon: <AccessTimeFilledIcon fontSize="large" />,
                 label: (
                   <NavLink
                     to="/shift/assignment/list"
-                    // className={({ isActive }) =>
-                    //   isActive ? setSelectedKey("group3-opt3") : undefined
-                    // }
                   >
                     Bảng phân ca làm việc
                   </NavLink>
@@ -166,9 +122,6 @@ function MySidebar(props) {
                 label: (
                   <NavLink
                     to=""
-                    // className={({ isActive }) =>
-                    //   isActive ? setSelectedKey("sub2-opt1") : undefined
-                    // }
                   >
                     Bảng chấm công
                   </NavLink>
@@ -179,9 +132,6 @@ function MySidebar(props) {
                 label: (
                   <NavLink
                     to=""
-                    // className={({ isActive }) =>
-                    //   isActive ? setSelectedKey("sub2-opt2") : undefined
-                    // }
                   >
                     Báo cáo đi muộn, về sớm
                   </NavLink>
@@ -195,9 +145,6 @@ function MySidebar(props) {
             label: (
               <NavLink
                 to="/notification"
-                // className={({ isActive }) =>
-                //   isActive ? setSelectedKey("6") : undefined
-                // }
               >
                 <Space>
                   Thông báo

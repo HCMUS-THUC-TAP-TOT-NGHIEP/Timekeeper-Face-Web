@@ -4,9 +4,8 @@ import {
   EyeOutlined,
   FilterFilled,
   FormOutlined,
-  PlusCircleOutlined,
   PlusOutlined,
-  SearchOutlined,
+  SearchOutlined
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -20,7 +19,7 @@ import {
   Row,
   Space,
   Table,
-  Tooltip,
+  Tooltip
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";
@@ -32,7 +31,6 @@ import Config from "../../constant";
 import { AddNewUser, DeleteUser, GetAccountList, UpdateUser } from "./api";
 
 export const AccountListPage = (props) => {
-  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [notify, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(true);
@@ -56,7 +54,7 @@ export const AccountListPage = (props) => {
           PerPage: pageSize,
         });
         const { Status, ResponseData, Description } = response;
-        if (Status == 1) {
+        if (Status === 1) {
           const { AccountList, Total } = ResponseData;
           for (var ob of AccountList) {
             ob.key = ob.Id;
@@ -190,7 +188,7 @@ export const AccountListPage = (props) => {
   };
   const deleteAccount = (value) => {
     setAccountList(
-      accountList.filter((account) => account.Username != value.Username)
+      accountList.filter((account) => account.Username !== value.Username)
     );
   };
   const editAccount = (value) => {
@@ -338,9 +336,6 @@ export const AccountListPage = (props) => {
                   account={record}
                   editAccount={editAccount}
                 />
-                {/* <Tooltip title="Xóa">
-                  <Button type="text" icon={<DeleteOutlined />} />
-                </Tooltip> */}
                 <DeleteAccountForm
                   account={record}
                   deleteAccount={deleteAccount}

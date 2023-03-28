@@ -4,23 +4,16 @@ import {
   EditFilled,
   EditTwoTone,
   InfoCircleTwoTone,
-  MoreOutlined,
+  MoreOutlined
 } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
   Col,
-  Dropdown,
-  Popconfirm,
-  Row,
-  Skeleton,
-  Space,
-  Table,
-  Modal,
-  Form,
-  Input,
-  notification,
-  Select,
+  Dropdown, Form,
+  Input, Modal, notification, Popconfirm,
+  Row, Select, Space,
+  Table
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -29,7 +22,7 @@ import {
   CreateOneDepartment,
   DeleteOneDepartment,
   GetDepartmentList,
-  UpdateOneDepartment,
+  UpdateOneDepartment
 } from "./api";
 
 const DepartmentList = (props) => {
@@ -38,7 +31,7 @@ const DepartmentList = (props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [form] = Form.useForm();
-
+  const [notify, contextHolder] = notification.useNotification();
   useEffect(() => {
     document.title = "Danh sách phòng ban";
   }, []);
@@ -47,12 +40,39 @@ const DepartmentList = (props) => {
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
+          for (var ob of ResponseData) {
+            ob.key = ob.Id;
+          }
           setCurrentDepartmentList(ResponseData);
           setLoading(false);
           return;
         }
+        notify.error({
+          message: "Không thành công",
+          descriptions: Description,
+        });
       })
-      .catch((error) => {});
+      .catch((error) => {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi.",
+            description: error.message,
+          });
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [perPage, page]);
 
   const updateOneDepartment = (values) => {
@@ -129,6 +149,7 @@ const DepartmentList = (props) => {
   ];
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
+      {contextHolder}
       <Row wrap={false}>
         <Col flex="none">
           <Breadcrumb>
@@ -146,19 +167,18 @@ const DepartmentList = (props) => {
           </Button>
         </Col>
       </Row>
-      <Skeleton loading={loading} active={loading}>
-        <Table
-          bordered
-          scroll={{
-            x: 900,
-          }}
-          rowSelection={{
-            type: "checkbox",
-          }}
-          dataSource={currentDepartmentList}
-          columns={columns}
-        />
-      </Skeleton>
+      <Table
+        loading={loading}
+        bordered
+        scroll={{
+          x: 900,
+        }}
+        rowSelection={{
+          type: "checkbox",
+        }}
+        dataSource={currentDepartmentList}
+        columns={columns}
+      />
     </Space>
   );
 };
@@ -250,12 +270,10 @@ function ActionMenu(props) {
           placement="top"
           onConfirm={deleteDepartment}
         >
-          <a href="#" style={{ display: "block" }}>
-            <Space>
-              <DeleteFilled key="1" />
-              Xóa
-            </Space>
-          </a>
+          <Space>
+            <DeleteFilled key="1" />
+            Xóa
+          </Space>
         </Popconfirm>
       ),
       key: "1",
@@ -268,9 +286,9 @@ function ActionMenu(props) {
       placement="bottomRight"
       arrow
     >
-      <Space style={{ paddingRight: "5px", paddingLeft: "5px" }}>
-        <MoreOutlined />
-      </Space>
+      <MoreOutlined />
+      {/* <Space style={{ paddingRight: "5px", paddingLeft: "5px" }}>
+      </Space> */}
     </Dropdown>
   );
 }
@@ -297,8 +315,7 @@ const EditDepartmentFrom = function(props) {
         }
         notification.error({
           message: "Có lỗi",
-          description:
-            "Truy vấn danh sách nhân viên không thành công. " + Description,
+          description: Description,
         });
       })
       .catch((error) => {
@@ -307,7 +324,8 @@ const EditDepartmentFrom = function(props) {
           message: "Có lỗi",
           description: "Truy vấn danh sách nhân viên không thành công.",
         });
-      });
+      })
+      .finally(() => {});
   }, [department]);
   const onSubmit = (values) => {
     UpdateOneDepartment(values)
@@ -568,3 +586,4 @@ const AddDepartmentFrom = function(props) {
 };
 
 export { DepartmentList };
+

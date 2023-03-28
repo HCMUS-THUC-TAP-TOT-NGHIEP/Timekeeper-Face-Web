@@ -5,7 +5,7 @@ import {
   FilterFilled,
   FormOutlined,
   PlusOutlined,
-  SearchOutlined,
+  SearchOutlined
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -19,7 +19,7 @@ import {
   Row,
   Space,
   Table,
-  Tooltip,
+  Tooltip
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";

@@ -4,7 +4,7 @@ import {
   EditFilled,
   EditTwoTone,
   InfoCircleTwoTone,
-  MoreOutlined,
+  MoreOutlined
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -28,7 +28,7 @@ import {
   CreateOneDepartment,
   DeleteOneDepartment,
   GetDepartmentList,
-  UpdateOneDepartment,
+  UpdateOneDepartment
 } from "./api";
 
 const DepartmentList = (props) => {
@@ -628,3 +628,4 @@ const AddDepartmentFrom = function (props) {
 };
 
 export { DepartmentList };
+

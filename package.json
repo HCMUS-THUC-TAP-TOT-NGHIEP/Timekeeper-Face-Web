@@ -36,7 +36,6 @@
   "bugs": {
     "url": "https://github.com/HCMUS-THUC-TAP-TOT-NGHIEP/Timekeeper-Face-Web/issues"
   },
-  "homepage": "https://github.com/HCMUS-THUC-TAP-TOT-NGHIEP/Timekeeper-Face-Web#readme",
   "dependencies": {
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",

@@ -44,11 +44,23 @@ export const ForgotPasswordPage = function(props) {
         });
       })
       .catch((error) => {
-        notify.error({
-          message: "Reset password failed",
-          description: error,
-        });
-      });
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      })
   };
   return (
     <Layout style={{ height: "100vh" }}>
@@ -168,7 +180,24 @@ export const ResetPasswordPage = function(props) {
         });
         navigate("/login");
       })
-      .catch((error) => {});
+      .catch((error) => {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      })
   };
   return (
     <Layout style={{ height: "100vh" }}>

@@ -3,31 +3,30 @@ import {
   DeleteFilled,
   EditFilled,
   EditTwoTone,
-  InfoCircleTwoTone
+  InfoCircleTwoTone,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
-  Col, Form,
-  Input, Modal,
+  Col,
+  Form,
+  Input,
+  Modal,
   notification,
   Popconfirm,
-  Row, Skeleton,
+  Row,
+  Skeleton,
   Space,
   Table,
   TimePicker,
-  Tooltip
+  Tooltip,
 } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  CreateNewShift,
-  DeleteShift,
-  GetShiftList, UpdateShift
-} from "./api";
+import { CreateNewShift, DeleteShift, GetShiftList, UpdateShift } from "./api";
 
-const ShiftList = function(props) {
+const ShiftList = function (props) {
   const [loading, setLoading] = useState(true);
   const [currentShiftList, setCurrentShiftList] = useState([]);
   const [page, setPage] = useState(1);
@@ -43,6 +42,9 @@ const ShiftList = function(props) {
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
+          for (var shift in ResponseData) {
+            shift.key = shift.Id;
+          }
           setCurrentShiftList(ResponseData);
           return;
         }
@@ -50,17 +52,17 @@ const ShiftList = function(props) {
       .catch((error) => {
         if (error.response) {
           notify.error({
-            message: "Có lỗi",
+            message: "Có lỗi ở response.",
             description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
           notify.error({
-            message: "Có lỗi.",
+            message: "Có lỗi ở request.",
             description: error,
           });
         } else {
           notify.error({
-            message: "Có lỗi.",
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
@@ -213,6 +215,8 @@ const ShiftList = function(props) {
 const AddShiftForm = (props) => {
   const form = props.form;
   const [insertOneShift, currentShiftList] = props.listState;
+  const [notify, contextHolder] = notification.useNotification();
+
   const onSubmit = (values) => {
     const patternTime = "HH:mm:ss";
     values.StartTime = dayjs(values.StartTime).format(patternTime);
@@ -241,18 +245,18 @@ const AddShiftForm = (props) => {
       })
       .catch((error) => {
         if (error.response) {
-          notification.error({
-            message: "Có lỗi",
+          notify.error({
+            message: "Có lỗi ở response.",
             description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notification.error({
-            message: "Có lỗi.",
+          notify.error({
+            message: "Có lỗi ở request.",
             description: error,
           });
         } else {
-          notification.error({
-            message: "Có lỗi.",
+          notify.error({
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
@@ -271,6 +275,7 @@ const AddShiftForm = (props) => {
       autoComplete="off"
       layout="vertical"
     >
+      {contextHolder}
       <Row
         gutter={{
           xs: 8,
@@ -412,6 +417,8 @@ const AddShiftForm = (props) => {
 function ActionMenu(props) {
   const [form] = Form.useForm();
   const { shift, setShiftList, shiftList, updateOneShift } = props;
+  const [notify, contextHolder] = notification.useNotification();
+
   const deleteShift = () => {
     DeleteShift({ IdList: [shift.Id] })
       .then((response) => {
@@ -430,18 +437,18 @@ function ActionMenu(props) {
       })
       .catch((error) => {
         if (error.response) {
-          notification.error({
-            message: "Có lỗi",
+          notify.error({
+            message: "Có lỗi ở response.",
             description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notification.error({
-            message: "Có lỗi.",
+          notify.error({
+            message: "Có lỗi ở request.",
             description: error,
           });
         } else {
-          notification.error({
-            message: "Có lỗi.",
+          notify.error({
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
@@ -472,7 +479,9 @@ function ActionMenu(props) {
 
   return (
     <Space align="center" size="middle" wrap>
-      <Space size="middle"
+      {contextHolder}
+      <Space
+        size="middle"
         onClick={showEditForm}
         style={{ padding: 4, margin: 1, cursor: "pointer" }}
       >
@@ -506,6 +515,8 @@ const EditShiftFrom = (props) => {
   const shift = props.content;
   const [updateOneShift, shiftList] = props.listState;
   const timePattern = "HH:mm:ss";
+  const [notify, contextHolder] = notification.useNotification();
+
   useEffect(() => {
     form.setFieldsValue({
       Id: shift.Id,
@@ -546,18 +557,18 @@ const EditShiftFrom = (props) => {
       })
       .catch((error) => {
         if (error.response) {
-          notification.error({
-            message: "Request có lỗi.",
-            description: `Data: [${error.response.data}], Status [${error.response.status}]`,
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notification.error({
-            message: "Response có lỗi.",
-            description: error.response,
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
           });
         } else {
-          notification.error({
-            message: "Có lỗi xảy ra",
+          notify.error({
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
@@ -576,6 +587,7 @@ const EditShiftFrom = (props) => {
       layout="vertical"
       preserve={false}
     >
+      {contextHolder}
       <Row
         gutter={{
           xs: 8,
@@ -700,4 +712,3 @@ const EditShiftFrom = (props) => {
 };
 
 export { ShiftList };
-

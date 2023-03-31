@@ -5,6 +5,7 @@ import {
   Card,
   Col,
   Descriptions,
+  notification,
   Row,
   Skeleton,
   Space,
@@ -20,6 +21,8 @@ export const EmployeeProfile = (props) => {
   const { employeeId } = useParams();
   const [currentEmployee, setCurrentEmployee] = useState({});
   const [loading, setLoading] = useState(true);
+  const [notify, contextHolder] = notification.useNotification();
+
   useEffect(() => {
     document.title = "Hồ sơ nhân viên";
     const access_token = localStorage.getItem("access_token");
@@ -38,11 +41,29 @@ export const EmployeeProfile = (props) => {
           return;
         }
       })
-      .catch((error) => {});
+      .catch((error) => {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      });
   }, [employeeId]);
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
+      {contextHolder}
       <Row>
         <Col flex="none">
           <Breadcrumb>

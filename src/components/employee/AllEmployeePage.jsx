@@ -27,6 +27,7 @@ export const AllEmployeesPage = (props) => {
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [notify, contextHolder] = notification.useNotification();
 
   useEffect(() => {
     document.title = "Tất cả nhân viên";
@@ -50,7 +51,24 @@ export const AllEmployeesPage = (props) => {
           return;
         }
       })
-      .catch((error) => {});
+      .catch((error) => {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      });
   }, [page, perPage]);
 
   const rowSelection = {
@@ -179,6 +197,7 @@ export const AllEmployeesPage = (props) => {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
+      {contextHolder}
       <Row wrap={false}>
         <Col flex="none">
           <Breadcrumb>
@@ -217,6 +236,7 @@ export const AllEmployeesPage = (props) => {
 
 function ActionMenu(props) {
   const { Employee, setCurrentEmployeeList, currentEmployeeList } = props;
+  const [notify, contextHolder] = notification.useNotification();
   const deleteEmployee = () => {
     DeleteOneEmployee({ EmployeeId: Employee.Id })
       .then((response) => {
@@ -237,17 +257,18 @@ function ActionMenu(props) {
       })
       .catch((error) => {
         if (error.response) {
-          notification.error({
-            title: "Request có lỗi.",
-            message: `Data: [${error.response.data}], Status [${error.response.status}]`,
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notification.error({
-            title: "Response có lỗi.",
-            message: error.response,
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
           });
         } else {
-          notification.error({
+          notify.error({
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
@@ -297,6 +318,7 @@ function ActionMenu(props) {
   ];
   return (
     <>
+      {contextHolder}
       <Dropdown
         menu={{ items }}
         trigger={["click"]}

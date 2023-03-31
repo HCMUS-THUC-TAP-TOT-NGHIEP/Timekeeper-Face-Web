@@ -11,7 +11,7 @@ import {
   Select,
   Skeleton,
   Space,
-  theme
+  theme,
 } from "antd";
 import Title from "antd/es/typography/Title";
 import dayjs from "dayjs";
@@ -22,6 +22,8 @@ import "./style.css";
 
 export const EditEmployeePage = () => {
   const navigate = useNavigate();
+  const [notify, contextHolder] = notification.useNotification();
+
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -81,17 +83,18 @@ export const EditEmployeePage = () => {
       })
       .catch((error) => {
         if (error.response) {
-          notification.error({
-            message: "Request có lỗi.",
-            description: `Data: [${error.response.data}], Status [${error.response.status}]`,
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notification.error({
-            message: "Response có lỗi.",
-            description: error.response,
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
           });
         } else {
-          notification.error({
+          notify.error({
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
@@ -100,6 +103,7 @@ export const EditEmployeePage = () => {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
+      {contextHolder}
       <Row gutter={[16, 16]}>
         <Col flex="none">
           <Breadcrumb>

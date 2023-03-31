@@ -8,7 +8,7 @@ import {
   Link,
   Paper,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import { Button, notification } from "antd";
 import { ErrorMessage, Field, Form, Formik } from "formik";
@@ -77,16 +77,17 @@ const LoginPage = ({ handleChange }) => {
       .catch((error) => {
         if (error.response) {
           notify.error({
-            message: "Request có lỗi.",
-            description: `Data: [${error.response.data}], Status [${error.response.status}]`,
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
           notify.error({
-            message: "Response có lỗi.",
-            description: error.response,
+            message: "Có lỗi ở request.",
+            description: error,
           });
         } else {
           notify.error({
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
@@ -174,26 +175,13 @@ const LoginPage = ({ handleChange }) => {
                     </div>
 
                     <Grid item p={1}>
-                      {/* <LoadingButton
-                        type="submit"
-                        color="primary"
-                        variant="contained"
-                        loadingPosition="start"
-                        startIcon={null}
-                        style={btnstyle}
-                        fullWidth
-                        loading={loading}
-                      >
-                        {isSubmitting ? "Loading" : "Log in"}
-                      </LoadingButton> */}
                       <Button
                         htmlType="submit"
                         type="primary"
                         variant="contained"
-                        loadingPosition="start"
-                        style={{ width: "100%" }}
-                        loading={loading}
                         size="large"
+                        loading={loading}
+                        style={{ width: "100%" }}
                       >
                         Log In
                       </Button>

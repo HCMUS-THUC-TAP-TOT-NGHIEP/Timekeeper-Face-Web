@@ -10,7 +10,7 @@ import {
   Row,
   Select,
   Space,
-  theme
+  theme,
 } from "antd";
 import Title from "antd/es/typography/Title";
 import React, { useEffect } from "react";
@@ -20,6 +20,8 @@ import "./style.css";
 
 export const NewEmployeePage = (props) => {
   const navigate = useNavigate();
+  const [notify, contextHolder] = notification.useNotification();
+
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -51,18 +53,18 @@ export const NewEmployeePage = (props) => {
       })
       .catch((error) => {
         if (error.response) {
-          notification.error({
-            title: "Request có lỗi.",
-            message: `Data: [${error.response.data}], Status [${error.response.status}]`,
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notification.error({
-            title: "Response có lỗi.",
-            message: error.response,
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
           });
         } else {
-          notification.error({
-            title: "Có lỗi xảy ra",
+          notify.error({
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
@@ -71,6 +73,7 @@ export const NewEmployeePage = (props) => {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
+      {contextHolder}
       <Row wrap={false}>
         <Col flex="none">
           <Breadcrumb>

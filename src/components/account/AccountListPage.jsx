@@ -26,7 +26,7 @@ import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
 import React, { useEffect, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Config from "../../constant";
 import { AddNewUser, DeleteUser, GetAccountList, UpdateUser } from "./api";
 
@@ -686,17 +686,17 @@ export const EditAccountForm = (props) => {
       .catch((error) => {
         if (error.response) {
           notify.error({
-            message: "Có lỗi",
+            message: "Có lỗi ở response.",
             description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
           notify.error({
-            message: "Có lỗi.",
+            message: "Có lỗi ở request.",
             description: error,
           });
         } else {
           notify.error({
-            message: "Có lỗi.",
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }

@@ -31,7 +31,7 @@ const DepartmentList = (props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [form] = Form.useForm();
-  const [notify, contextHolder] = notification.useNotification();
+  const [notification, contextHolder] = notification.useNotification();
   useEffect(() => {
     document.title = "Danh sách phòng ban";
   }, []);
@@ -47,25 +47,25 @@ const DepartmentList = (props) => {
           setLoading(false);
           return;
         }
-        notify.error({
+        notification.error({
           message: "Không thành công",
           descriptions: Description,
         });
       })
       .catch((error) => {
         if (error.response) {
-          notify.error({
-            message: "Có lỗi",
+          notification.error({
+            message: "Có lỗi ở response.",
             description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notify.error({
-            message: "Có lỗi.",
+          notification.error({
+            message: "Có lỗi ở request.",
             description: error,
           });
         } else {
-          notify.error({
-            message: "Có lỗi.",
+          notification.error({
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
@@ -212,21 +212,21 @@ function ActionMenu(props) {
       .catch((error) => {
         if (error.response) {
           notification.error({
-            message: "Có lỗi",
+            message: "Có lỗi ở response.",
             description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
           notification.error({
-            message: "Có lỗi.",
+            message: "Có lỗi ở request.",
             description: error,
           });
         } else {
           notification.error({
-            message: "Có lỗi.",
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
-      });
+      })
   };
 
   const showEditForm = () => {
@@ -319,11 +319,22 @@ const EditDepartmentFrom = function(props) {
         });
       })
       .catch((error) => {
-        console.error(error);
-        notification.error({
-          message: "Có lỗi",
-          description: "Truy vấn danh sách nhân viên không thành công.",
-        });
+        if (error.response) {
+          notification.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notification.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notification.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
       })
       .finally(() => {});
   }, [department]);
@@ -351,21 +362,21 @@ const EditDepartmentFrom = function(props) {
       .catch((error) => {
         if (error.response) {
           notification.error({
-            message: "Request có lỗi.",
-            description: `Data: [${error.response.data}], Status [${error.response.status}]`,
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
           notification.error({
-            message: "Response có lỗi.",
-            description: error.response,
+            message: "Có lỗi ở request.",
+            description: error,
           });
         } else {
           notification.error({
-            message: "Có lỗi xảy ra",
+            message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
-      });
+      })
   };
   return (
     <Form
@@ -475,12 +486,23 @@ const AddDepartmentFrom = function(props) {
         return;
       })
       .catch((error) => {
-        console.error(error);
-        notification.error({
-          message: "Có lỗi",
-          description: "Truy vấn danh sách nhân viên không thành công.",
-        });
-      });
+        if (error.response) {
+          notification.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notification.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notification.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      })
   };
 
   useEffect(() => {
@@ -498,12 +520,23 @@ const AddDepartmentFrom = function(props) {
         });
       })
       .catch((error) => {
-        console.error(error);
-        notification.error({
-          message: "Có lỗi",
-          description: "Truy vấn danh sách nhân viên không thành công.",
-        });
-      });
+        if (error.response) {
+          notification.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notification.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notification.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      })
   }, []);
 
   return (

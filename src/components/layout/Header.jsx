@@ -10,6 +10,7 @@ import {
   Avatar,
   Col,
   Dropdown,
+  notification,
   Row,
   Skeleton,
   Space,
@@ -56,6 +57,8 @@ function MyHeader(props) {
   const [userInfo, setUserInfo] = useState(null);
   const [active, setActive] = useState(true);
   const navigate = useNavigate();
+  const [notify, contextHolder] = notification.useNotification();
+
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -71,11 +74,49 @@ function MyHeader(props) {
         navigate("/login");
       })
       .catch((error) => {
-        console.log(error);
         localStorage.removeItem("access_token");
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
         navigate("/login");
       });
   }, []);
+
+  const createAvatar = (userInfo) => {
+    var str = "";
+    if (userInfo) {
+      if (userInfo.Username) {
+        str = userInfo.Username;
+      } else {
+        str = userInfo.Email;
+      }
+    }
+    return (
+      <Avatar
+        size={{
+          xs: 24,
+          sm: 32,
+          md: 40,
+        }}
+      >
+        {str[0] + str[1]}
+      </Avatar>
+    );
+  };
+
   return (
     <Header
       style={{
@@ -86,6 +127,7 @@ function MyHeader(props) {
         top: 0,
       }}
     >
+      {contextHolder}
       <Row wrap={false}>
         <Col flex="auto">
           <Space>
@@ -114,15 +156,7 @@ function MyHeader(props) {
             trigger="click"
           >
             <span>
-              <Avatar
-                size={{
-                  xs: 24,
-                  sm: 32,
-                  md: 40,
-                }}
-              >
-                {userInfo ? userInfo.email[0] + userInfo.email[1] : ""}
-              </Avatar>
+              {createAvatar(userInfo)}
               <DownOutlined fontSize="small" />
             </span>
           </Dropdown>

@@ -85,12 +85,23 @@ const RegisterPage = ({ handleChange }) => {
         navigate("/login");
       })
       .catch((error) => {
-        notify.error({
-          message: "Register account failed",
-          description: error,
-        });
-        console.log(error);
-      });
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      })
   };
 
   return (

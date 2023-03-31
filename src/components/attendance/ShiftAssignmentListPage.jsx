@@ -2,30 +2,33 @@ import {
   DeleteFilled,
   EditFilled,
   EyeOutlined,
+  FilterFilled,
   MoreOutlined,
   PlusOutlined,
+  SearchOutlined
 } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
   Col,
   Dropdown,
+  Input,
   Popconfirm,
-  Row,
-  Skeleton,
-  Space,
+  Row, Space,
   Table,
   Tabs,
-  theme,
+  theme
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import useNotification from "antd/es/notification/useNotification";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import Highlighter from "react-highlight-words";
 import { Link, useNavigate } from "react-router-dom";
+import Config from "../../constant";
+import { compareString } from "../../utils";
 import { GetAssignmentList } from "./api";
 
-const datePattern = "DD/MM/YYYY";
 const ShiftAssignmentListPage = (props) => {
   const [loading, setLoading] = useState(true);
   const [tabKey, setTabKey] = useState(0);
@@ -37,39 +40,141 @@ const ShiftAssignmentListPage = (props) => {
   const [fullShiftAssignmentList, setFullShiftAssignmentList] = useState([]);
   const [notify, contextHolder] = useNotification();
 
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const searchInput = useRef(null);
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+      close,
+    }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <Input
+          ref={searchInput}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+          >
+            Tìm kiếm
+          </Button>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters)}
+            size="small"
+            style={{
+              width: 90,
+            }}
+          >
+            Đặt lại
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <FilterFilled
+        style={{
+          color: filtered ? "#1890ff" : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(
+          () => (searchInput.current ? searchInput.current.input : undefined),
+          100
+        );
+      }
+    },
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{
+            backgroundColor: "#ffc069",
+            padding: 0,
+          }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ""}
+        />
+      ) : (
+        text
+      ),
+  });
   const columns = [
     {
       title: "Tiêu đề",
       dataIndex: "Description",
       key: "Description",
       width: 80,
+      sorter: (a, b) => compareString(a, b, "Description"),
+      ...getColumnSearchProps("Description"),
     },
     {
       title: "Kiểu phân ca",
       dataIndex: "ShiftDescription",
       key: "ShiftDescription",
       width: 80,
+      sorter: (a, b) => compareString(a, b, "ShiftDescription"),
+      ...getColumnSearchProps("ShiftDescription"),
     },
     {
       title: "Từ ngày",
       dataIndex: "StartDate",
       key: "StartDate",
       width: 60,
-      render: (_, { StartDate }) => dayjs(StartDate).format(datePattern),
+      // render: (_, { StartDate }) => dayjs(StartDate).format(Config.dateFormat),
+      sorter: (a, b) => compareString(a, b, "StartDate"),
+      ...getColumnSearchProps("StartDate"),
     },
     {
       title: "Đến ngày",
       dataIndex: "EndDate",
       key: "EndDate",
       width: 60,
-      render: (_, { EndDate }) => dayjs(EndDate).format(datePattern),
+      render: (_, { EndDate }) => dayjs(EndDate).format(Config.dateFormat),
+      sorter: (a, b) => compareString(a, b, "EndDate"),
+      ...getColumnSearchProps("EndDate"),
     },
     {
       title: "Ngày tạo",
       dataIndex: "CreatedDate",
       key: "CreatedDate",
       width: 60,
-      render: (_, { CreatedDate }) => dayjs(CreatedDate).format(datePattern),
+      render: (_, { CreatedDate }) =>
+        dayjs(CreatedDate).format(Config.dateFormat),
+      sorter: (a, b) => compareString(a, b, "CreatedDate"),
+      ...getColumnSearchProps("CreatedDate"),
     },
     {
       title: "",
@@ -82,6 +187,7 @@ const ShiftAssignmentListPage = (props) => {
       fixed: "right",
     },
   ];
+
   useEffect(() => {
     document.title = "Bảng phân ca";
     GetAssignmentList()
@@ -173,20 +279,19 @@ const ShiftAssignmentListPage = (props) => {
         onChange={changeTabs}
       />
       <Content style={{ background: colorBgContainer }}>
-        <Skeleton loading={loading} active={loading}>
-          <Table
-            style={{}}
-            scroll={{
-              x: 1500,
-            }}
-            rowSelection={{
-              type: "checkbox",
-              //   ...rowSelection,
-            }}
-            dataSource={shiftAssignmentList}
-            columns={columns}
-          />
-        </Skeleton>
+        <Table
+          loading={loading}
+          style={{}}
+          scroll={{
+            x: 1500,
+          }}
+          rowSelection={{
+            type: "checkbox",
+            //   ...rowSelection,
+          }}
+          dataSource={shiftAssignmentList}
+          columns={columns}
+        />
       </Content>
       {contextHolder}
     </Space>
@@ -255,3 +360,4 @@ const ActionMenu = (props) => {
   );
 };
 export { ShiftAssignmentListPage };
+

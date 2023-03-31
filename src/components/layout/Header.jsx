@@ -99,21 +99,27 @@ function MyHeader(props) {
     var str = "";
     if (userInfo) {
       if (userInfo.Username) {
-        str = userInfo.Username;
+        str = String(userInfo.Username);
       } else {
-        str = userInfo.Email;
+        str = String(userInfo.Email);
       }
     }
     return (
-      <Avatar
-        size={{
-          xs: 24,
-          sm: 32,
-          md: 40,
-        }}
-      >
-        {str[0] + str[1]}
-      </Avatar>
+      <a onClick={(e) => e.preventDefault()}>
+        <Space>
+          <Avatar
+            size={{
+              xs: 24,
+              sm: 32,
+              md: 40,
+            }}
+            style={{ backgroundColor: "#fde3cf", color: "#f56a00" }}
+          >
+            {String(str[0] + str[1])}
+          </Avatar>
+          <DownOutlined fontSize="small" />
+        </Space>
+      </a>
     );
   };
 
@@ -155,10 +161,7 @@ function MyHeader(props) {
             placement="bottomRight"
             trigger="click"
           >
-            <span>
-              {createAvatar(userInfo)}
-              <DownOutlined fontSize="small" />
-            </span>
+            {createAvatar(userInfo)}
           </Dropdown>
         </Col>
       </Row>

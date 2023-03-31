@@ -5,7 +5,7 @@ import {
   FilterFilled,
   FormOutlined,
   PlusOutlined,
-  SearchOutlined
+  SearchOutlined,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -19,7 +19,7 @@ import {
   Row,
   Space,
   Table,
-  Tooltip
+  Tooltip,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";
@@ -28,6 +28,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { Link } from "react-router-dom";
 import Config from "../../constant";
+import { compareDatetime, compareString } from "../../utils";
 import { AddNewUser, DeleteUser, GetAccountList, UpdateUser } from "./api";
 
 export const AccountListPage = (props) => {
@@ -92,7 +93,6 @@ export const AccountListPage = (props) => {
     loadData();
   }, [currentPage, pageSize]);
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    console.log(confirm);
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
@@ -156,10 +156,7 @@ export const AccountListPage = (props) => {
       />
     ),
     onFilter: (value, record) =>
-      record[dataIndex]
-        .toString()
-        .toLowerCase()
-        .includes(value.toLowerCase()),
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
         setTimeout(
@@ -244,17 +241,7 @@ export const AccountListPage = (props) => {
             title="Username"
             dataIndex="Username"
             key="Username"
-            sorter={(a, b) => {
-              const UsernameA = a.Username.toUpperCase(); // ignore upper and lowercase
-              const UsernameB = b.Username.toUpperCase(); // ignore upper and lowercase
-              if (UsernameA < UsernameB) {
-                return -1;
-              }
-              if (UsernameA > UsernameB) {
-                return 1;
-              }
-              return 0; // Username must be equal
-            }}
+            sorter={(a, b) => compareString(a, b, "Username")}
             {...getColumnSearchProps("Username")}
             width={100}
           />
@@ -262,17 +249,7 @@ export const AccountListPage = (props) => {
             title="Email"
             dataIndex="EmailAddress"
             key="EmailAddress"
-            sorter={(a, b) => {
-              const EmailAddressA = a.EmailAddress.toUpperCase(); // ignore upper and lowercase
-              const EmailAddressB = b.EmailAddress.toUpperCase(); // ignore upper and lowercase
-              if (EmailAddressA < EmailAddressB) {
-                return -1;
-              }
-              if (EmailAddressA > EmailAddressB) {
-                return 1;
-              }
-              return 0; // EmailAddress must be equal
-            }}
+            sorter={(a, b) => compareString(a, b, "EmailAddress")}
             {...getColumnSearchProps("EmailAddress")}
             width={300}
           />
@@ -280,17 +257,7 @@ export const AccountListPage = (props) => {
             title="Tên"
             dataIndex="Name"
             key="Name"
-            sorter={(a, b) => {
-              const NameA = a.Name.toUpperCase(); // ignore upper and lowercase
-              const NameB = b.Name.toUpperCase(); // ignore upper and lowercase
-              if (NameA < NameB) {
-                return -1;
-              }
-              if (NameA > NameB) {
-                return 1;
-              }
-              return 0; // Employee must be equal
-            }}
+            sorter={(a, b) => compareString(a, b, "Name")}
             {...getColumnSearchProps("Name")}
             width={200}
           />
@@ -319,7 +286,7 @@ export const AccountListPage = (props) => {
             render={(_, record) => {
               return dayjs(record.CreatedAt).format(Config.dateFormat);
             }}
-            sorter={(a, b) => a.CreatedAt > b.CreatedAt}
+            sorter={(a, b) => compareDatetime(a, b, "CreatedAt")}
             width={100}
           />
           <Column
@@ -328,9 +295,9 @@ export const AccountListPage = (props) => {
             title=""
             render={(_, record) => (
               <Space size="small">
-                <Tooltip title="Xem nhanh">
+                {/* <Tooltip title="Xem nhanh">
                   <Button type="text" icon={<EyeOutlined />} />
-                </Tooltip>
+                </Tooltip> */}
                 <EditAccount
                   form={form}
                   account={record}
@@ -630,7 +597,7 @@ export const EditAccount = (props) => {
   const showEditForm = () => {
     modal.confirm({
       title: "Chỉnh sửa người dùng",
-      icon: <FormOutlined />,
+      icon: <FormOutlined size="small" />,
       closable: true,
       content: (
         <EditAccountForm
@@ -662,6 +629,9 @@ export const EditAccount = (props) => {
 export const EditAccountForm = (props) => {
   const { form, setLoading, account, editAccount } = props;
   const [notify, contextHolder] = notification.useNotification();
+  const [readonlyForm, setReadonlyForm] = useState(
+    props.isReadOnly ? true : false
+  );
   const modifyAccount = async (values) => {
     var success = false;
     setLoading(true);
@@ -727,7 +697,7 @@ export const EditAccountForm = (props) => {
         onFinish={modifyAccount}
       >
         <Row gutter={24}>
-          <Col xs={24} md={24}>
+          <Col xs={24} md={12}>
             <Form.Item
               label="Username"
               name="Username"
@@ -737,11 +707,38 @@ export const EditAccountForm = (props) => {
                   required: true,
                   message: "Username là trường bắt buộc.",
                 },
+                {
+                  max: 20,
+                  message: "Username chỉ cho phép tối đa 20 ký tự",
+                },
+                {
+                  min: 5,
+                  message: "Username cần tối thiểu 5 ký tự",
+                },
               ]}
             >
-              <Input placeholder="Username" disabled />
+              <Input placeholder="Username" readOnly />
             </Form.Item>
           </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Tên"
+              name="Name"
+              rules={[
+                {
+                  min: 5,
+                  message: "Tên phải tối thiểu 5 ký tự",
+                },
+                {
+                  max: 100,
+                  message: "Tên chỉ được tối đa 100 ký tự",
+                },
+              ]}
+            >
+              <Input placeholder="Nhập Họ tên" readOnly={readonlyForm} />
+            </Form.Item>
+          </Col>
+
           <Col xs={24} md={24}>
             <Form.Item
               label="Email"
@@ -758,25 +755,7 @@ export const EditAccountForm = (props) => {
                 },
               ]}
             >
-              <Input placeholder="Nhập Email" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={24}>
-            <Form.Item
-              label="Tên"
-              name="Name"
-              rules={[
-                {
-                  min: 5,
-                  message: "Tên phải tối thiểu 5 ký tự",
-                },
-                {
-                  max: 100,
-                  message: "Tên chỉ được tối đa 100 ký tự",
-                },
-              ]}
-            >
-              <Input placeholder="Nhập Họ tên" />
+              <Input placeholder="Nhập Email" readOnly={readonlyForm} />
             </Form.Item>
           </Col>
         </Row>

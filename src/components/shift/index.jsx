@@ -1,9 +1,10 @@
 import {
   CloseOutlined,
   DeleteFilled,
-  EditFilled,
+  DeleteOutlined,
+  EditOutlined,
   EditTwoTone,
-  InfoCircleTwoTone,
+  InfoCircleTwoTone
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -14,12 +15,10 @@ import {
   Modal,
   notification,
   Popconfirm,
-  Row,
-  Skeleton,
-  Space,
+  Row, Space,
   Table,
   TimePicker,
-  Tooltip,
+  Tooltip
 } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
@@ -42,12 +41,15 @@ const ShiftList = function (props) {
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          for (var shift in ResponseData) {
-            shift.key = shift.Id;
+          for (var i = 0; i < ResponseData.length; i++) {
+            ResponseData[i].key = i;
           }
           setCurrentShiftList(ResponseData);
           return;
         }
+        notify.error({
+          description: Description,
+        });
       })
       .catch((error) => {
         if (error.response) {
@@ -195,19 +197,18 @@ const ShiftList = function (props) {
           </Button>
         </Col>
       </Row>
-      <Skeleton loading={loading} active={loading}>
-        <Table
-          bordered
-          scroll={{
-            x: 900,
-          }}
-          rowSelection={{
-            type: "checkbox",
-          }}
-          dataSource={currentShiftList}
-          columns={columns}
-        />
-      </Skeleton>
+      <Table
+        loading={loading}
+        bordered
+        scroll={{
+          x: 900,
+        }}
+        rowSelection={{
+          type: "checkbox",
+        }}
+        dataSource={currentShiftList}
+        columns={columns}
+      />
     </Space>
   );
 };
@@ -486,21 +487,21 @@ function ActionMenu(props) {
         style={{ padding: 4, margin: 1, cursor: "pointer" }}
       >
         <Tooltip title="Chỉnh sửa">
-          <EditFilled />
+          <EditOutlined />
         </Tooltip>
       </Space>
       <Popconfirm
         title={`Xóa ca làm việc ID ${shift.Id}`}
         description={`Bạn có chắc muốn xóa ID ${shift.Id} - ${shift.Description}?`}
-        okText="Yes"
+        okText="Xóa"
         okType="danger"
-        cancelText="No"
-        placement="top"
+        cancelText="Hủy"
+        placement="topLeft"
         onConfirm={deleteShift}
         icon={<DeleteFilled />}
       >
         <Tooltip title="Xóa">
-          <DeleteFilled
+          <DeleteOutlined
             key="1"
             style={{ padding: 4, margin: 1, cursor: "pointer" }}
           />
@@ -712,3 +713,4 @@ const EditShiftFrom = (props) => {
 };
 
 export { ShiftList };
+

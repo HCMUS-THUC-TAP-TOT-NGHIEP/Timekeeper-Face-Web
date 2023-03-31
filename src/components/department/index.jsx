@@ -37,7 +37,7 @@ const DepartmentList = (props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [form] = Form.useForm();
-  const [notify, contextHolder] = notification.useNotification();
+  const [notification, contextHolder] = notification.useNotification();
   useEffect(() => {
     document.title = "Danh sách phòng ban";
   }, []);
@@ -230,7 +230,7 @@ function ActionMenu(props) {
             description: error.message,
           });
         }
-      });
+      })
   };
 
   const showEditForm = () => {
@@ -383,7 +383,7 @@ const EditDepartmentFrom = function (props) {
             description: error.message,
           });
         }
-      });
+      })
   };
   return (
     <Form

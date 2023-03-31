@@ -4,7 +4,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   EditTwoTone,
-  InfoCircleTwoTone
+  InfoCircleTwoTone,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -18,7 +18,7 @@ import {
   Row, Space,
   Table,
   TimePicker,
-  Tooltip
+  Tooltip,
 } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
@@ -713,4 +713,3 @@ const EditShiftFrom = (props) => {
 };
 
 export { ShiftList };
-

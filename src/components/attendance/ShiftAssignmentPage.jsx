@@ -88,19 +88,68 @@ const ShiftAssignmentPage = (props) => {
             description: error.message,
           });
         }
-      })
+      });
   };
   useEffect(() => {
     async function loadData() {
-      const response1 = await GetAssignmentType();
-      const response2 = await GetShiftList();
-      const response3 = await GetDepartmentList();
-      const response5 = await GetManyEmployee();
-      setAssignmentTypeList(response1.ResponseData);
-      setShiftList(response2.ResponseData);
-      setDepartmentList(response3.ResponseData);
-      setEmployeeList(response5.ResponseData);
-      setLoading(false);
+      try {
+        const response1 = await GetAssignmentType();
+        if (response1.Status !== 1) {
+          notify.error({
+            message: "Không thành công",
+            description: response1.Description,
+          });
+          return;
+        }
+        const response2 = await GetShiftList();
+        if (response2.Status !== 1) {
+          notify.error({
+            message: "Không thành công",
+            description: response2.Description,
+          });
+          return;
+        }
+        const response3 = await GetDepartmentList();
+        if (response3.Status !== 1) {
+          notify.error({
+            message: "Không thành công",
+            description: response3.Description,
+          });
+          return;
+        }
+        const response5 = await GetManyEmployee();
+        if (response5.Status !== 1) {
+          notify.error({
+            message: "Không thành công",
+            description: response5.Description,
+          });
+          return;
+        }
+        setShiftList(response2.ResponseData);
+        setAssignmentTypeList(response1.ResponseData);
+        setEmployeeList(response5.ResponseData);
+        setDepartmentList(response3.ResponseData);
+        return;
+      } catch (error) {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      } finally {
+        setLoading(false);
+      }
     }
     loadData();
   }, []);
@@ -367,7 +416,7 @@ const EditShiftAssignmentPage = (props) => {
             description: error.message,
           });
         }
-      })
+      });
   };
   useEffect(() => {
     async function loadData() {

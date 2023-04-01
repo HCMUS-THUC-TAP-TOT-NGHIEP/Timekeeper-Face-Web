@@ -67,7 +67,7 @@ export const AccountListPage = (props) => {
         }
         notify.error({
           message: "Không thành công",
-          descriptions: Description,
+          description: Description,
         });
       } catch (error) {
         if (error.response) {

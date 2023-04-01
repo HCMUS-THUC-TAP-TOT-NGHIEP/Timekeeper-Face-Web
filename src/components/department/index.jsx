@@ -4,7 +4,7 @@ import {
   EditFilled,
   EditTwoTone,
   InfoCircleTwoTone,
-  MoreOutlined
+  MoreOutlined,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -28,7 +28,7 @@ import {
   CreateOneDepartment,
   DeleteOneDepartment,
   GetDepartmentList,
-  UpdateOneDepartment
+  UpdateOneDepartment,
 } from "./api";
 
 const DepartmentList = (props) => {
@@ -37,7 +37,7 @@ const DepartmentList = (props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [form] = Form.useForm();
-  const [notification, contextHolder] = notification.useNotification();
+  const [notify, contextHolder] = notification.useNotification();
   useEffect(() => {
     document.title = "Danh sách phòng ban";
   }, []);
@@ -230,7 +230,7 @@ function ActionMenu(props) {
             description: error.message,
           });
         }
-      })
+      });
   };
 
   const showEditForm = () => {
@@ -383,7 +383,7 @@ const EditDepartmentFrom = function (props) {
             description: error.message,
           });
         }
-      })
+      });
   };
   return (
     <Form
@@ -628,4 +628,3 @@ const AddDepartmentFrom = function (props) {
 };
 
 export { DepartmentList };
-

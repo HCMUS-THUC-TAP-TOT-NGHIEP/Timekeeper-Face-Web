@@ -4,16 +4,22 @@ import {
   EditFilled,
   EditTwoTone,
   InfoCircleTwoTone,
-  MoreOutlined
+  MoreOutlined,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
   Col,
-  Dropdown, Form,
-  Input, Modal, notification, Popconfirm,
-  Row, Select, Space,
-  Table
+  Dropdown,
+  Form,
+  Input,
+  Modal,
+  notification,
+  Popconfirm,
+  Row,
+  Select,
+  Space,
+  Table,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -22,7 +28,7 @@ import {
   CreateOneDepartment,
   DeleteOneDepartment,
   GetDepartmentList,
-  UpdateOneDepartment
+  UpdateOneDepartment,
 } from "./api";
 
 const DepartmentList = (props) => {
@@ -31,7 +37,7 @@ const DepartmentList = (props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [form] = Form.useForm();
-  const [notification, contextHolder] = notification.useNotification();
+  const [notify, contextHolder] = notification.useNotification();
   useEffect(() => {
     document.title = "Danh sách phòng ban";
   }, []);
@@ -54,17 +60,17 @@ const DepartmentList = (props) => {
       })
       .catch((error) => {
         if (error.response) {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở response.",
             description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở request.",
             description: error,
           });
         } else {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở máy khách",
             description: error.message,
           });
@@ -185,18 +191,16 @@ const DepartmentList = (props) => {
 
 function ActionMenu(props) {
   const [form] = Form.useForm();
-  const {
-    department,
-    setDepartmentList,
-    departmentList,
-    updateOneDepartment,
-  } = props;
+  const { department, setDepartmentList, departmentList, updateOneDepartment } =
+    props;
+  const [notify, contextHolder] = notification.useNotification();
+
   const deleteDepartment = () => {
     DeleteOneDepartment({ Id: department.Id })
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          notification.success({
+          notify.success({
             description: `Đã xóa phòng ban ${department.Id} - ${department.Name}`,
           });
           setDepartmentList(
@@ -204,29 +208,29 @@ function ActionMenu(props) {
           );
           return;
         }
-        notification.error({
+        notify.error({
           message: "Không thành công",
           description: Description,
         });
       })
       .catch((error) => {
         if (error.response) {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở response.",
             description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở request.",
             description: error,
           });
         } else {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
-      })
+      });
   };
 
   const showEditForm = () => {
@@ -280,24 +284,27 @@ function ActionMenu(props) {
     },
   ];
   return (
-    <Dropdown
-      menu={{ items }}
-      trigger={["click"]}
-      placement="bottomRight"
-      arrow
-    >
-      <MoreOutlined />
-      {/* <Space style={{ paddingRight: "5px", paddingLeft: "5px" }}>
-      </Space> */}
-    </Dropdown>
+    <>
+      <Dropdown
+        menu={{ items }}
+        trigger={["click"]}
+        placement="bottomRight"
+        arrow
+      >
+        <MoreOutlined />
+      </Dropdown>
+      {contextHolder}
+    </>
   );
 }
 
-const EditDepartmentFrom = function(props) {
+const EditDepartmentFrom = function (props) {
   const form = props.form;
   const department = props.content;
   const [updateOneDepartment, departmentList] = props.listState;
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
+  const [notify, contextHolder] = notification.useNotification();
+
   useEffect(() => {
     form.setFieldsValue({
       Id: department.Id,
@@ -313,24 +320,24 @@ const EditDepartmentFrom = function(props) {
           form.setFieldsValue({ ManagerId: department.ManagerId });
           return;
         }
-        notification.error({
+        notify.error({
           message: "Có lỗi",
           description: Description,
         });
       })
       .catch((error) => {
         if (error.response) {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở response.",
             description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở request.",
             description: error,
           });
         } else {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở máy khách",
             description: error.message,
           });
@@ -376,7 +383,7 @@ const EditDepartmentFrom = function(props) {
             description: error.message,
           });
         }
-      })
+      });
   };
   return (
     <Form
@@ -389,6 +396,7 @@ const EditDepartmentFrom = function(props) {
       autoComplete="off"
       layout="vertical"
     >
+      {contextHolder}
       <Form.Item
         hasFeedback
         labelCol={24}
@@ -459,11 +467,11 @@ const EditDepartmentFrom = function(props) {
   );
 };
 
-const AddDepartmentFrom = function(props) {
+const AddDepartmentFrom = function (props) {
   const form = props.form;
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
   const [insertOneDepartment, departmentList] = props.listState;
-
+  const [notify, contextHolder] = notification.useNotification();
   const onSubmit = (values) => {
     CreateOneDepartment(values)
       .then((response) => {
@@ -487,22 +495,22 @@ const AddDepartmentFrom = function(props) {
       })
       .catch((error) => {
         if (error.response) {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở response.",
             description: `[${error.response.statusText}]`,
           });
         } else if (error.request) {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở request.",
             description: error,
           });
         } else {
-          notification.error({
+          notify.error({
             message: "Có lỗi ở máy khách",
             description: error.message,
           });
         }
-      })
+      });
   };
 
   useEffect(() => {
@@ -536,7 +544,7 @@ const AddDepartmentFrom = function(props) {
             description: error.message,
           });
         }
-      })
+      });
   }, []);
 
   return (
@@ -550,6 +558,7 @@ const AddDepartmentFrom = function(props) {
       autoComplete="off"
       layout="vertical"
     >
+      {contextHolder}
       <Form.Item
         hasFeedback
         labelCol={24}
@@ -619,4 +628,3 @@ const AddDepartmentFrom = function(props) {
 };
 
 export { DepartmentList };
-

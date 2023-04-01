@@ -9,7 +9,7 @@ import {
   ShiftAssignmentPage,
   ShiftManagementIndex,
 } from "./components/attendance";
-import ChangePasswordPage from "./components/authentication/ChangePassword";
+import { ChangePasswordPage } from "./components/authentication/ChangePassword";
 import {
   ForgotPasswordPage,
   ResetPasswordPage,
@@ -67,6 +67,11 @@ function App() {
               element={<ShiftAssignmentDetail />}
             />
           </Route>
+          <Route
+            path="/profile/changepwd"
+            exact
+            element={<ChangePasswordPage />}
+          />
         </Route>
         <Route path="/register" exact element={<RegisterPage />} />
         <Route path="/login" exact element={<LoginPage />} />
@@ -76,7 +81,6 @@ function App() {
           exact
           element={<ResetPasswordPage />}
         />
-        <Route path="/changepwd" exact element={<ChangePasswordPage />} />
         <Route path="*" element={<NoMatch />} />
       </Routes>
     </>

@@ -9,12 +9,11 @@ import {
   Button,
   Col,
   Dropdown,
-  notification,
   Popconfirm,
   Row,
-  Skeleton,
   Space,
   Table,
+  notification
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -47,9 +46,12 @@ export const AllEmployeesPage = (props) => {
             ob.key = ob.Id;
           }
           setCurrentEmployeeList(ResponseData);
-          setLoading(false);
           return;
         }
+        notify.error({
+          message: "Không thành công",
+          description: Description,
+        });
       })
       .catch((error) => {
         if (error.response) {
@@ -68,6 +70,9 @@ export const AllEmployeesPage = (props) => {
             description: error.message,
           });
         }
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [page, perPage]);
 
@@ -215,19 +220,18 @@ export const AllEmployeesPage = (props) => {
           </Button>
         </Col>
       </Row>
-      <Skeleton loading={loading} active={loading}>
-        <Table
-          scroll={{
-            x: 1500,
-          }}
-          rowSelection={{
-            type: "checkbox",
-            ...rowSelection,
-          }}
-          dataSource={currentEmployeeList}
-          columns={columns}
-        />
-      </Skeleton>
+      <Table
+        loading={loading}
+        scroll={{
+          x: 1500,
+        }}
+        rowSelection={{
+          type: "checkbox",
+          ...rowSelection,
+        }}
+        dataSource={currentEmployeeList}
+        columns={columns}
+      />
     </Space>
   );
 };

@@ -55,7 +55,7 @@ const DepartmentList = (props) => {
         }
         notification.error({
           message: "Không thành công",
-          descriptions: Description,
+          description: Description,
         });
       })
       .catch((error) => {

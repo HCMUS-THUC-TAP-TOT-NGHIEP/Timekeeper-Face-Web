@@ -28,7 +28,7 @@ const LoginPage = (props) => {
     if (access_token) {
       navigate("/dashboard");
     }
-    document.title = `Login Page`;
+    document.title = `Đăng nhập`;
   }, []);
   const [values, setValues] = useState({
     showPass: false,
@@ -98,119 +98,117 @@ const LoginPage = (props) => {
   };
 
   return (
-    <>
+    <div style={{ backgroundColor: "#EEEEEE" }}>
       {contextHolder}
-      <div style={{ backgroundColor: "#EEEEEE" }}>
-        <Container maxWidth="sm">
-          <Grid
-            container
-            spacing={5}
-            direction="column"
-            justifyContent="center"
-            style={{ minHeight: "100vh" }}
-          >
-            <Paper elelvation={2} sx={{ padding: 5 }}>
-              <Grid container direction="column" spacing={1}>
-                <Grid align="center">
-                  <h1>Log In</h1>
-                </Grid>
-                <Formik
-                  initialValues={initialValues}
-                  onSubmit={onSubmit}
-                  validationSchema={validationSchema}
-                >
-                  {(props) => (
-                    <Form>
-                      <div>
-                        <Grid item p={1}>
-                          <Field
-                            as={TextField}
-                            label="Username hoặc email"
-                            name="email"
-                            placeholder="Nhập username hoặc email"
-                            fullWidth
-                            helperText={
-                              <ErrorMessage
-                                name="email"
-                                render={(msg) => (
-                                  <span style={{ color: "red" }}>{msg}</span>
-                                )}
-                              />
-                            }
-                          />
-                        </Grid>
-                      </div>
-
-                      <div>
-                        <Grid item p={1}>
-                          <Field
-                            as={TextField}
-                            label="Password"
-                            name="password"
-                            placeholder="Enter password"
-                            fullWidth
-                            helperText={
-                              <ErrorMessage
-                                name="password"
-                                render={(msg) => (
-                                  <span style={{ color: "red" }}>{msg}</span>
-                                )}
-                              />
-                            }
-                            type={values.showPass ? "text" : "password"}
-                            InputProps={{
-                              endAdornment: (
-                                <InputAdornment position="end">
-                                  <IconButton onClick={handlePassVisibilty}>
-                                    {values.showPass ? (
-                                      <VisibilityOffIcon />
-                                    ) : (
-                                      <VisibilityIcon />
-                                    )}
-                                  </IconButton>
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        </Grid>
-                      </div>
-
-                      <Grid item p={1}>
-                        <Button
-                          htmlType="submit"
-                          type="primary"
-                          variant="contained"
-                          size="large"
-                          loading={loading}
-                          style={{ width: "100%" }}
-                        >
-                          Log In
-                        </Button>
-                      </Grid>
-                    </Form>
-                  )}
-                </Formik>
-                <Grid item p={1}>
-                  <Typography>
-                    <Link href="/forgotpwd">Forgot password ?</Link>
-                  </Typography>
-                  <Typography>
-                    {" "}
-                    Do you have an account ?
-                    <Link
-                      href="/register"
-                      onClick={() => handleChange("event", 1)}
-                    >
-                      Register
-                    </Link>
-                  </Typography>
-                </Grid>
+      <Container maxWidth="sm">
+        <Grid
+          container
+          spacing={5}
+          direction="column"
+          justifyContent="center"
+          style={{ minHeight: "100vh" }}
+        >
+          <Paper elelvation={2} sx={{ padding: 5 }}>
+            <Grid container direction="column" spacing={1}>
+              <Grid align="center">
+                <h1>Đăng nhập</h1>
               </Grid>
-            </Paper>
-          </Grid>
-        </Container>
-      </div>
-    </>
+              <Formik
+                initialValues={initialValues}
+                onSubmit={onSubmit}
+                validationSchema={validationSchema}
+              >
+                {(props) => (
+                  <Form>
+                    <div>
+                      <Grid item p={1}>
+                        <Field
+                          as={TextField}
+                          label="Username hoặc email"
+                          name="email"
+                          placeholder="Nhập username hoặc email"
+                          fullWidth
+                          helperText={
+                            <ErrorMessage
+                              name="email"
+                              render={(msg) => (
+                                <span style={{ color: "red" }}>{msg}</span>
+                              )}
+                            />
+                          }
+                        />
+                      </Grid>
+                    </div>
+
+                    <div>
+                      <Grid item p={1}>
+                        <Field
+                          as={TextField}
+                          label="Password"
+                          name="password"
+                          placeholder="Enter password"
+                          fullWidth
+                          helperText={
+                            <ErrorMessage
+                              name="password"
+                              render={(msg) => (
+                                <span style={{ color: "red" }}>{msg}</span>
+                              )}
+                            />
+                          }
+                          type={values.showPass ? "text" : "password"}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton onClick={handlePassVisibilty}>
+                                  {values.showPass ? (
+                                    <VisibilityOffIcon />
+                                  ) : (
+                                    <VisibilityIcon />
+                                  )}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                      </Grid>
+                    </div>
+
+                    <Grid item p={1}>
+                      <Button
+                        htmlType="submit"
+                        type="primary"
+                        variant="contained"
+                        size="large"
+                        loading={loading}
+                        style={{ width: "100%" }}
+                      >
+                        Log In
+                      </Button>
+                    </Grid>
+                  </Form>
+                )}
+              </Formik>
+              <Grid item p={1}>
+                <Typography>
+                  <Link href="/forgotpwd">Forgot password ?</Link>
+                </Typography>
+                <Typography>
+                  {" "}
+                  Do you have an account ?
+                  <Link
+                    href="/register"
+                    onClick={() => handleChange("event", 1)}
+                  >
+                    Register
+                  </Link>
+                </Typography>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
+      </Container>
+    </div>
   );
 };
 

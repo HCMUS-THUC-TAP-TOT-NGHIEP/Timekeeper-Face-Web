@@ -9,3 +9,7 @@ Website của hệ thống chấm công khuôn mặt
 
 # Notes:
 - Tạo sẵn một file .env để sau này cập nhật các biến môi trường (không push lên source code).
+
+# Command with docker
+1. Build image: docker build .
+2. Chạy file compose: docker compose up -d

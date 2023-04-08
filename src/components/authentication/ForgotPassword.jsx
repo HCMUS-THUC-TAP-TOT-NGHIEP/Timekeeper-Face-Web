@@ -279,7 +279,7 @@ export const ResetPasswordPage = function(props) {
                       }
                       return Promise.reject(
                         new Error(
-                          "The two passwords that you entered do not match!"
+                          "Mật khẩu chưa trùng khớp!"
                         )
                       );
                     },

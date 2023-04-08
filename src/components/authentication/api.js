@@ -11,12 +11,7 @@ let AxiosInstance = axios.create({
 });
 
 export const RegisterAccount = async (requestData) => {
-  var bodyData = {
-    email: requestData.email,
-    password: requestData.password,
-    firstName: requestData.firstName,
-  };
-  var response = await AxiosInstance.post("auth/register", bodyData, {
+  var response = await AxiosInstance.post("auth/register", requestData, {
     headers: {
       "Access-Control-Allow-Origin": "*",
     },
@@ -61,6 +56,17 @@ export const ResetPassword = async (requestData) => {
 
 export const Logout = async (access_token) => {
   var response = await AxiosInstance.post("auth/logout", null, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + access_token,
+    },
+  });
+  return response.data;
+};
+
+export const changePasswordBE = async (req) => {
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.post("auth/changepwd", req, {
     headers: {
       "Access-Control-Allow-Origin": "*",
       Authorization: "Bearer " + access_token,

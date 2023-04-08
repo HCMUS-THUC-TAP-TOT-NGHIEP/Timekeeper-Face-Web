@@ -4,7 +4,9 @@ import {
   DeleteOutlined,
   EditOutlined,
   EditTwoTone,
-  InfoCircleTwoTone
+  FilterFilled,
+  InfoCircleTwoTone,
+  SearchOutlined,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -14,16 +16,21 @@ import {
   Input,
   Modal,
   Popconfirm,
-  Row, Space,
+  Row,
+  Space,
   Table,
   TimePicker,
   Tooltip,
-  notification
+  notification,
 } from "antd";
+import { Content } from "antd/es/layout/layout";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import Config from "../../constant";
 import { CreateNewShift, DeleteShift, GetShiftList, UpdateShift } from "./api";
+import Highlighter from "react-highlight-words";
+import { compareDatetime, compareString } from "../../utils";
 
 const ShiftList = function (props) {
   const [loading, setLoading] = useState(true);
@@ -32,6 +39,9 @@ const ShiftList = function (props) {
   const [perPage, setPerPage] = useState(10);
   const [form] = Form.useForm();
   const [notify, contextHolder] = notification.useNotification();
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const searchInput = useRef(null);
 
   useEffect(() => {
     document.title = "Danh mục ca làm việc";
@@ -74,6 +84,95 @@ const ShiftList = function (props) {
       });
   }, [perPage, page]);
 
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+      close,
+    }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <Input
+          ref={searchInput}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+          >
+            Tìm kiếm
+          </Button>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters)}
+            size="small"
+            style={{
+              width: 90,
+            }}
+          >
+            Đặt lại
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <FilterFilled
+        style={{
+          color: filtered ? "#1890ff" : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(
+          () => (searchInput.current ? searchInput.current.input : undefined),
+          100
+        );
+      }
+    },
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{
+            backgroundColor: "#ffc069",
+            padding: 0,
+          }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ""}
+        />
+      ) : (
+        text
+      ),
+  });
+
   const columns = [
     {
       title: "Mã",
@@ -81,12 +180,16 @@ const ShiftList = function (props) {
       key: "Id",
       sorter: (a, b) => a.Id - b.Id,
       fixed: "left",
+      width: 50,
+      ...getColumnSearchProps("Id"),
     },
     {
       title: "Mô tả",
       dataIndex: "Description",
       key: "Description",
-      sorter: (a, b) => a.Description.localeCompare(b.Description),
+      sorter: (a, b) => compareString(a, b, "Description"),
+      width: 50,
+      ...getColumnSearchProps("Description"),
     },
     {
       title: "Giờ vào",
@@ -98,6 +201,9 @@ const ShiftList = function (props) {
         }
         return "";
       },
+      width: 50,
+      sorter: (a, b) => compareDatetime(a, b, "StartTime"),
+      ...getColumnSearchProps("StartTime"),
     },
     {
       title: "Giờ ra",
@@ -109,6 +215,9 @@ const ShiftList = function (props) {
         }
         return "";
       },
+      width: 50,
+      sorter: (a, b) => compareDatetime(a, b, "FinishTime"),
+      ...getColumnSearchProps("FinishTime"),
     },
     {
       title: "Giờ nghỉ",
@@ -120,6 +229,9 @@ const ShiftList = function (props) {
         }
         return "";
       },
+      width: 50,
+      sorter: (a, b) => compareDatetime(a, b, "BreakAt"),
+      ...getColumnSearchProps("BreakAt"),
     },
     {
       title: "Kết thúc nghỉ",
@@ -131,6 +243,43 @@ const ShiftList = function (props) {
         }
         return "";
       },
+      width: 50,
+      sorter: (a, b) => compareDatetime(a, b, "BreakEnd"),
+      ...getColumnSearchProps("BreakEnd"),
+    },
+    {
+      title: "Số giờ làm",
+      dataIndex: "Số giờ làm",
+      key: "Số giờ làm",
+      render: (_, record) => {
+        var time0 = dayjs(record.StartTime, Config.timeFormat);
+        var time1 = dayjs(record.FinishTime, Config.timeFormat);
+        var time2 = dayjs(record.BreakAt, Config.timeFormat);
+        var time3 = dayjs(record.BreakEnd, Config.timeFormat);
+        console.log(
+          time1.diff(time0, "minutes") - time3.diff(time2, "minutes")
+        );
+        var minutes =
+          time1.diff(time0, "minutes") - time3.diff(time2, "minutes");
+        var str = `${(minutes - (minutes % 60)) / 60} giờ`;
+        str += minutes % 60 == 0 ? "" : ` ${minutes % 60} phút`;
+        return str;
+      },
+      width: 50,
+    },
+    {
+      title: "Số giờ nghỉ",
+      dataIndex: "Số giờ nghỉ",
+      key: "Số giờ nghỉ",
+      render: (_, record) => {
+        var time2 = dayjs(record.BreakAt, Config.timeFormat);
+        var time3 = dayjs(record.BreakEnd, Config.timeFormat);
+        var minutes = time3.diff(time2, "minutes");
+        var str = `${(minutes - (minutes % 60)) / 60} giờ`;
+        str += minutes % 60 == 0 ? "" : ` ${minutes % 60} phút`;
+        return str;
+      },
+      width: 50,
     },
     {
       title: "",
@@ -144,6 +293,7 @@ const ShiftList = function (props) {
           updateOneShift={updateOneShift}
         />
       ),
+      width: 50,
     },
   ];
   const insertOneShift = (values) => {
@@ -197,18 +347,22 @@ const ShiftList = function (props) {
           </Button>
         </Col>
       </Row>
-      <Table
-        loading={loading}
-        bordered
-        scroll={{
-          x: 900,
+      <Content
+        style={{
+          boxShadow:
+            "rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
         }}
-        rowSelection={{
-          type: "checkbox",
-        }}
-        dataSource={currentShiftList}
-        columns={columns}
-      />
+      >
+        <Table
+          loading={loading}
+          bordered
+          scroll={{
+            x: 900,
+          }}
+          dataSource={currentShiftList}
+          columns={columns}
+        ></Table>
+      </Content>
     </Space>
   );
 };
@@ -263,7 +417,6 @@ const AddShiftForm = (props) => {
         }
       });
   };
-
   return (
     <Form
       style={{ width: "100%", maxWidth: "600px" }}
@@ -713,4 +866,3 @@ const EditShiftFrom = (props) => {
 };
 
 export { ShiftList };
-

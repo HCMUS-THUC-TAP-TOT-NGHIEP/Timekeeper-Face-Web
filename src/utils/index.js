@@ -14,8 +14,6 @@ function compareString(a, b, field) {
   }
 }
 
-function compareNumber(a, b, field) {}
-
 function compareDatetime(a, b, field) {
   try {
     if (a[field] == b[field]) {

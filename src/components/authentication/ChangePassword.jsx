@@ -263,9 +263,11 @@ const ChangePasswordPage = (props) => {
       );
       if (Status === 1) {
         notify.success({
-          message: "Bạn vừa đổi mật khẩu thành công"
-        })
-        navigate("/dashboard");
+          message: "Bạn vừa đổi mật khẩu thành công",
+        });
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1000);
         return;
       }
       notify.error({
@@ -308,94 +310,106 @@ const ChangePasswordPage = (props) => {
           </Breadcrumb>
         </Col>
       </Row>
-        <Form layout="vertical" onFinish={changePassword}>
-          <Row gutter={24}>
-            <Col xs={24} sm={12} md={8}>
-              <Form.Item
-                label="Nhập mật khẩu hiện tại"
-                name="Password"
-                required
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập mật khẩu hiện tại",
-                  },
-                ]}
-                hasFeedback
-              >
-                <Input.Password size="large" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={24}>
-            <Col xs={24} sm={12} md={8}>
-              <Form.Item
-                label="Mật khẩu mới"
-                name="NewPassword"
-                required
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập mật khẩu mới",
-                  },
-                  {
-                    min: 8,
-                    message: "Mật khẩu tối thiểu 8 ký tự",
-                  },
-                ]}
-                hasFeedback
-              >
-                <Input.Password size="large" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={24}>
-            <Col xs={24} sm={12} md={8}>
-              <Form.Item
-                label="Nhập lại mật khẩu mới"
-                name="Confirm"
-                required
-                dependencies={["NewPassword"]}
-                rules={[
-                  {
-                    max: 100,
-                    message: "Tên chỉ được tối đa 100 ký tự",
-                  },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue("NewPassword") === value) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject(
-                        new Error(
-                          "The two passwords that you entered do not match!"
-                        )
-                      );
-                    },
-                  }),
-                ]}
-                hasFeedback
-              >
-                <Input.Password size="large" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row>
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                style={{ width: "100%" }}
-                size="large"
-                loading={loadingButton}
-              >
-                Reset password
-              </Button>
+      <Form layout="vertical" onFinish={changePassword}>
+        <Row gutter={24}>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item
+              label="Nhập mật khẩu hiện tại"
+              name="Password"
+              required
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập mật khẩu hiện tại",
+                },
+              ]}
+              hasFeedback
+            >
+              <Input.Password size="large" />
             </Form.Item>
-          </Row>
-        </Form>
-      {/* <Content style={{ paddingTop: 20 }}>
-      </Content> */}
+          </Col>
+        </Row>
+        <Row gutter={24}>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item
+              label="Mật khẩu mới"
+              name="NewPassword"
+              required
+              dependencies={["Password"]}
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập mật khẩu mới",
+                },
+                {
+                  min: 8,
+                  message: "Mật khẩu tối thiểu 8 ký tự",
+                },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("Password") !== value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error(
+                        "Vui lòng nhập mật khẩu mới khác với mật khẩu cũ!"
+                      )
+                    );
+                  },
+                }),
+
+              ]}
+              hasFeedback
+            >
+              <Input.Password size="large" />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={24}>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item
+              label="Nhập lại mật khẩu mới"
+              name="Confirm"
+              required
+              dependencies={["NewPassword"]}
+              rules={[
+                {
+                  max: 100,
+                  message: "Tên chỉ được tối đa 100 ký tự",
+                },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("NewPassword") === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error(
+                        "Nhập lại mật khẩu không khớp nhau!"
+                      )
+                    );
+                  },
+                }),
+              ]}
+              hasFeedback
+            >
+              <Input.Password size="large" />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              style={{ width: "100%" }}
+              size="large"
+              loading={loadingButton}
+            >
+              Reset password
+            </Button>
+          </Form.Item>
+        </Row>
+      </Form>
     </Space>
   );
 };

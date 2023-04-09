@@ -1,25 +1,14 @@
-import {
-  DeleteOutlined,
-  EditOutlined,
-  EyeOutlined,
-  FilterFilled,
-  FormOutlined,
-  PlusOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { FilterFilled, SearchOutlined } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
   Col,
   Form,
   Input,
-  Modal,
-  notification,
-  Popconfirm,
   Row,
   Space,
   Table,
-  Tooltip,
+  notification,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";
@@ -29,7 +18,10 @@ import Highlighter from "react-highlight-words";
 import { Link } from "react-router-dom";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils";
-import { AddNewUser, DeleteUser, GetAccountList, UpdateUser } from "./api";
+import { AddAccount } from "./AddAccount";
+import { DeleteAccount } from "./DeleteAccount";
+import { EditAccount } from "./EditAccount";
+import { GetAccountList } from "./api";
 
 export const AccountListPage = (props) => {
   const [form] = Form.useForm();
@@ -91,7 +83,7 @@ export const AccountListPage = (props) => {
       }
     }
     loadData();
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, notify]);
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -190,7 +182,7 @@ export const AccountListPage = (props) => {
   };
   const editAccount = (value) => {
     const updatedList = accountList.map((account) => {
-      if (account.Id == value.Id) {
+      if (account.Id === value.Id) {
         return value;
       } else {
         return account;
@@ -213,7 +205,7 @@ export const AccountListPage = (props) => {
           </Breadcrumb>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <AddAccount insertAccount={insertAccount} form={form} />
+          <AddAccount insertFE={insertAccount} />
         </Col>
       </Row>
       <Content style={{ paddingTop: 20 }}>
@@ -301,11 +293,11 @@ export const AccountListPage = (props) => {
                 <EditAccount
                   form={form}
                   account={record}
-                  editAccount={editAccount}
+                  editAccountFE={editAccount}
                 />
-                <DeleteAccountForm
+                <DeleteAccount
                   account={record}
-                  deleteAccount={deleteAccount}
+                  deleteAccountFE={deleteAccount}
                 />
               </Space>
             )}
@@ -316,7 +308,8 @@ export const AccountListPage = (props) => {
   );
 };
 
-export const AddAccount = (props) => {
+/*
+const AddAccount_ = (props) => {
   const { insertAccount, form } = props;
   const [modal, contextHolder] = Modal.useModal();
   const [loading, setLoading] = useState(false);
@@ -333,6 +326,8 @@ export const AddAccount = (props) => {
           insertAccount={insertAccount}
         />
       ),
+      okText: "Lưu",
+      okCancel: "Hủy",
       onOk(e) {
         form.submit();
       },
@@ -355,7 +350,7 @@ export const AddAccount = (props) => {
   );
 };
 
-export const AddAccountForm = (props) => {
+const AddAccountForm_ = (props) => {
   const { form, insertAccount, setLoading } = props;
   const [notify, contextHolder] = notification.useNotification();
   const insertAccountBE = async (values) => {
@@ -479,6 +474,11 @@ export const AddAccountForm = (props) => {
                   max: 20,
                   message: "Mật khẩu có tối đa 20 ký tự",
                 },
+                {
+                  pattern: new RegExp(Config.passwordPattern),
+                  message:
+                    "Mật khẩu phải có ít nhất một số, một ký tự thường, một ký tự hoa và một ký tự đặc biệt!",
+                },
               ]}
             >
               <Input.Password placeholder="Nhập mật khẩu" />
@@ -499,7 +499,7 @@ export const AddAccountForm = (props) => {
                       return Promise.resolve();
                     }
                     return Promise.reject(
-                      new Error("Mật khẩu không khớp nhau.")
+                      new Error("Nhập lại mật khẩu không khớp nhau!")
                     );
                   },
                 }),
@@ -508,7 +508,7 @@ export const AddAccountForm = (props) => {
               <Input.Password />
             </Form.Item>
           </Col>
-          {/* <Col xs={24} md={24}>
+          <Col xs={24} md={24}>
           <Form.Item
             label="Vai trò"
             name="Role"
@@ -521,76 +521,14 @@ export const AddAccountForm = (props) => {
           >
             <Input.Password placeholder="Nhập Họ tên" />
           </Form.Item>
-        </Col> */}
+        </Col>
         </Row>
       </Form>
     </>
   );
 };
 
-export const DeleteAccountForm = (props) => {
-  const { account, deleteAccount, ...other } = props;
-  const [loading, setLoading] = useState(false);
-  const [notify, contextHolder] = notification.useNotification();
-
-  const deleteAccountBE = async () => {
-    try {
-      setLoading(true);
-      var response = await DeleteUser({ Username: account.Username });
-      const { Status, ResponseData, Description } = response;
-      if (Status === 1) {
-        notify.success({
-          message: "Đã xóa tài khoản " + account.Username,
-        });
-        deleteAccount(account);
-        return;
-      }
-      notify.error({
-        message: "Không thành công",
-        description: Description,
-      });
-    } catch (error) {
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi.",
-          description: error.message,
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <>
-      <Popconfirm
-        title="Xóa người dùng"
-        description={`Chắc chắn loại bỏ người dùng ${account.Username}?`}
-        onConfirm={deleteAccountBE}
-        okText="Xóa"
-        okButtonProps={{ danger: true, loading: loading }}
-        cancelText="Hủy"
-      >
-        <Tooltip title="Xóa" trigger="hover">
-          <Button type="text" icon={<DeleteOutlined />} />
-        </Tooltip>
-      </Popconfirm>
-      {contextHolder}
-    </>
-  );
-};
-
-export const EditAccount = (props) => {
+const EditAccount_ = (props) => {
   const { account, editAccount, form, ...other } = props;
   const [modal, contextHolder] = Modal.useModal();
   const [loading, setLoading] = useState(false);
@@ -738,7 +676,6 @@ export const EditAccountForm = (props) => {
               <Input placeholder="Nhập Họ tên" readOnly={readonlyForm} />
             </Form.Item>
           </Col>
-
           <Col xs={24} md={24}>
             <Form.Item
               label="Email"
@@ -763,3 +700,4 @@ export const EditAccountForm = (props) => {
     </>
   );
 };
+*/

@@ -8,9 +8,9 @@ import {
   Space,
   notification,
 } from "antd";
-import { Content } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Config from "../../constant";
 import { changePasswordBE } from "./api";
 
 // const ChangePasswordPage_ = ({ handleChange }) => {
@@ -258,9 +258,7 @@ const ChangePasswordPage = (props) => {
   const changePassword = async (values) => {
     try {
       setLoadingButton(true);
-      const { Status, Description, ResponseData } = await changePasswordBE(
-        values
-      );
+      const { Status, Description } = await changePasswordBE(values);
       if (Status === 1) {
         notify.success({
           message: "Bạn vừa đổi mật khẩu thành công",
@@ -344,6 +342,11 @@ const ChangePasswordPage = (props) => {
                 {
                   min: 8,
                   message: "Mật khẩu tối thiểu 8 ký tự",
+                },
+                {
+                  pattern: new RegExp(Config.passwordPattern),
+                  message:
+                    "Mật khẩu phải có ít nhất một số, một ký tự thường, một ký tự hoa và một ký tự đặc biệt!",
                 },
                 ({ getFieldValue }) => ({
                   validator(_, value) {

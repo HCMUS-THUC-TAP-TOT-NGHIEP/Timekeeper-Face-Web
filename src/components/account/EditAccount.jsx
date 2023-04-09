@@ -89,6 +89,8 @@ const EditAccount = (props) => {
         footer={null}
         destroyOnClose={true}
         onCancel={handleCancel}
+        width={700}
+        bodyStyle={{ width: "100%" }}
       >
         <Form
           preserve={false}
@@ -99,6 +101,7 @@ const EditAccount = (props) => {
             EmailAddress: account.EmailAddress,
             Name: account.Name,
           }}
+          style={{ width: "100%" }}
         >
           <Row gutter={24}>
             <Col xs={24} md={12}>
@@ -163,7 +166,7 @@ const EditAccount = (props) => {
             </Col>
             <Col xs={24} md={24}>
               <Form.Item
-                label="Mật khẩu xác thực"
+                label="Xác thực mật khẩu"
                 name="ConfirmPassword"
                 required
                 rules={[
@@ -172,6 +175,7 @@ const EditAccount = (props) => {
                     message: "Vui lòng nhập mật khẩu xác nhận!",
                   },
                 ]}
+                tooltip="Cung cấp mật khẩu của bạn"
               >
                 <Input.Password />
               </Form.Item>

@@ -2,6 +2,7 @@ import { PlusOutlined } from "@ant-design/icons";
 import {
   Button,
   Col,
+  Divider,
   Form,
   Input,
   Modal,
@@ -84,7 +85,7 @@ const AddAccount = (props) => {
       >
         <Form preserve={false} layout="vertical" onFinish={insertAccountBE}>
           <Row gutter={24}>
-            <Col xs={24} md={24}>
+            <Col xs={24} md={12}>
               <Form.Item
                 label="Username"
                 name="Username"
@@ -97,6 +98,24 @@ const AddAccount = (props) => {
                 ]}
               >
                 <Input placeholder="Username" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="Tên"
+                name="Name"
+                rules={[
+                  {
+                    min: 5,
+                    message: "Tên phải tối thiểu 5 ký tự",
+                  },
+                  {
+                    max: 100,
+                    message: "Tên chỉ được tối đa 100 ký tự",
+                  },
+                ]}
+              >
+                <Input placeholder="Nhập Họ tên" />
               </Form.Item>
             </Col>
             <Col xs={24} md={24}>
@@ -118,25 +137,7 @@ const AddAccount = (props) => {
                 <Input placeholder="Nhập Email" />
               </Form.Item>
             </Col>
-            <Col xs={24} md={24}>
-              <Form.Item
-                label="Tên"
-                name="Name"
-                rules={[
-                  {
-                    min: 5,
-                    message: "Tên phải tối thiểu 5 ký tự",
-                  },
-                  {
-                    max: 100,
-                    message: "Tên chỉ được tối đa 100 ký tự",
-                  },
-                ]}
-              >
-                <Input placeholder="Nhập Họ tên" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={24}>
+            <Col xs={24} md={12}>
               <Form.Item
                 label="Mật khẩu"
                 name="Password"
@@ -160,7 +161,7 @@ const AddAccount = (props) => {
                 <Input.Password placeholder="Nhập mật khẩu" />
               </Form.Item>
             </Col>
-            <Col xs={24} md={24}>
+            <Col xs={24} md={12}>
               <Form.Item
                 label="Nhắc lại mật khẩu"
                 name="Confirm"
@@ -180,6 +181,23 @@ const AddAccount = (props) => {
                     },
                   }),
                 ]}
+              >
+                <Input.Password />
+              </Form.Item>
+            </Col>
+            <Divider />
+            <Col xs={24} md={24}>
+              <Form.Item
+                label="Xác thực mật khẩu"
+                name="ConfirmPassword"
+                required
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập mật khẩu xác nhận!",
+                  },
+                ]}
+                tooltip="Cung cấp mật khẩu của bạn"
               >
                 <Input.Password />
               </Form.Item>

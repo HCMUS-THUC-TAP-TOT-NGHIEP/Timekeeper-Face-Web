@@ -357,7 +357,6 @@ const ChangePasswordPage = (props) => {
                     );
                   },
                 }),
-
               ]}
               hasFeedback
             >
@@ -383,9 +382,7 @@ const ChangePasswordPage = (props) => {
                       return Promise.resolve();
                     }
                     return Promise.reject(
-                      new Error(
-                        "Nhập lại mật khẩu không khớp nhau!"
-                      )
+                      new Error("Nhập lại mật khẩu không khớp nhau!")
                     );
                   },
                 }),
@@ -398,15 +395,20 @@ const ChangePasswordPage = (props) => {
         </Row>
         <Row>
           <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              style={{ width: "100%" }}
-              size="large"
-              loading={loadingButton}
-            >
-              Reset password
-            </Button>
+            <Space direction="horizontal">
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{ width: "100%" }}
+                size="large"
+                loading={loadingButton}
+              >
+                Lưu
+              </Button>
+              <Button size="large" onClick={() => navigate(-1)}>
+                Quay lại
+              </Button>
+            </Space>
           </Form.Item>
         </Row>
       </Form>

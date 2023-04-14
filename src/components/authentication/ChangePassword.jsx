@@ -275,21 +275,21 @@ const ChangePasswordPage = (props) => {
     } catch (error) {
       if (error.response) {
         notify.error({
-          message: "Có lỗi",
+          message: "Có lỗi ở response.",
           description: `[${error.response.statusText}]`,
         });
       } else if (error.request) {
         notify.error({
-          message: "Có lỗi.",
+          message: "Có lỗi ở request.",
           description: error,
         });
       } else {
         notify.error({
-          message: "Có lỗi.",
+          message: "Có lỗi ở máy khách",
           description: error.message,
         });
       }
-    } finally {
+  } finally {
       setLoadingButton(false);
     }
   };

@@ -162,7 +162,7 @@ const ShiftAssignmentListPage = (props) => {
       dataIndex: "EndDate",
       key: "EndDate",
       width: 60,
-      render: (_, { EndDate }) => dayjs(EndDate).format(Config.dateFormat),
+      render: (_, { EndDate }) => dayjs(EndDate).format(Config.DateFormat),
       sorter: (a, b) => compareString(a, b, "EndDate"),
       ...getColumnSearchProps("EndDate"),
     },
@@ -172,7 +172,7 @@ const ShiftAssignmentListPage = (props) => {
       key: "CreatedDate",
       width: 60,
       render: (_, { CreatedDate }) =>
-        dayjs(CreatedDate).format(Config.dateFormat),
+        dayjs(CreatedDate).format(Config.DateFormat),
       sorter: (a, b) => compareString(a, b, "CreatedDate"),
       ...getColumnSearchProps("CreatedDate"),
     },

@@ -148,7 +148,7 @@ const RegisterPage = (props) => {
                     message: "Mật khẩu cho phép tối đa 20 ký tự",
                   },
                   {
-                    pattern: new RegExp(Config.passwordPattern),
+                    pattern: new RegExp(Config.PasswordPattern),
                     message:
                       "Mật khẩu phải có ít nhất một số, một ký tự thường, một ký tự hoa và một ký tự đặc biệt!",
                   },

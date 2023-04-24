@@ -1,4 +1,4 @@
-import { EditOutlined } from "@ant-design/icons";
+import { EditTwoTone } from "@ant-design/icons";
 import {
   Button,
   Col,
@@ -78,7 +78,7 @@ const EditAccount = (props) => {
   return (
     <Space>
       <Tooltip title="Chỉnh sửa">
-        <Button type="text" icon={<EditOutlined />} onClick={showEditForm} />
+        <Button type="text" icon={<EditTwoTone />} onClick={showEditForm} />
       </Tooltip>
       <Modal
         title={<Space>Chỉnh sửa người dùng</Space>}

@@ -55,6 +55,7 @@ const DeleteAccount = (props) => {
         okText="Xóa"
         okButtonProps={{ danger: true, loading: loading }}
         cancelText="Hủy"
+        placement="topRight"
       >
         <Tooltip title="Xóa" trigger="hover">
           <Button type="text" danger icon={<DeleteOutlined />} />

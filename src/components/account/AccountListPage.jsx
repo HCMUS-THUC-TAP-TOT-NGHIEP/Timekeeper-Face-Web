@@ -253,30 +253,12 @@ export const AccountListPage = (props) => {
             {...getColumnSearchProps("Name")}
             width={200}
           />
-          {/* <Column
-            title="Nhân viên"
-            dataIndex="Employee"
-            key="Employee"
-            sorter={(a, b) => {
-              const EmployeeA = a.Employee.toUpperCase(); // ignore upper and lowercase
-              const EmployeeB = b.Employee.toUpperCase(); // ignore upper and lowercase
-              if (EmployeeA < EmployeeB) {
-                return -1;
-              }
-              if (EmployeeA > EmployeeB) {
-                return 1;
-              }
-              return 0; // Employee must be equal
-            }}
-            width={200}
-            {...getColumnSearchProps("Employee")}
-          /> */}
           <Column
             title="Ngày tạo"
             dataIndex="CreatedAt"
             key="CreatedAt"
             render={(_, record) => {
-              return dayjs(record.CreatedAt).format(Config.dateFormat);
+              return dayjs(record.CreatedAt).format(Config.DateFormat);
             }}
             sorter={(a, b) => compareDatetime(a, b, "CreatedAt")}
             width={100}

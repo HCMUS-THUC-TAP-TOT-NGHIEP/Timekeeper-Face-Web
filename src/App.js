@@ -1,4 +1,4 @@
-import { Layout } from "antd";
+import { Layout, notification, theme } from "antd";
 import React, { useState } from "react";
 // import { Outlet, Route, Routes } from "react-router";
 import { AccountIndexPage, AccountListPage } from "./components/account";
@@ -32,8 +32,10 @@ import { ShiftList } from "./components/shift";
 import { Outlet, Route, Routes } from "react-router-dom";
 
 function App() {
+  const [notify, contextHolder] = notification.useNotification();
   return (
     <>
+      {contextHolder}
       <Routes>
         <Route path="/" element={<CustomLayout />}>
           <Route path="/" element={<Dashboard />} />
@@ -53,19 +55,22 @@ function App() {
           <Route path="/department/all" element={<DepartmentList />} />
 
           <Route path="shift" element={<ShiftManagementIndex />}>
-            <Route path="" element={<ShiftList />} />
-            <Route path="assignment" element={<ShiftAssignmentPage />} />
+            <Route path="" element={<ShiftList notify={notify} />} />
+            <Route
+              path="assignment"
+              element={<ShiftAssignmentPage notify={notify} />}
+            />
             <Route
               path="assignment/edit/:id"
-              element={<EditShiftAssignmentPage />}
+              element={<EditShiftAssignmentPage notify={notify} />}
             />
             <Route
               path="assignment/list"
-              element={<ShiftAssignmentListPage />}
+              element={<ShiftAssignmentListPage notify={notify} />}
             />
             <Route
               path="assignment/detail/:id"
-              element={<ShiftAssignmentDetail />}
+              element={<ShiftAssignmentDetail notify={notify} />}
             />
           </Route>
           <Route
@@ -90,6 +95,9 @@ function App() {
 
 function CustomLayout(props) {
   const [collapsed, setCollapsed] = useState(false);
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
   return (
     <Layout
       style={{
@@ -104,7 +112,7 @@ function CustomLayout(props) {
             margin: "24px 16px",
             padding: 24,
             minHeight: 280,
-            // background: colorBgContainer,
+            background: colorBgContainer,
           }}
         >
           <Outlet />

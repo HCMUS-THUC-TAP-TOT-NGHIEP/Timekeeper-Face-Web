@@ -14,7 +14,7 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Config from "../../constant";
-import { compareDatetime, compareString } from "../../utils";
+import { compareDatetime, compareString } from "../../utils/Comparation";
 import { DeleteOneEmployee, GetManyEmployee } from "./api";
 import "./style.css";
 

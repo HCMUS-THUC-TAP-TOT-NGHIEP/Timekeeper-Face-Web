@@ -1,7 +1,7 @@
 var Config = {
   ServerApiUrl: process.env.REACT_APP_SERVER_API_URL,
   Timeout: 6000,
-  DateFormat: "DD/MM/YYYY",
+  DateFormat: "DD - MM - YYYY",
   TimeFormat: "HH:mm:ss",
   NonSecondFormat: "HH:mm",
   TimestampFormat: "DD/MM/YYYY HH:mm:ss",

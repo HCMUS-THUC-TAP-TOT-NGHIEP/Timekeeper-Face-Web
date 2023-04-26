@@ -26,7 +26,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { Link, useNavigate } from "react-router-dom";
 import Config from "../../constant";
-import { compareString } from "../../utils";
+import { compareString } from "../../utils/Comparation";
 import { GetAssignmentList } from "./api";
 
 const ShiftAssignmentListPage = (props) => {

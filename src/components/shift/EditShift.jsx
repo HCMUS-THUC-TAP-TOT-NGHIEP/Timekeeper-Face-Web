@@ -1,4 +1,4 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { EditTwoTone, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
   DatePicker,
@@ -8,29 +8,29 @@ import {
   Select,
   Space,
   TimePicker,
+  Tooltip,
   Typography,
   notification,
   theme,
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import { default as React, useEffect, useState } from "react";
 import Config from "../../constant";
-import { CreateNewShift, GetShiftTypeList } from "./api";
+import { GetShiftTypeList, UpdateShift } from "./api";
 
-const AddShift = (props) => {
-  const { insertOneShiftFE, notify, currentShiftList } = props;
-  const [form] = Form.useForm();
+const EditShift = (props) => {
+  const { notify, updateOneShift, shiftList, shift } = props;
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [startTime, setStartTime] = useState(null);
-  const [finishTime, setFinishTime] = useState(null);
-  const [startBreakTime, setStartBreakTime] = useState(null);
-  const [endBreakTime, setEndBreakTime] = useState(null);
   const [loading, setLoading] = useState(false);
   const [shiftTypeList, setShiftTypeList] = useState([]);
   const {
     token: { colorBgLayout },
   } = theme.useToken();
+  const [startTime, setStartTime] = useState(shift.StartTime);
+  const [finishTime, setFinishTime] = useState(shift.FinishTime);
+  const [startBreakTime, setStartBreakTime] = useState(shift.BreakAt);
+  const [endBreakTime, setEndBreakTime] = useState(shift.BreakEnd);
 
   useEffect(() => {
     async function loadData() {
@@ -57,6 +57,22 @@ const AddShift = (props) => {
     setStartBreakTime(null);
     setEndBreakTime(null);
   };
+
+  const getAmountOfWorkingHours = () => {
+    var minutes = 0;
+    if (startTime && finishTime) {
+      var time0 = dayjs(startTime, Config.TimeFormat);
+      var time1 = dayjs(finishTime, Config.TimeFormat);
+      minutes = time1.diff(time0, "minutes") + 1;
+      if (startBreakTime && endBreakTime) {
+        var time2 = dayjs(startBreakTime, Config.TimeFormat);
+        var time3 = dayjs(endBreakTime, Config.TimeFormat);
+        minutes = minutes - (time3.diff(time2, "minutes") + 1);
+      }
+    }
+    return `${(minutes - (minutes % 60)) / 60} giờ ${minutes % 60} phút`;
+  };
+
   const onSubmit = (values) => {
     setLoading(true);
     values.StartTime = dayjs(values.StartTime).format(Config.TimeFormat);
@@ -67,20 +83,18 @@ const AddShift = (props) => {
     if (values.BreakEnd) {
       values.BreakEnd = dayjs(values.BreakEnd).format(Config.TimeFormat);
     }
-    var success = false;
-    CreateNewShift(values)
+    UpdateShift(values)
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          success = true;
-          values.Id = ResponseData.Id;
           notification.success({
-            description: "Ca làm việc mới đã được tạo",
+            description: "Chỉnh sửa thành công",
           });
+          updateOneShift(values);
           return;
         }
         notification.error({
-          message: "Không thành công",
+          message: "Có lỗi",
           description: Description,
         });
       })
@@ -104,35 +118,20 @@ const AddShift = (props) => {
       })
       .finally(() => {
         setLoading(false);
-        if (success) {
-          insertOneShiftFE(values);
-          handleCancel();
-        }
       });
   };
-
-  const getAmountOfWorkingHours = () => {
-    var minutes = 0;
-    if (startTime && finishTime) {
-      var time0 = dayjs(startTime, Config.TimeFormat);
-      var time1 = dayjs(finishTime, Config.TimeFormat);
-      minutes = time1.diff(time0, "minutes") + 1;
-      if (startBreakTime && endBreakTime) {
-        var time2 = dayjs(startBreakTime, Config.TimeFormat);
-        var time3 = dayjs(endBreakTime, Config.TimeFormat);
-        minutes = minutes - (time3.diff(time2, "minutes") + 1);
-      }
-    }
-    return `${(minutes - (minutes % 60)) / 60} giờ ${minutes % 60} phút`;
-  };
-
   return (
     <Space>
-      <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
-        Thêm ca làm việc
-      </Button>
+      <Tooltip title="Chỉnh sửa">
+        <Button
+          type="text"
+          shape="circle"
+          icon={<EditTwoTone />}
+          onClick={showModal}
+        />
+      </Tooltip>
       <Modal
-        title="Thêm ca làm việc"
+        title="Chỉnh sửa"
         open={isModalOpen}
         keyboard={true}
         closable={true}
@@ -150,9 +149,23 @@ const AddShift = (props) => {
           labelWrap
           labelAlign="right"
           onFinish={onSubmit}
+          initialValues={{
+            Id: shift.Id,
+            Description: shift.Description,
+            StartDate: dayjs(shift.StartDate),
+            EndDate: dayjs(shift.EndDate),
+            StartTime: dayjs(shift.StartTime, Config.NonSecondFormat),
+            FinishTime: dayjs(shift.FinishTime, Config.NonSecondFormat),
+            BreakAt: shift.BreakAt
+              ? dayjs(shift.BreakAt, Config.NonSecondFormat)
+              : undefined,
+            BreakEnd: shift.BreakEnd
+              ? dayjs(shift.BreakEnd, Config.NonSecondFormat)
+              : undefined,
+            ShiftType: shift.ShiftType,
+          }}
         >
           <Form.Item
-            form={form}
             hasFeedback
             label="Ca làm việc"
             name="Description"
@@ -163,7 +176,7 @@ const AddShift = (props) => {
               },
               {
                 validator: (_, value) => {
-                  var exist = currentShiftList.find(
+                  var exist = shiftList.find(
                     (shift) => shift.Description == value
                   );
                   if (!exist) return Promise.resolve();
@@ -333,6 +346,200 @@ const AddShift = (props) => {
       </Modal>
     </Space>
   );
+
+  // return (
+  //   <Form
+  //     style={{ width: "100%", maxWidth: "600px" }}
+  //     form={form}
+  //     name="basic"
+  //     labelCol={{
+  //       span: 8,
+  //     }}
+  //     onFinish={onSubmit}
+  //     autoComplete="off"
+  //     layout="vertical"
+  //     preserve={false}
+  //   >
+  //     <Form.Item
+  //       form={form}
+  //       hasFeedback
+  //       label="Ca làm việc"
+  //       name="Description"
+  //       rules={[
+  //         {
+  //           required: true,
+  //           message: "Mô tả là trường bắt buộc.",
+  //         },
+  //         {
+  //           validator: (_, value) => {
+  //             var exist = shiftList.find(
+  //               (shift) => shift.Description == value
+  //             );
+  //             if (!exist) return Promise.resolve();
+  //             return Promise.reject(
+  //               new Error(`${value} đã có trong danh mục ca làm việc.`)
+  //             );
+  //           },
+  //         },
+  //       ]}
+  //     >
+  //       <Input placeholder="Nhập tên hoặc mô tả ca làm việc" />
+  //     </Form.Item>
+  //     <Form.Item
+  //       label="Loại ca làm việc"
+  //       name="ShiftType"
+  //       rules={[
+  //         {
+  //           required: true,
+  //           message: "",
+  //         },
+  //       ]}
+  //     >
+  //       <Select
+  //         defaultActiveFirstOption={true}
+  //         options={shiftTypeList.map((shiftType) => ({
+  //           label: shiftType.Description,
+  //           value: shiftType.Id,
+  //         }))}
+  //       />
+  //     </Form.Item>
+  //     <Typography.Title
+  //       level={5}
+  //       style={{ background: colorBgLayout, padding: "4px 8px" }}
+  //     >
+  //       Chi tiết
+  //     </Typography.Title>
+  //     <Form.Item
+  //       hasFeedback
+  //       label="Ngày bắt đầu"
+  //       // wrapperCol={{ span: 6 }}
+  //       name="StartDate"
+  //       rules={[
+  //         {
+  //           required: true,
+  //           message: "Ngày bắt đầu là trường bắt buộc.",
+  //         },
+  //       ]}
+  //     >
+  //       <DatePicker
+  //         style={{ width: "100%" }}
+  //         placeholder="Chọn ngày bắt đầu"
+  //         format={Config.DateFormat}
+  //         locale={locale}
+  //       />
+  //     </Form.Item>
+  //     <Form.Item hasFeedback label="Ngày kết thúc" name="EndDate">
+  //       <DatePicker
+  //         style={{ width: "100%" }}
+  //         placeholder="Chọn ngày kết thúc"
+  //         format={Config.DateFormat}
+  //         locale={locale}
+  //       />
+  //     </Form.Item>
+  //     <Form.Item
+  //       hasFeedback
+  //       label="Giờ vào"
+  //       // wrapperCol={{ span: 6 }}
+  //       name="StartTime"
+  //       rules={[
+  //         {
+  //           required: true,
+  //           message: "Giờ vào là trường bắt buộc.",
+  //         },
+  //       ]}
+  //     >
+  //       <TimePicker
+  //         minuteStep={15}
+  //         locale={locale}
+  //         style={{ width: "100%" }}
+  //         placeholder="Chọn giờ vào"
+  //         format={Config.NonSecondFormat}
+  //         onChange={(value) => setStartTime(value)}
+  //       />
+  //     </Form.Item>
+  //     <Form.Item
+  //       hasFeedback
+  //       label="Giờ ra"
+  //       name="FinishTime"
+  //       rules={[
+  //         {
+  //           required: true,
+  //           message: "Giờ ra là trường bắt buộc.",
+  //         },
+  //       ]}
+  //     >
+  //       <TimePicker
+  //         minuteStep={15}
+  //         style={{ width: "100%" }}
+  //         placeholder="Chọn giờ ra"
+  //         format={Config.NonSecondFormat}
+  //         locale={locale}
+  //         onChange={(value) => setFinishTime(value)}
+  //       />
+  //     </Form.Item>
+  //     <Form.Item label="Giờ nghỉ">
+  //       <Form.Item
+  //         hasFeedback
+  //         name="BreakAt"
+  //         style={{ display: "inline-block", width: "calc(50% - 12px)" }}
+  //       >
+  //         <TimePicker
+  //           minuteStep={15}
+  //           style={{ width: "100%" }}
+  //           placeholder="Chọn giờ nghỉ"
+  //           format={Config.NonSecondFormat}
+  //           locale={locale}
+  //           onChange={(value) => setStartBreakTime(value)}
+  //         />
+  //       </Form.Item>
+  //       <span
+  //         style={{
+  //           display: "inline-block",
+  //           width: "24px",
+  //           lineHeight: "32px",
+  //           textAlign: "center",
+  //         }}
+  //       >
+  //         -
+  //       </span>
+  //       <Form.Item
+  //         hasFeedback
+  //         name="BreakEnd"
+  //         style={{ display: "inline-block", width: "calc(50% - 12px)" }}
+  //       >
+  //         <TimePicker
+  //           minuteStep={15}
+  //           style={{ width: "100%" }}
+  //           placeholder="Chọn giờ kết thúc nghỉ"
+  //           format={Config.NonSecondFormat}
+  //           locale={locale}
+  //           onChange={(value) => setEndBreakTime(value)}
+  //         />
+  //       </Form.Item>
+  //     </Form.Item>
+  //     <Typography.Paragraph
+  //       style={{ background: "#fff1b8", padding: "4px 8px" }}
+  //     >
+  //       Tổng thời gian làm việc: {getAmountOfWorkingHours()}
+  //     </Typography.Paragraph>
+  //     <Form.Item>
+  //       <Space direction="horizontal" align="center">
+  //         <Button
+  //           type="primary"
+  //           htmlType="submit"
+  //           style={{ width: "100%" }}
+  //           size="middle"
+  //           loading={loading}
+  //         >
+  //           Lưu
+  //         </Button>
+  //         <Button size="middle" onClick={handleCancel}>
+  //           Quay lại
+  //         </Button>
+  //       </Space>
+  //     </Form.Item>
+  //   </Form>
+  // );
 };
 
-export { AddShift };
+export { EditShift };

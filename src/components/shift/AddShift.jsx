@@ -5,6 +5,7 @@ import {
   Form,
   Input,
   Modal,
+  Radio,
   Select,
   Space,
   TimePicker,
@@ -28,6 +29,8 @@ const AddShift = (props) => {
   const [endBreakTime, setEndBreakTime] = useState(null);
   const [loading, setLoading] = useState(false);
   const [shiftTypeList, setShiftTypeList] = useState([]);
+  const [totalWorkingTime, setTotalWorkingTime] = useState([0, 0]);
+
   const {
     token: { colorBgLayout },
   } = theme.useToken();
@@ -46,6 +49,21 @@ const AddShift = (props) => {
     }
     loadData();
   }, []);
+
+  useEffect(() => {
+    var minutes = 0;
+    if (startTime && finishTime) {
+      var time0 = dayjs(startTime, Config.TimeFormat);
+      var time1 = dayjs(finishTime, Config.TimeFormat);
+      minutes = time1.diff(time0, "minutes") + 1;
+      if (startBreakTime && endBreakTime) {
+        var time2 = dayjs(startBreakTime, Config.TimeFormat);
+        var time3 = dayjs(endBreakTime, Config.TimeFormat);
+        minutes = minutes - (time3.diff(time2, "minutes") + 1);
+      }
+    }
+    setTotalWorkingTime([(minutes - (minutes % 60)) / 60, minutes % 60]);
+  }, [startTime, startBreakTime, endBreakTime, finishTime]);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -111,21 +129,6 @@ const AddShift = (props) => {
       });
   };
 
-  const getAmountOfWorkingHours = () => {
-    var minutes = 0;
-    if (startTime && finishTime) {
-      var time0 = dayjs(startTime, Config.TimeFormat);
-      var time1 = dayjs(finishTime, Config.TimeFormat);
-      minutes = time1.diff(time0, "minutes") + 1;
-      if (startBreakTime && endBreakTime) {
-        var time2 = dayjs(startBreakTime, Config.TimeFormat);
-        var time3 = dayjs(endBreakTime, Config.TimeFormat);
-        minutes = minutes - (time3.diff(time2, "minutes") + 1);
-      }
-    }
-    return `${(minutes - (minutes % 60)) / 60} giờ ${minutes % 60} phút`;
-  };
-
   return (
     <Space>
       <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
@@ -174,7 +177,7 @@ const AddShift = (props) => {
               },
             ]}
           >
-            <Input placeholder="Nhập tên hoặc mô tả ca làm việc" />
+            <Input />
           </Form.Item>
           <Form.Item
             label="Loại ca làm việc"
@@ -186,8 +189,9 @@ const AddShift = (props) => {
               },
             ]}
           >
-            <Select
-              defaultActiveFirstOption={true}
+            <Radio.Group
+              optionType="button"
+              defaultValue={shiftTypeList[0].Id}
               options={shiftTypeList.map((shiftType) => ({
                 label: shiftType.Description,
                 value: shiftType.Id,
@@ -311,9 +315,13 @@ const AddShift = (props) => {
           <Typography.Paragraph
             style={{ background: "#fff1b8", padding: "4px 8px" }}
           >
-            Tổng thời gian làm việc: {getAmountOfWorkingHours()}
+            {"Tổng thời gian làm việc: " +
+              totalWorkingTime[0] +
+              " giờ " +
+              totalWorkingTime[1] +
+              " phút"}
           </Typography.Paragraph>
-          <Form.Item>
+          <div style={{ textAlign: "center" }}>
             <Space direction="horizontal" align="center">
               <Button
                 type="primary"
@@ -328,7 +336,7 @@ const AddShift = (props) => {
                 Quay lại
               </Button>
             </Space>
-          </Form.Item>
+          </div>
         </Form>
       </Modal>
     </Space>

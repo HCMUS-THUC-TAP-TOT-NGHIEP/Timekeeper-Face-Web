@@ -5,6 +5,7 @@ import {
   Form,
   Input,
   Modal,
+  Radio,
   Select,
   Space,
   TimePicker,
@@ -31,6 +32,7 @@ const EditShift = (props) => {
   const [finishTime, setFinishTime] = useState(shift.FinishTime);
   const [startBreakTime, setStartBreakTime] = useState(shift.BreakAt);
   const [endBreakTime, setEndBreakTime] = useState(shift.BreakEnd);
+  const [totalWorkingTime, setTotalWorkingTime] = useState([0, 0]);
 
   useEffect(() => {
     async function loadData() {
@@ -47,18 +49,7 @@ const EditShift = (props) => {
     loadData();
   }, []);
 
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    setEndBreakTime(null);
-    setFinishTime(null);
-    setStartBreakTime(null);
-    setEndBreakTime(null);
-  };
-
-  const getAmountOfWorkingHours = () => {
+  useEffect(() => {
     var minutes = 0;
     if (startTime && finishTime) {
       var time0 = dayjs(startTime, Config.TimeFormat);
@@ -70,7 +61,18 @@ const EditShift = (props) => {
         minutes = minutes - (time3.diff(time2, "minutes") + 1);
       }
     }
-    return `${(minutes - (minutes % 60)) / 60} giờ ${minutes % 60} phút`;
+    setTotalWorkingTime([(minutes - (minutes % 60)) / 60, minutes % 60]);
+  }, [startTime, startBreakTime, endBreakTime, finishTime, isModalOpen]);
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setEndBreakTime(null);
+    setFinishTime(null);
+    setStartBreakTime(null);
+    setEndBreakTime(null);
   };
 
   const onSubmit = (values) => {
@@ -83,6 +85,7 @@ const EditShift = (props) => {
     if (values.BreakEnd) {
       values.BreakEnd = dayjs(values.BreakEnd).format(Config.TimeFormat);
     }
+    values.Id = shift.Id;
     UpdateShift(values)
       .then((response) => {
         const { Status, Description, ResponseData } = response;
@@ -172,12 +175,12 @@ const EditShift = (props) => {
             rules={[
               {
                 required: true,
-                message: "Mô tả là trường bắt buộc.",
+                message: "Vui lòng nhập tên hoặc mô tả ca làm việc.",
               },
               {
                 validator: (_, value) => {
                   var exist = shiftList.find(
-                    (shift) => shift.Description == value
+                    (s) => s.Description == value && s.Id !== shift.Id
                   );
                   if (!exist) return Promise.resolve();
                   return Promise.reject(
@@ -187,7 +190,7 @@ const EditShift = (props) => {
               },
             ]}
           >
-            <Input placeholder="Nhập tên hoặc mô tả ca làm việc" />
+            <Input />
           </Form.Item>
           <Form.Item
             label="Loại ca làm việc"
@@ -198,9 +201,10 @@ const EditShift = (props) => {
                 message: "",
               },
             ]}
+            hasFeedback
           >
-            <Select
-              defaultActiveFirstOption={true}
+            <Radio.Group
+              optionType="button"
               options={shiftTypeList.map((shiftType) => ({
                 label: shiftType.Description,
                 value: shiftType.Id,
@@ -214,7 +218,6 @@ const EditShift = (props) => {
             Chi tiết
           </Typography.Title>
           <Form.Item
-            hasFeedback
             label="Ngày bắt đầu"
             // wrapperCol={{ span: 6 }}
             name="StartDate"
@@ -224,6 +227,7 @@ const EditShift = (props) => {
                 message: "Ngày bắt đầu là trường bắt buộc.",
               },
             ]}
+            hasFeedback
           >
             <DatePicker
               style={{ width: "100%" }}
@@ -241,7 +245,6 @@ const EditShift = (props) => {
             />
           </Form.Item>
           <Form.Item
-            hasFeedback
             label="Giờ vào"
             // wrapperCol={{ span: 6 }}
             name="StartTime"
@@ -251,6 +254,7 @@ const EditShift = (props) => {
                 message: "Giờ vào là trường bắt buộc.",
               },
             ]}
+            hasFeedback
           >
             <TimePicker
               minuteStep={15}
@@ -262,7 +266,6 @@ const EditShift = (props) => {
             />
           </Form.Item>
           <Form.Item
-            hasFeedback
             label="Giờ ra"
             name="FinishTime"
             rules={[
@@ -271,6 +274,7 @@ const EditShift = (props) => {
                 message: "Giờ ra là trường bắt buộc.",
               },
             ]}
+            hasFeedback
           >
             <TimePicker
               minuteStep={15}
@@ -283,9 +287,9 @@ const EditShift = (props) => {
           </Form.Item>
           <Form.Item label="Giờ nghỉ">
             <Form.Item
-              hasFeedback
               name="BreakAt"
               style={{ display: "inline-block", width: "calc(50% - 12px)" }}
+              hasFeedback
             >
               <TimePicker
                 minuteStep={15}
@@ -307,9 +311,9 @@ const EditShift = (props) => {
               -
             </span>
             <Form.Item
-              hasFeedback
               name="BreakEnd"
               style={{ display: "inline-block", width: "calc(50% - 12px)" }}
+              hasFeedback
             >
               <TimePicker
                 minuteStep={15}
@@ -324,9 +328,13 @@ const EditShift = (props) => {
           <Typography.Paragraph
             style={{ background: "#fff1b8", padding: "4px 8px" }}
           >
-            Tổng thời gian làm việc: {getAmountOfWorkingHours()}
+            {"Tổng thời gian làm việc: " +
+              totalWorkingTime[0] +
+              " giờ " +
+              totalWorkingTime[1] +
+              " phút"}
           </Typography.Paragraph>
-          <Form.Item>
+          <div style={{ textAlign: "center" }}>
             <Space direction="horizontal" align="center">
               <Button
                 type="primary"
@@ -335,13 +343,13 @@ const EditShift = (props) => {
                 size="middle"
                 loading={loading}
               >
-                Lưu
+                Lưu thay đổi
               </Button>
               <Button size="middle" onClick={handleCancel}>
                 Quay lại
               </Button>
             </Space>
-          </Form.Item>
+          </div>
         </Form>
       </Modal>
     </Space>

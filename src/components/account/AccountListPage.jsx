@@ -17,7 +17,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { Link } from "react-router-dom";
 import Config from "../../constant";
-import { compareDatetime, compareString } from "../../utils";
+import { compareDatetime, compareString } from "../../utils/Comparation";
 import { AddAccount } from "./AddAccount";
 import { DeleteAccount } from "./DeleteAccount";
 import { EditAccount } from "./EditAccount";

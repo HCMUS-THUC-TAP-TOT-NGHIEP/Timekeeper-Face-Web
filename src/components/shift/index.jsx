@@ -19,6 +19,7 @@ import {
   Table,
   TimePicker,
   Tooltip,
+  Typography,
   notification,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
@@ -28,9 +29,10 @@ import React, { useEffect, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { Link } from "react-router-dom";
 import Config from "../../constant";
-import { compareDatetime, compareString } from "../../utils";
+import { compareDatetime, compareString } from "../../utils/Comparation";
 import { AddShift } from "./AddShift";
 import { DeleteShift, GetShiftList, UpdateShift } from "./api";
+import { EditShift } from "./EditShift";
 
 const ShiftList = function (props) {
   const [loading, setLoading] = useState(true);
@@ -51,9 +53,6 @@ const ShiftList = function (props) {
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          for (var i = 0; i < ResponseData.length; i++) {
-            ResponseData[i].key = i;
-          }
           setCurrentShiftList(ResponseData);
           return;
         }
@@ -220,62 +219,46 @@ const ShiftList = function (props) {
           }}
           style={{ borderColor: "black" }}
           dataSource={currentShiftList}
-          //columns={columns}
+          rowKey="Id"
         >
-          {/* <Column
-            title="Mã"
-            dataIndex="Id"
-            key="Id"
-            sorter={(a, b) => a.Id - b.Id}
-            fixed="left"
-            width={50}
-            {...getColumnSearchProps("Id")}
-          /> */}
           <Column
             title="Mô tả"
             dataIndex="Description"
             key="Description"
             sorter={(a, b) => compareString(a, b, "Description")}
-            width={50}
             {...getColumnSearchProps("Description")}
+            width={200}
           />
           <Column
             title="Ngày bắt đầu"
             dataIndex="StartDate"
             key="StartDate"
-            render={
-              (_, { StartDate }) => (
-                <p>dayjs(StartDate).format(Config.DateFormat)</p>
-              )
-              //   {
-              //   if (record.StartDate) {
-              //     return dayjs(record.StartDate).format(Config.DateFormat);
-              //   }
-              //   return <p></p>;
-              // }
-            }
-            width={50}
             {...getColumnSearchProps("StartDate")}
+            render={(_, { StartDate }) => {
+              var content = "";
+              if (StartDate) {
+                content += dayjs(StartDate).format(Config.DateFormat);
+              }
+              return <Typography.Text>{content}</Typography.Text>;
+            }}
+            sorter={(a, b) => compareDatetime(a, b, "StartDate")}
+            width={150}
           />
           <Column
             title="Ngày kết thúc"
             dataIndex="EndDate"
             key="EndDate"
-            render={
-              (_, { EndDate }) => (
-                <Space>{dayjs(EndDate).format(Config.DateFormat)}</Space>
-              )
-              //   {
-              //   if (record.StartDate) {
-              //     return dayjs(record.StartDate).format(Config.DateFormat);
-              //   }
-              //   return <p></p>;
-              // }
-            }
-            width={50}
             {...getColumnSearchProps("StartDate")}
+            render={(_, { EndDate }) => {
+              var content = "";
+              if (EndDate) {
+                content += dayjs(EndDate).format(Config.DateFormat);
+              }
+              return <Typography.Text>{content}</Typography.Text>;
+            }}
+            sorter={(a, b) => compareDatetime(a, b, "EndDate")}
+            width={150}
           />
-
           <Column
             title="Giờ vào"
             dataIndex="StartTime"
@@ -294,51 +277,39 @@ const ShiftList = function (props) {
               }
               return <p></p>;
             }}
-            width={50}
             sorter={(a, b) => compareDatetime(a, b, "StartTime")}
             {...getColumnSearchProps("StartTime")}
+            width={100}
           />
           <Column
             title="Giờ ra"
             dataIndex="FinishTime"
             key="FinishTime"
-            render={(_, { FinishTime }) => {
-              if (FinishTime) {
-                return FinishTime;
-              }
-              return "";
-            }}
-            width={50}
             sorter={(a, b) => compareDatetime(a, b, "FinishTime")}
             {...getColumnSearchProps("FinishTime")}
+            width={100}
           />
           <Column
             title="Giờ nghỉ"
-            dataIndex="BreakAt"
-            key="BreakAt"
-            render={(_, { BreakAt }) => {
-              if (BreakAt) {
-                return BreakAt;
+            dataIndex="Break"
+            key="Break"
+            render={(_, shift) => {
+              var content = "";
+              if (shift.BreakAt) {
+                content += dayjs(shift.BreakAt, Config.TimeFormat).format(
+                  Config.NonSecondFormat
+                );
               }
-              return "";
-            }}
-            width={50}
-            sorter={(a, b) => compareDatetime(a, b, "BreakAt")}
-            {...getColumnSearchProps("BreakAt")}
-          />
-          <Column
-            title="Kết thúc nghỉ"
-            dataIndex="BreakEnd"
-            key="BreakEnd"
-            render={(_, { BreakEnd }) => {
-              if (BreakEnd) {
-                return BreakEnd;
+              if (shift.BreakEnd) {
+                content +=
+                  " - " +
+                  dayjs(shift.BreakEnd, Config.TimeFormat).format(
+                    Config.NonSecondFormat
+                  );
               }
-              return "";
+              return <Typography.Text>{content}</Typography.Text>;
             }}
-            width={50}
-            sorter={(a, b) => compareDatetime(a, b, "BreakEnd")}
-            {...getColumnSearchProps("BreakEnd")}
+            width={200}
           />
           <Column
             title="Số giờ làm"
@@ -362,22 +333,22 @@ const ShiftList = function (props) {
                 minutes % 60
               } phút`;
             }}
-            width={80}
+            width={200}
           />
           <Column
             title=""
             dataIndex="actions"
             key="actions"
-            render={(_, shift) => (
+            render={(_, record) => (
               <ActionMenu
-                shift={shift}
+                shift={record}
                 setShiftList={setCurrentShiftList}
                 shiftList={currentShiftList}
                 updateOneShift={updateOneShift}
                 deleteOneShift={deleteOneShift}
               />
             )}
-            width={100}
+            width={200}
           />
         </Table>
       </Content>
@@ -563,9 +534,9 @@ const ShiftList = function (props) {
 // };
 
 function ActionMenu(props) {
-  const [form] = Form.useForm();
   const { shift, setShiftList, shiftList, updateOneShift } = props;
   const [notify, contextHolder] = notification.useNotification();
+  // const [form] = Form.useForm();
 
   const deleteShift = () => {
     DeleteShift({ IdList: [shift.Id] })
@@ -602,33 +573,33 @@ function ActionMenu(props) {
         }
       });
   };
-  const showEditForm = () => {
-    Modal.confirm({
-      title: "Chỉnh sửa ca làm việc",
-      icon: <EditTwoTone />,
-      closeIcon: <CloseOutlined />,
-      content: (
-        <EditShiftFrom
-          form={form}
-          content={shift}
-          listState={[updateOneShift, shiftList]}
-        />
-      ),
-      cancelText: "Hủy",
-      okText: "Cập nhật",
-      onOk() {
-        form.submit();
-        setTimeout(() => {}, 10000);
-      },
-      closable: true,
-      width: 600,
-    });
-  };
+  // const showEditForm = () => {
+  //   Modal.confirm({
+  //     title: "Chỉnh sửa ca làm việc",
+  //     icon: <EditTwoTone />,
+  //     closeIcon: <CloseOutlined />,
+  //     content: (
+  //       <EditShiftForm
+  //         form={form}
+  //         content={shift}
+  //         listState={[updateOneShift, shiftList]}
+  //       />
+  //     ),
+  //     cancelText: "Hủy",
+  //     okText: "Cập nhật",
+  //     onOk() {
+  //       form.submit();
+  //       setTimeout(() => {}, 10000);
+  //     },
+  //     closable: true,
+  //     width: 600,
+  //   });
+  // };
 
   return (
     <Space align="center" size="middle" wrap>
       {contextHolder}
-      <Space
+      {/* <Space
         size="middle"
         onClick={showEditForm}
         style={{ padding: 4, margin: 1, cursor: "pointer" }}
@@ -636,7 +607,13 @@ function ActionMenu(props) {
         <Tooltip title="Chỉnh sửa">
           <Button type="text" shape="circle" icon={<EditTwoTone />} />
         </Tooltip>
-      </Space>
+      </Space> */}
+      <EditShift
+        notify={notify}
+        updateOneShift={updateOneShift}
+        shiftList={shiftList}
+        shift={shift}
+      />
       <Popconfirm
         title={`Xóa ca làm việc ID ${shift.Id}`}
         description={`Bạn có chắc muốn xóa ID ${shift.Id} - ${shift.Description}?`}
@@ -655,7 +632,7 @@ function ActionMenu(props) {
   );
 }
 
-const EditShiftFrom = (props) => {
+const EditShiftForm = (props) => {
   const form = props.form;
   const shift = props.content;
   const [updateOneShift, shiftList] = props.listState;

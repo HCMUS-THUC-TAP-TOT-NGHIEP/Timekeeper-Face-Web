@@ -670,6 +670,7 @@ const EditShiftAssignmentPage = (props) => {
                 name="Id"
                 initialValue={assignment.Id}
                 required
+                hidden
               >
                 <Input readOnly placeholder="Nhập tiêu đề" />
               </Form.Item>

@@ -8,6 +8,7 @@ import {
   Row,
   Space,
   Table,
+  Typography,
   notification,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
@@ -15,7 +16,7 @@ import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
 import React, { useEffect, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
 import { AddAccount } from "./AddAccount";
@@ -191,18 +192,23 @@ export const AccountListPage = (props) => {
     setAccountList(updatedList);
   };
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
       {contextHolder}
-      <Row wrap={false}>
+      <Row wrap={false} gutter={[16, 16]} align="middle">
         <Col flex="none">
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Link to="/manage/account">Quản lý người dùng</Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Link to="">Danh sách người dùng</Link>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Space direction="vertical">
+            <Typography.Title level={2} style={{ marginTop: 0 }}>
+              Danh sách người dùng
+            </Typography.Title>
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                <Link to="">Dashboard</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <NavLink to="/manage/account">Quản lý người dùng</NavLink>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
           <AddAccount insertFE={insertAccount} />

@@ -1,25 +1,24 @@
 import {
   CloseOutlined,
-  DeleteFilled,
-  EditFilled,
+  DeleteOutlined,
   EditTwoTone,
-  InfoCircleTwoTone,
-  MoreOutlined,
+  InfoCircleTwoTone
 } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
   Col,
-  Dropdown,
   Form,
   Input,
   Modal,
-  notification,
   Popconfirm,
   Row,
   Select,
   Space,
   Table,
+  Tooltip,
+  Typography,
+  notification,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -32,12 +31,12 @@ import {
 } from "./api";
 
 const DepartmentList = (props) => {
+  const { notify } = props;
   const [loading, setLoading] = useState(true);
   const [currentDepartmentList, setCurrentDepartmentList] = useState([]);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [form] = Form.useForm();
-  const [notify, contextHolder] = notification.useNotification();
   useEffect(() => {
     document.title = "Danh sách phòng ban";
   }, []);
@@ -149,28 +148,34 @@ const DepartmentList = (props) => {
           updateOneDepartment={updateOneDepartment}
         />
       ),
-      width: 50,
+      width: 100,
       fixed: "right",
     },
   ];
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
-      {contextHolder}
-      <Row wrap={false}>
+      <Row wrap={false} align="middle" gutter={[16, 16]}>
         <Col flex="none">
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Link to="/department/all">Phòng ban</Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Link to="">Tất cả</Link>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Space direction="vertical">
+            <Typography.Title level={2} style={{ marginTop: 0 }}>
+              Danh sách phòng ban
+            </Typography.Title>
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                <Link to="">Dashboard</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <Link to="/department/all">Phòng ban</Link>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <Button type="primary" onClick={showCreateForm}>
-            Thêm phòng ban mới
-          </Button>
+          <Space wrap>
+            <Button type="primary" onClick={showCreateForm}>
+              Thêm phòng ban mới
+            </Button>
+          </Space>
         </Col>
       </Row>
       <Table
@@ -253,48 +258,32 @@ function ActionMenu(props) {
     });
   };
 
-  const items = [
-    {
-      label: (
-        <Space onClick={showEditForm}>
-          <EditFilled />
-          Chỉnh sửa
-        </Space>
-      ),
-      key: "0",
-    },
-    {
-      label: (
-        <Popconfirm
-          title={`Xóa phòng ban ID ${department.Id}`}
-          description={`Bạn có chắc muốn xóa nhân viên ID ${department.Id} - ${department.Name}?`}
-          okText="Yes"
-          okType="danger"
-          cancelText="No"
-          placement="top"
-          onConfirm={deleteDepartment}
-        >
-          <Space>
-            <DeleteFilled key="1" />
-            Xóa
-          </Space>
-        </Popconfirm>
-      ),
-      key: "1",
-    },
-  ];
   return (
-    <>
-      <Dropdown
-        menu={{ items }}
-        trigger={["click"]}
-        placement="bottomRight"
-        arrow
-      >
-        <MoreOutlined />
-      </Dropdown>
+    <Space>
       {contextHolder}
-    </>
+      <Tooltip title="Chỉnh sửa">
+        <Button
+          onClick={showEditForm}
+          type="text"
+          shape="circle"
+          icon={<EditTwoTone />}
+        />
+      </Tooltip>
+      <Popconfirm
+        title={`Xóa phòng ban ID ${department.Id}`}
+        description={`Bạn có chắc muốn xóa nhân viên ID ${department.Id} - ${department.Name}?`}
+        okText="Yes"
+        okText="Chắc chắn"
+        cancelText="Hủy"
+        okType="danger"
+        placement="top"
+        onConfirm={deleteDepartment}
+      >
+        <Tooltip title="Xoá">
+          <Button icon={<DeleteOutlined />} type="text" shape="circle" danger />
+        </Tooltip>
+      </Popconfirm>
+    </Space>
   );
 }
 
@@ -628,3 +617,4 @@ const AddDepartmentFrom = function (props) {
 };
 
 export { DepartmentList };
+

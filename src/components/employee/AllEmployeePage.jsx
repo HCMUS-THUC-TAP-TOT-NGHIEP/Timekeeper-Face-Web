@@ -8,6 +8,7 @@ import {
   Space,
   Table,
   Tooltip,
+  Typography,
   notification,
 } from "antd";
 import dayjs from "dayjs";
@@ -202,16 +203,21 @@ export const AllEmployeesPage = (props) => {
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}
-      <Row wrap={false}>
+      <Row gutter={[16, 16]} wrap={false} align="middle">
         <Col flex="none">
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Link to="/employee/all">Nhân viên</Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Link to="/employee/all">Tất cả</Link>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Space direction="vertical">
+            <Typography.Title level={2} style={{ marginTop: 0 }}>
+              Danh sách nhân viên
+            </Typography.Title>
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                <Link to="/">Dashboard</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <Link to="/employee/all">Nhân viên</Link>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
           <Button type="primary" onClick={() => navigate("/employee/add")}>

@@ -8,7 +8,7 @@ import {
   ShiftAssignmentListPage,
   ShiftAssignmentPage,
   ShiftManagementIndex,
-} from "./components/attendance";
+} from "./components/shift";
 import { ChangePasswordPage } from "./components/authentication/ChangePassword";
 import {
   ForgotPasswordPage,
@@ -28,7 +28,7 @@ import MyFooter from "./components/layout/Footer";
 import MyHeader from "./components/layout/Header";
 import NoMatch from "./components/layout/NoMatch";
 import MySidebar from "./components/layout/Sidebar";
-import { ShiftList } from "./components/shift";
+import { ShiftList } from "./components/shift/ShiftList";
 import { Outlet, Route, Routes } from "react-router-dom";
 
 function App() {

@@ -40,7 +40,6 @@ export const GetAssignmentDetail = async (req) => {
       Authorization: "Bearer " + accessToken,
     },
   });
-  console.log(response.data);
   return response.data;
 };
 

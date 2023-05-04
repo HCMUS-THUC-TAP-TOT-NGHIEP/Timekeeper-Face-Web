@@ -1,4 +1,4 @@
-import { EditTwoTone, PlusOutlined } from "@ant-design/icons";
+import { EditTwoTone } from "@ant-design/icons";
 import {
   Button,
   Checkbox,
@@ -9,13 +9,12 @@ import {
   Modal,
   Radio,
   Row,
-  Select,
   Space,
   TimePicker,
   Tooltip,
   Typography,
   notification,
-  theme,
+  theme
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import dayjs from "dayjs";
@@ -408,3 +407,4 @@ const EditShift = (props) => {
   );
 };
 export { EditShift };
+

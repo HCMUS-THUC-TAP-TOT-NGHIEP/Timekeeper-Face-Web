@@ -13,8 +13,8 @@ import {
 import { Content } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { RegisterAccount } from "./api";
 import Config from "../../constant";
+import { RegisterAccount } from "./api";
 const { Title, Text } = Typography;
 
 const RegisterPage = (props) => {

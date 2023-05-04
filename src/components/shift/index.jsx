@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import {
-  ShiftAssignmentPage,
-  EditShiftAssignmentPage,
-} from "./ShiftAssignmentPage";
-import { ShiftAssignmentListPage } from "./ShiftAssignmentListPage";
 import { ShiftAssignmentDetail } from "./ShiftAssignmentDetail";
+import { ShiftAssignmentListPage } from "./ShiftAssignmentListPage";
+import {
+  EditShiftAssignmentPage,
+  ShiftAssignmentPage,
+} from "./ShiftAssignmentPage";
 
 const ShiftManagementIndex = (props) => {
   useEffect(() => {
@@ -21,3 +21,4 @@ export {
   ShiftAssignmentDetail,
   EditShiftAssignmentPage,
 };
+

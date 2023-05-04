@@ -1,11 +1,14 @@
 import { EditTwoTone, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
+  Checkbox,
+  Col,
   DatePicker,
   Form,
   Input,
   Modal,
   Radio,
+  Row,
   Select,
   Space,
   TimePicker,
@@ -86,14 +89,17 @@ const EditShift = (props) => {
       values.BreakEnd = dayjs(values.BreakEnd).format(Config.TimeFormat);
     }
     values.Id = shift.Id;
+    var shiftType = shiftTypeList.find((s) => s.Id == values.ShiftType);
+    values.ShiftTypeText = shiftType.Description;
+    var success = false;
     UpdateShift(values)
       .then((response) => {
-        const { Status, Description, ResponseData } = response;
+        const { Status, Description } = response;
         if (Status === 1) {
           notification.success({
             description: "Chỉnh sửa thành công",
           });
-          updateOneShift(values);
+          success = true;
           return;
         }
         notification.error({
@@ -121,6 +127,10 @@ const EditShift = (props) => {
       })
       .finally(() => {
         setLoading(false);
+        if (success) {
+          updateOneShift(values);
+          setIsModalOpen(false);
+        }
       });
   };
   return (
@@ -150,7 +160,7 @@ const EditShift = (props) => {
           labelCol={{ span: 6 }}
           wrapperCol={{ span: 18 }}
           labelWrap
-          labelAlign="right"
+          labelAlign="left"
           onFinish={onSubmit}
           initialValues={{
             Id: shift.Id,
@@ -166,8 +176,14 @@ const EditShift = (props) => {
               ? dayjs(shift.BreakEnd, Config.NonSecondFormat)
               : undefined,
             ShiftType: shift.ShiftType,
+            DayIndexList: shift.DayIndexList,
+            Note: shift.Note,
+            Status: shift.Status,
           }}
         >
+          <Form.Item name="Status" hidden>
+            <Input readOnly />
+          </Form.Item>
           <Form.Item
             hasFeedback
             label="Ca làm việc"
@@ -204,7 +220,6 @@ const EditShift = (props) => {
             hasFeedback
           >
             <Radio.Group
-              optionType="button"
               options={shiftTypeList.map((shiftType) => ({
                 label: shiftType.Description,
                 value: shiftType.Id,
@@ -334,6 +349,43 @@ const EditShift = (props) => {
               totalWorkingTime[1] +
               " phút"}
           </Typography.Paragraph>
+          <Form.Item label="Ngày trong tuần" name="DayIndexList" required>
+            <Checkbox.Group>
+              <Row>
+                <Col span={8}>
+                  <Checkbox value={1}>Thứ 2</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={2}>Thứ 3</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={3}>Thứ 4</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={4}>Thứ 5</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={5}>Thứ 6</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={6} checked>
+                    Thứ 7
+                  </Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={0}>Chủ nhật</Checkbox>
+                </Col>
+              </Row>
+            </Checkbox.Group>
+          </Form.Item>
+          <Form.Item label="Ghi chú" name="Note">
+            <Input.TextArea
+              // autoSize={{ minRows: 2 }}
+              maxLength={2000}
+              showCount
+              allowClear
+            ></Input.TextArea>
+          </Form.Item>
           <div style={{ textAlign: "center" }}>
             <Space direction="horizontal" align="center">
               <Button
@@ -354,200 +406,5 @@ const EditShift = (props) => {
       </Modal>
     </Space>
   );
-
-  // return (
-  //   <Form
-  //     style={{ width: "100%", maxWidth: "600px" }}
-  //     form={form}
-  //     name="basic"
-  //     labelCol={{
-  //       span: 8,
-  //     }}
-  //     onFinish={onSubmit}
-  //     autoComplete="off"
-  //     layout="vertical"
-  //     preserve={false}
-  //   >
-  //     <Form.Item
-  //       form={form}
-  //       hasFeedback
-  //       label="Ca làm việc"
-  //       name="Description"
-  //       rules={[
-  //         {
-  //           required: true,
-  //           message: "Mô tả là trường bắt buộc.",
-  //         },
-  //         {
-  //           validator: (_, value) => {
-  //             var exist = shiftList.find(
-  //               (shift) => shift.Description == value
-  //             );
-  //             if (!exist) return Promise.resolve();
-  //             return Promise.reject(
-  //               new Error(`${value} đã có trong danh mục ca làm việc.`)
-  //             );
-  //           },
-  //         },
-  //       ]}
-  //     >
-  //       <Input placeholder="Nhập tên hoặc mô tả ca làm việc" />
-  //     </Form.Item>
-  //     <Form.Item
-  //       label="Loại ca làm việc"
-  //       name="ShiftType"
-  //       rules={[
-  //         {
-  //           required: true,
-  //           message: "",
-  //         },
-  //       ]}
-  //     >
-  //       <Select
-  //         defaultActiveFirstOption={true}
-  //         options={shiftTypeList.map((shiftType) => ({
-  //           label: shiftType.Description,
-  //           value: shiftType.Id,
-  //         }))}
-  //       />
-  //     </Form.Item>
-  //     <Typography.Title
-  //       level={5}
-  //       style={{ background: colorBgLayout, padding: "4px 8px" }}
-  //     >
-  //       Chi tiết
-  //     </Typography.Title>
-  //     <Form.Item
-  //       hasFeedback
-  //       label="Ngày bắt đầu"
-  //       // wrapperCol={{ span: 6 }}
-  //       name="StartDate"
-  //       rules={[
-  //         {
-  //           required: true,
-  //           message: "Ngày bắt đầu là trường bắt buộc.",
-  //         },
-  //       ]}
-  //     >
-  //       <DatePicker
-  //         style={{ width: "100%" }}
-  //         placeholder="Chọn ngày bắt đầu"
-  //         format={Config.DateFormat}
-  //         locale={locale}
-  //       />
-  //     </Form.Item>
-  //     <Form.Item hasFeedback label="Ngày kết thúc" name="EndDate">
-  //       <DatePicker
-  //         style={{ width: "100%" }}
-  //         placeholder="Chọn ngày kết thúc"
-  //         format={Config.DateFormat}
-  //         locale={locale}
-  //       />
-  //     </Form.Item>
-  //     <Form.Item
-  //       hasFeedback
-  //       label="Giờ vào"
-  //       // wrapperCol={{ span: 6 }}
-  //       name="StartTime"
-  //       rules={[
-  //         {
-  //           required: true,
-  //           message: "Giờ vào là trường bắt buộc.",
-  //         },
-  //       ]}
-  //     >
-  //       <TimePicker
-  //         minuteStep={15}
-  //         locale={locale}
-  //         style={{ width: "100%" }}
-  //         placeholder="Chọn giờ vào"
-  //         format={Config.NonSecondFormat}
-  //         onChange={(value) => setStartTime(value)}
-  //       />
-  //     </Form.Item>
-  //     <Form.Item
-  //       hasFeedback
-  //       label="Giờ ra"
-  //       name="FinishTime"
-  //       rules={[
-  //         {
-  //           required: true,
-  //           message: "Giờ ra là trường bắt buộc.",
-  //         },
-  //       ]}
-  //     >
-  //       <TimePicker
-  //         minuteStep={15}
-  //         style={{ width: "100%" }}
-  //         placeholder="Chọn giờ ra"
-  //         format={Config.NonSecondFormat}
-  //         locale={locale}
-  //         onChange={(value) => setFinishTime(value)}
-  //       />
-  //     </Form.Item>
-  //     <Form.Item label="Giờ nghỉ">
-  //       <Form.Item
-  //         hasFeedback
-  //         name="BreakAt"
-  //         style={{ display: "inline-block", width: "calc(50% - 12px)" }}
-  //       >
-  //         <TimePicker
-  //           minuteStep={15}
-  //           style={{ width: "100%" }}
-  //           placeholder="Chọn giờ nghỉ"
-  //           format={Config.NonSecondFormat}
-  //           locale={locale}
-  //           onChange={(value) => setStartBreakTime(value)}
-  //         />
-  //       </Form.Item>
-  //       <span
-  //         style={{
-  //           display: "inline-block",
-  //           width: "24px",
-  //           lineHeight: "32px",
-  //           textAlign: "center",
-  //         }}
-  //       >
-  //         -
-  //       </span>
-  //       <Form.Item
-  //         hasFeedback
-  //         name="BreakEnd"
-  //         style={{ display: "inline-block", width: "calc(50% - 12px)" }}
-  //       >
-  //         <TimePicker
-  //           minuteStep={15}
-  //           style={{ width: "100%" }}
-  //           placeholder="Chọn giờ kết thúc nghỉ"
-  //           format={Config.NonSecondFormat}
-  //           locale={locale}
-  //           onChange={(value) => setEndBreakTime(value)}
-  //         />
-  //       </Form.Item>
-  //     </Form.Item>
-  //     <Typography.Paragraph
-  //       style={{ background: "#fff1b8", padding: "4px 8px" }}
-  //     >
-  //       Tổng thời gian làm việc: {getAmountOfWorkingHours()}
-  //     </Typography.Paragraph>
-  //     <Form.Item>
-  //       <Space direction="horizontal" align="center">
-  //         <Button
-  //           type="primary"
-  //           htmlType="submit"
-  //           style={{ width: "100%" }}
-  //           size="middle"
-  //           loading={loading}
-  //         >
-  //           Lưu
-  //         </Button>
-  //         <Button size="middle" onClick={handleCancel}>
-  //           Quay lại
-  //         </Button>
-  //       </Space>
-  //     </Form.Item>
-  //   </Form>
-  // );
 };
-
 export { EditShift };

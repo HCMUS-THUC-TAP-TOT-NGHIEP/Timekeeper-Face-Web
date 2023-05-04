@@ -1,16 +1,17 @@
 import { PlusOutlined } from "@ant-design/icons";
 import {
   Button,
+  Checkbox,
+  Col,
   DatePicker,
   Form,
   Input,
   Modal,
   Radio,
-  Select,
+  Row,
   Space,
   TimePicker,
   Typography,
-  notification,
   theme,
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
@@ -92,12 +93,14 @@ const AddShift = (props) => {
         if (Status === 1) {
           success = true;
           values.Id = ResponseData.Id;
-          notification.success({
+          var shiftType = shiftTypeList.find((s) => s.Id == values.ShiftType);
+          values.ShiftTypeText = shiftType.Description;
+          notify.success({
             description: "Ca làm việc mới đã được tạo",
           });
           return;
         }
-        notification.error({
+        notify.error({
           message: "Không thành công",
           description: Description,
         });
@@ -151,7 +154,7 @@ const AddShift = (props) => {
           labelCol={{ span: 6 }}
           wrapperCol={{ span: 18 }}
           labelWrap
-          labelAlign="right"
+          labelAlign="left"
           onFinish={onSubmit}
         >
           <Form.Item
@@ -185,13 +188,11 @@ const AddShift = (props) => {
             rules={[
               {
                 required: true,
-                message: "",
+                message: "Vui lòng chọn ca làm việc",
               },
             ]}
           >
             <Radio.Group
-              optionType="button"
-              defaultValue={shiftTypeList[0].Id}
               options={shiftTypeList.map((shiftType) => ({
                 label: shiftType.Description,
                 value: shiftType.Id,
@@ -234,7 +235,6 @@ const AddShift = (props) => {
           <Form.Item
             hasFeedback
             label="Giờ vào"
-            // wrapperCol={{ span: 6 }}
             name="StartTime"
             rules={[
               {
@@ -321,6 +321,48 @@ const AddShift = (props) => {
               totalWorkingTime[1] +
               " phút"}
           </Typography.Paragraph>
+          <Form.Item
+            label="Ngày trong tuần"
+            name="DayIndexList"
+            required
+            initialValue={[1, 2, 3, 4, 5]}
+          >
+            <Checkbox.Group>
+              <Row>
+                <Col span={8}>
+                  <Checkbox value={1}>Thứ 2</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={2}>Thứ 3</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={3}>Thứ 4</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={4}>Thứ 5</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={5}>Thứ 6</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={6} checked>
+                    Thứ 7
+                  </Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={0}>Chủ nhật</Checkbox>
+                </Col>
+              </Row>
+            </Checkbox.Group>
+          </Form.Item>
+          <Form.Item label="Ghi chú" name="Note">
+            <Input.TextArea
+              // autoSize={{ minRows: 2 }}
+              maxLength={2000}
+              showCount
+              allowClear
+            ></Input.TextArea>
+          </Form.Item>
           <div style={{ textAlign: "center" }}>
             <Space direction="horizontal" align="center">
               <Button
@@ -341,6 +383,16 @@ const AddShift = (props) => {
       </Modal>
     </Space>
   );
+};
+
+const DayIndexEnum = {
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thurs: 4,
+  Fri: 5,
+  Sat: 6,
+  Sun: 0,
 };
 
 export { AddShift };

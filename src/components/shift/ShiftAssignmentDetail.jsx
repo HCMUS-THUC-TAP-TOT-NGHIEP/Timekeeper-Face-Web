@@ -281,3 +281,4 @@ const ShiftAssignmentDetail = (props) => {
 };
 
 export { ShiftAssignmentDetail };
+

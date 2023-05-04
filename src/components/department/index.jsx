@@ -1,13 +1,16 @@
 import {
   CloseOutlined,
-  DeleteOutlined,
+  DeleteFilled,
+  EditFilled,
   EditTwoTone,
-  InfoCircleTwoTone
+  InfoCircleTwoTone,
+  MoreOutlined,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
   Col,
+  Dropdown,
   Form,
   Input,
   Modal,
@@ -16,7 +19,6 @@ import {
   Select,
   Space,
   Table,
-  Tooltip,
   Typography,
   notification,
 } from "antd";
@@ -148,7 +150,7 @@ const DepartmentList = (props) => {
           updateOneDepartment={updateOneDepartment}
         />
       ),
-      width: 100,
+      width: 50,
       fixed: "right",
     },
   ];
@@ -258,32 +260,48 @@ function ActionMenu(props) {
     });
   };
 
+  const items = [
+    {
+      label: (
+        <Space onClick={showEditForm}>
+          <EditFilled />
+          Chỉnh sửa
+        </Space>
+      ),
+      key: "0",
+    },
+    {
+      label: (
+        <Popconfirm
+          title={`Xóa phòng ban ID ${department.Id}`}
+          description={`Bạn có chắc muốn xóa nhân viên ID ${department.Id} - ${department.Name}?`}
+          okText="Yes"
+          okType="danger"
+          cancelText="No"
+          placement="top"
+          onConfirm={deleteDepartment}
+        >
+          <Space>
+            <DeleteFilled key="1" />
+            Xóa
+          </Space>
+        </Popconfirm>
+      ),
+      key: "1",
+    },
+  ];
   return (
-    <Space>
-      {contextHolder}
-      <Tooltip title="Chỉnh sửa">
-        <Button
-          onClick={showEditForm}
-          type="text"
-          shape="circle"
-          icon={<EditTwoTone />}
-        />
-      </Tooltip>
-      <Popconfirm
-        title={`Xóa phòng ban ID ${department.Id}`}
-        description={`Bạn có chắc muốn xóa nhân viên ID ${department.Id} - ${department.Name}?`}
-        okText="Yes"
-        okText="Chắc chắn"
-        cancelText="Hủy"
-        okType="danger"
-        placement="top"
-        onConfirm={deleteDepartment}
+    <>
+      <Dropdown
+        menu={{ items }}
+        trigger={["click"]}
+        placement="bottomRight"
+        arrow
       >
-        <Tooltip title="Xoá">
-          <Button icon={<DeleteOutlined />} type="text" shape="circle" danger />
-        </Tooltip>
-      </Popconfirm>
-    </Space>
+        <MoreOutlined />
+      </Dropdown>
+      {contextHolder}
+    </>
   );
 }
 
@@ -617,4 +635,3 @@ const AddDepartmentFrom = function (props) {
 };
 
 export { DepartmentList };
-

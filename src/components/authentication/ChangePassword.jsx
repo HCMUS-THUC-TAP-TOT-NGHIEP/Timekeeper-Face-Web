@@ -12,6 +12,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { changePasswordBE } from "./api";
+import { useAuthState } from "../../Contexts/AuthContext";
 
 // const ChangePasswordPage_ = ({ handleChange }) => {
 //   useEffect(() => {
@@ -248,11 +249,19 @@ import { changePasswordBE } from "./api";
 //   );
 // };
 
-const ChangePasswordPage = (props) => {
-  var [notify, contextHolder] = notification.useNotification();
+const ChangePasswordPage = ({ notify, loginRequired, ...rest }) => {
   const [loadingButton, setLoadingButton] = useState(false);
   const navigate = useNavigate();
+  const userDetails = useAuthState();
+
   useEffect(() => {
+    if (loginRequired && !userDetails.token) {
+      notify.warning({
+        message: "Yêu cầu đăng nhập để đổi mật khẩu.",
+      });
+      navigate("/login");
+      return;
+    }
     document.title = "Đổi mật khẩu";
   }, []);
   const changePassword = async (values) => {
@@ -289,13 +298,12 @@ const ChangePasswordPage = (props) => {
           description: error.message,
         });
       }
-  } finally {
+    } finally {
       setLoadingButton(false);
     }
   };
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
-      {contextHolder}
       <Row wrap={false}>
         <Col flex="none">
           <Breadcrumb>
@@ -420,4 +428,3 @@ const ChangePasswordPage = (props) => {
 };
 
 export { ChangePasswordPage };
-

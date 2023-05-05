@@ -7,25 +7,28 @@ import {
   Row,
   Space,
   Typography,
-  notification,
-  theme,
+  theme
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { RegisterAccount } from "./api";
 const { Title, Text } = Typography;
 
-const RegisterPage = (props) => {
+const RegisterPage = ({ notify, ...rest }) => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const [notify, contextHolder] = notification.useNotification();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const userDetails = useAuthState();
 
   useEffect(() => {
+    if (userDetails.token) {
+      navigate("/dashboard");
+    }
     document.title = "Đăng ký tài khoản";
   }, []);
   const onSubmit = (values) => {
@@ -66,7 +69,6 @@ const RegisterPage = (props) => {
   };
   return (
     <Layout style={{ height: "100vh" }}>
-      {contextHolder}
       <Row
         style={{
           height: "inherit",

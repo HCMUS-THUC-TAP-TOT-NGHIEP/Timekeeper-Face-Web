@@ -96,10 +96,14 @@ function MySidebar(props) {
             children: [
               {
                 key: "sub2-opt1",
-                label: <NavLink to="">Bảng chấm công</NavLink>,
+                label: <NavLink to="/attendance/statistic">Thống kê điểm danh</NavLink>,
               },
               {
                 key: "sub2-opt2",
+                label: <NavLink to="">Bảng chấm công</NavLink>,
+              },
+              {
+                key: "sub2-opt3",
                 label: <NavLink to="">Báo cáo đi muộn, về sớm</NavLink>,
               },
             ],

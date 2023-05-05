@@ -15,17 +15,18 @@ import { ErrorMessage, Field, Form, Formik } from "formik";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
-import { LoginAccount } from "./api";
+import { LoginAccount, LoginAccount2 } from "./api";
+import { useAuthDispatch, useAuthState } from "../../Contexts/AuthContext";
 
 const LoginPage = (props) => {
-  const handleChange = props.handleChange;
+  const { handleChange, notify } = props;
   const navigate = useNavigate();
-  const [notify, contextHolder] = notification.useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
+  const dispatch = useAuthDispatch();
+  const userDetails = useAuthState();
   useEffect(() => {
-    const access_token = localStorage.getItem("access_token");
-    if (access_token) {
+    if (userDetails.token) {
       navigate("/dashboard");
     }
     document.title = `Đăng nhập`;
@@ -59,6 +60,7 @@ const LoginPage = (props) => {
       email: values.email,
       password: values.password,
     };
+    /*
     LoginAccount(requestData)
       .then((response) => {
         const { Status, Description, ResponseData } = response;
@@ -95,50 +97,86 @@ const LoginPage = (props) => {
       .finally((done) => {
         setLoading(false);
       });
+    */
+    LoginAccount2(dispatch, values)
+      .then((response) => {
+        const { Status, Description, ResponseData } = response;
+        if (Status !== 1) {
+          notify.error({
+            message: "Đăng nhập thất bại",
+            description: Description,
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        localStorage.setItem("access_token", ResponseData.access_token);
+        navigate("/dashboard"); // redirect to home page
+      })
+      .catch((error) => {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      })
+      .finally((done) => {
+        setLoading(false);
+      });
   };
 
   return (
-    <div style={{ backgroundColor: "#EEEEEE" }}>
-      {contextHolder}
-      <Container maxWidth="sm">
-        <Grid
-          container
-          spacing={5}
-          direction="column"
-          justifyContent="center"
-          style={{ minHeight: "100vh" }}
-        >
-          <Paper elelvation={2} sx={{ padding: 5 }}>
-            <Grid container direction="column" spacing={1}>
-              <Grid align="center">
-                <h1>Đăng nhập</h1>
-              </Grid>
-              <Formik
-                initialValues={initialValues}
-                onSubmit={onSubmit}
-                validationSchema={validationSchema}
-              >
-                {(props) => (
-                  <Form>
-                    <div>
-                      <Grid item p={1}>
-                        <Field
-                          as={TextField}
-                          label="Username hoặc email"
-                          name="email"
-                          placeholder="Nhập username hoặc email"
-                          fullWidth
-                          helperText={
-                            <ErrorMessage
-                              name="email"
-                              render={(msg) => (
-                                <span style={{ color: "red" }}>{msg}</span>
-                              )}
-                            />
-                          }
-                        />
-                      </Grid>
-                    </div>
+    <>
+      <div style={{ backgroundColor: "#EEEEEE" }}>
+        <Container maxWidth="sm">
+          <Grid
+            container
+            spacing={5}
+            direction="column"
+            justifyContent="center"
+            style={{ minHeight: "100vh" }}
+          >
+            <Paper elelvation={2} sx={{ padding: 5 }}>
+              <Grid container direction="column" spacing={1}>
+                <Grid align="center">
+                  <h1>Log In</h1>
+                </Grid>
+                <Formik
+                  initialValues={initialValues}
+                  onSubmit={onSubmit}
+                  validationSchema={validationSchema}
+                >
+                  {(props) => (
+                    <Form>
+                      <div>
+                        <Grid item p={1}>
+                          <Field
+                            as={TextField}
+                            label="Username hoặc email"
+                            name="email"
+                            placeholder="Nhập username hoặc email"
+                            fullWidth
+                            helperText={
+                              <ErrorMessage
+                                name="email"
+                                render={(msg) => (
+                                  <span style={{ color: "red" }}>{msg}</span>
+                                )}
+                              />
+                            }
+                          />
+                        </Grid>
+                      </div>
 
                     <div>
                       <Grid item p={1}>

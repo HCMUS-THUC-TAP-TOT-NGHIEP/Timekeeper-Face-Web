@@ -10,12 +10,11 @@ import {
   Avatar,
   Col,
   Dropdown,
-  notification,
   Row,
-  Skeleton,
   Space,
-  theme,
   Typography,
+  notification,
+  theme
 } from "antd";
 import { Header } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";

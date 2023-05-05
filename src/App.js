@@ -1,14 +1,8 @@
 import { Layout, notification, theme } from "antd";
 import React, { useState } from "react";
-// import { Outlet, Route, Routes } from "react-router";
+import { Outlet, Route, Routes } from "react-router-dom";
+import { AuthProvider } from "./Contexts/AuthContext";
 import { AccountIndexPage, AccountListPage } from "./components/account";
-import {
-  EditShiftAssignmentPage,
-  ShiftAssignmentDetail,
-  ShiftAssignmentListPage,
-  ShiftAssignmentPage,
-  ShiftManagementIndex,
-} from "./components/shift";
 import { ChangePasswordPage } from "./components/authentication/ChangePassword";
 import {
   ForgotPasswordPage,
@@ -28,68 +22,74 @@ import MyFooter from "./components/layout/Footer";
 import MyHeader from "./components/layout/Header";
 import NoMatch from "./components/layout/NoMatch";
 import MySidebar from "./components/layout/Sidebar";
+import {
+  EditShiftAssignmentPage,
+  ShiftAssignmentDetail,
+  ShiftAssignmentListPage,
+  ShiftAssignmentPage,
+  ShiftManagementIndex,
+} from "./components/shift";
 import { ShiftList } from "./components/shift/ShiftList";
-import { Outlet, Route, Routes } from "react-router-dom";
 
 function App() {
   const [notify, contextHolder] = notification.useNotification();
   return (
-    <>
+    <AuthProvider>
       {contextHolder}
       <Routes>
         <Route path="/" element={<CustomLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/manage/account" element={<AccountIndexPage />}>
-            <Route path="" exact element={<AccountListPage />} />
+          <Route path="/" element={<Dashboard requiredLogin={true} />} />
+          <Route path="/dashboard" element={<Dashboard loginRequired={true}  />} />
+          <Route path="/manage/account" element={<AccountIndexPage loginRequired={true} />}>
+            <Route path="" exact element={<AccountListPage loginRequired={true}  />} />
           </Route>
-          <Route path="/employee" element={<AllEmployeesPage />} />
-          <Route path="/employee/all" element={<AllEmployeesPage />} />
-          <Route path="/employee/add" element={<NewEmployeePage />} />
+          <Route path="/employee" element={<AllEmployeesPage loginRequired={true}/>} />
+          <Route path="/employee/all" element={<AllEmployeesPage loginRequired={true}/>} />
+          <Route path="/employee/add" element={<NewEmployeePage loginRequired={true}/>} />
           <Route
             path="/employee/edit/:employeeId"
-            element={<EditEmployeePage />}
+            element={<EditEmployeePage loginRequired={true}/>}
           />
-          <Route path="/employee/:employeeId" element={<EmployeeProfile />} />
-          <Route path="/department" element={<DepartmentList />} />
-          <Route path="/department/all" element={<DepartmentList />} />
+          <Route path="/employee/:employeeId" element={<EmployeeProfile loginRequired={true}/>} />
+          <Route path="/department" element={<DepartmentList loginRequired={true}/>} />
+          <Route path="/department/all" element={<DepartmentList loginRequired={true}/>} />
 
-          <Route path="shift" element={<ShiftManagementIndex />}>
-            <Route path="" element={<ShiftList notify={notify} />} />
+          <Route path="shift" element={<ShiftManagementIndex loginRequired={true}/>}>
+            <Route path="" element={<ShiftList notify={notify} loginRequired={true}/>} />
             <Route
               path="assignment"
-              element={<ShiftAssignmentPage notify={notify} />}
+              element={<ShiftAssignmentPage notify={notify} loginRequired={true}/>}
             />
             <Route
               path="assignment/edit/:id"
-              element={<EditShiftAssignmentPage notify={notify} />}
+              element={<EditShiftAssignmentPage notify={notify} loginRequired={true}/>}
             />
             <Route
               path="assignment/list"
-              element={<ShiftAssignmentListPage notify={notify} />}
+              element={<ShiftAssignmentListPage notify={notify} loginRequired={true}/>}
             />
             <Route
               path="assignment/detail/:id"
-              element={<ShiftAssignmentDetail notify={notify} />}
+              element={<ShiftAssignmentDetail notify={notify} loginRequired={true}/>}
             />
           </Route>
           <Route
             path="/profile/changepwd"
             exact
-            element={<ChangePasswordPage />}
+            element={<ChangePasswordPage  notify={notify} loginRequired={true}/>}
           />
         </Route>
-        <Route path="/register" exact element={<RegisterPage />} />
-        <Route path="/login" exact element={<LoginPage />} />
-        <Route path="/forgotpwd" exact element={<ForgotPasswordPage />} />
+        <Route path="/register" exact element={<RegisterPage notify={notify} />} />
+        <Route path="/login" exact element={<LoginPage notify={notify} />} />
+        <Route path="/forgotpwd" exact element={<ForgotPasswordPage notify={notify} />} />
         <Route
           path="/reset-password/:access_token"
           exact
-          element={<ResetPasswordPage />}
+          element={<ResetPasswordPage notify={notify}/>}
         />
         <Route path="*" element={<NoMatch />} />
       </Routes>
-    </>
+    </AuthProvider>
   );
 }
 

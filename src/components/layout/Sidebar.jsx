@@ -100,11 +100,11 @@ function MySidebar(props) {
               },
               {
                 key: "sub2-opt2",
-                label: <NavLink to="">Bảng chấm công</NavLink>,
+                label: <NavLink to="/attendance/summary">Bảng chấm công</NavLink>,
               },
               {
                 key: "sub2-opt3",
-                label: <NavLink to="">Báo cáo đi muộn, về sớm</NavLink>,
+                label: <NavLink to="/attendance/report">Báo cáo đi muộn, về sớm</NavLink>,
               },
             ],
           },

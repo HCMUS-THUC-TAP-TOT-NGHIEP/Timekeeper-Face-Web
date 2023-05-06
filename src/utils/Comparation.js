@@ -19,7 +19,7 @@ function compareDatetime(a, b, field) {
     if (a[field] == b[field]) {
       return 0;
     }
-    if (a.CreatedAt < b.CreatedAt) {
+    if (a[field] == b[field]) {
       return 1;
     }
     return -1;

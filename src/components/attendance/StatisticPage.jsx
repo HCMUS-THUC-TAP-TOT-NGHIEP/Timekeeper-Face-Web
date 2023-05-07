@@ -17,14 +17,23 @@ import { Content } from "antd/es/layout/layout";
 import { SearchOutlined } from "@ant-design/icons";
 import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import Config from "../../constant";
 import { GetStatistic } from "./api";
+import ColumnGroup from "antd/es/table/ColumnGroup";
+import locale from "antd/es/date-picker/locale/vi_VN";
+import "dayjs/locale/vi";
+dayjs.extend(isSameOrBefore);
 
 const StatisticPage = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [currentData, setCurrentData] = useState([]);
+  const [dateRange, setDateRange] = useState([dayjs(), dayjs()]);
+  const [searchString, setSearchString] = useState("");
+  const [totalRecords, setTotalRecords] = useState(0);
+
   useEffect(() => {
     if (loginRequired && !userDetails.token) {
       notify.warning({
@@ -33,26 +42,94 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
       navigate("/login");
       return;
     }
-  }, []);
-  const loadStatistic = async (values) => {
-    console.log(values);
+    loadStatistic();
+  }, [loginRequired, userDetails]);
+
+  let loadStatistic = async (values) => {
     try {
-      if (values.DateFrom) {
-        values.DateFrom = values.DateFrom.format(Config.DateFormat);
+      var DateFromObject = dateRange[0],
+        DateToObject = dateRange[1],
+        Keyword = searchString;
+      setLoading(true);
+      if (DateFromObject) {
+        var dateFrom = DateFromObject.format("YYYY-MM-DD");
       }
-      if (values.DateTo) {
-        values.DateTo = values.DateTo.format(Config.DateFormat);
+      if (DateToObject) {
+        var dateTo = DateToObject.format("YYYY-MM-DD");
       }
-      var response = await GetStatistic(values);
+      var response = await GetStatistic({
+        DateFrom: dateFrom,
+        DateTo: dateTo,
+        Keyword,
+      });
       console.log(response);
-      if(response.Status === 1)
-      {
-        setCurrentData(response.Data.Stat);
+      const { Status, ResponseData } = response;
+      if (Status === 1) {
+        setCurrentData(ResponseData.Statistics);
+        setTotalRecords(ResponseData.Total);
       }
     } catch (err) {
     } finally {
+      setLoading(false);
     }
   };
+
+  let Columns = (DateFrom, DateTo) => {
+    // var DateFrom = dateRange[0],
+    //   DateTo = dateRange[1];
+    if (!DateFrom || !DateTo) {
+      return [];
+    }
+    var cols = [];
+    let date = DateFrom,
+      i = 0;
+    for (; !date.isAfter(DateTo, "day"); i++) {
+      cols.push(
+        <ColumnGroup
+          key={`${date.locale("vi").format(`dddd, ${Config.DateFormat}`)}`}
+          title={
+            <Typography.Text autoCapitalize="true">
+              {date.locale("vi").format(`dddd`)}
+              <br />
+              {date.locale("vi").format(Config.DateFormat)}
+            </Typography.Text>
+          }
+          width={200}
+        >
+          <Column
+            title="Check in"
+            dataIndex="FirstCheckin"
+            render={(_, { Date, FirstCheckin }) => {
+              console.log(
+                Date,
+                date.format(Config.DateFormat),
+                dayjs(Date).isSame(date, "date")
+              );
+              return FirstCheckin
+                ? dayjs(FirstCheckin).format(Config.NonSecondFormat)
+                : null;
+            }}
+            width={100}
+          />
+          <Column
+            title="Check out"
+            dataIndex="LastCheckin"
+            render={(_, { LastCheckin }) =>
+              LastCheckin
+                ? dayjs(LastCheckin).format(Config.NonSecondFormat)
+                : null
+            }
+            width={100}
+          />
+        </ColumnGroup>
+      );
+      date = date.add(1, "day");
+
+      console.log(date.isSameOrBefore(DateTo, "day"));
+    }
+    return cols;
+  };
+
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <Row wrap={false} align="middle">
@@ -76,26 +153,35 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
       <Row wrap>
         <Form layout="inline" onFinish={loadStatistic} size="large">
           <Form.Item name="Employee" wrapperCol={3}>
-            <Input placeholder="Tên nhân viên" />
+            <Input
+              placeholder="Tên nhân viên"
+              onChange={(event) => setSearchString(event.target.value)}
+            />
           </Form.Item>
-          <Form.Item name="DateFrom" wrapperCol={3} initialValue={dayjs()}>
+          <Form.Item
+            name="DateFrom"
+            wrapperCol={3}
+            initialValue={dayjs()}
+            dependencies={["DateTo"]}
+            rules={[
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  var dateTo = dayjs(getFieldValue("DateTo"));
+                  if (!dateTo.isBefore(dayjs(value))) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("Ngày từ không hợp lệ nằm sau ngày đến.")
+                  );
+                },
+              }),
+            ]}
+          >
             <DatePicker
+              locale={locale}
+              onChange={(value) => setDateRange([value, dateRange[1]])}
               placeholder="Từ ngày"
               format={Config.DateFormat}
-              dependencies={["DateTo", "DateFrom"]}
-              rules={[
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    var dateTo = dayjs(getFieldValue("DateTo"));
-                    if (!dateTo.isBefore(dayjs(value))) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(
-                      new Error("Ngày từ không hợp lệ nằm sau ngày đến.")
-                    );
-                  },
-                }),
-              ]}
             />
           </Form.Item>
           <Form.Item
@@ -117,8 +203,14 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
             ]}
             initialValue={dayjs()}
           >
-            <DatePicker placeholder="đến ngày" format={Config.DateFormat} />
+            <DatePicker
+              locale={locale}
+              placeholder="đến ngày"
+              format={Config.DateFormat}
+              onChange={(value) => setDateRange([dateRange[0], value])}
+            />
           </Form.Item>
+
           <Form.Item wrapperCol={3}>
             <Button
               htmlType="submit"
@@ -137,18 +229,47 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
           bordered
           scroll={{
             x: 900,
+            y: 1000,
           }}
           style={{ borderColor: "black" }}
           dataSource={currentData}
-          rowKey="Id"
+          rowKey="Date"
+          locale={locale}
+          pagination={{
+            pageSize: 15,
+            total: totalRecords,
+            showTotal: (total) => `Tổng ${total} mục`,
+          }}
         >
-          <Column title="Nhân viên" dataIndex="FirstName"></Column>
-          <Column title="Nhân viên" dataIndex="FirstCheckin"></Column>
-          <Column title="Nhân viên" dataIndex="LastCheckin"></Column>
-          {/* <Column></Column>
-          <Column></Column>
-          <Column></Column>
-          <Column></Column> */}
+          <Column title="Nhân viên" dataIndex="EmployeeName" width={200} />
+          {/* <ColumnGroup
+            title={`${dayjs()
+              .locale("vi")
+              .format(`dddd, ${Config.DateFormat}`)}`}
+          >
+            <Column
+              title="Check in"
+              dataIndex="FirstCheckin"
+              render={(_, { FirstCheckin }) =>
+                FirstCheckin
+                  ? dayjs(FirstCheckin).format(Config.NonSecondFormat)
+                  : null
+              }
+              width={100}
+            />
+            <Column
+              title="Check out"
+              dataIndex="LastCheckin"
+              render={(_, { LastCheckin }) =>
+                LastCheckin
+                  ? dayjs(LastCheckin).format(Config.NonSecondFormat)
+                  : null
+              }
+              width={100}
+            />
+          </ColumnGroup> */}
+
+          {Columns(dateRange[0], dateRange[1])}
         </Table>
       </Content>
     </Space>

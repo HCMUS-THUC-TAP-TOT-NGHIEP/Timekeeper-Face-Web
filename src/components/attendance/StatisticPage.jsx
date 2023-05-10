@@ -25,6 +25,12 @@ import locale from "antd/es/date-picker/locale/vi_VN";
 import "dayjs/locale/vi";
 dayjs.extend(isSameOrBefore);
 
+const col1 = {
+  title: "Nhân viên",
+  dataIndex: "EmployeeName",
+  width: 300,
+};
+
 const StatisticPage = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
@@ -33,6 +39,7 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
   const [dateRange, setDateRange] = useState([dayjs(), dayjs()]);
   const [searchString, setSearchString] = useState("");
   const [totalRecords, setTotalRecords] = useState(0);
+  const [columns, setColumns] = useState([col1]);
 
   useEffect(() => {
     if (loginRequired && !userDetails.token) {
@@ -44,6 +51,13 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
     }
     loadStatistic();
   }, [loginRequired, userDetails]);
+
+  useEffect(() => {
+    if (!dateRange[0] || !dateRange[1]) {
+      return;
+    }
+    addColumns(dateRange[0], dateRange[1]);
+  }, [dateRange]);
 
   let loadStatistic = async (values) => {
     try {
@@ -62,7 +76,6 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
         DateTo: dateTo,
         Keyword,
       });
-      console.log(response);
       const { Status, ResponseData } = response;
       if (Status === 1) {
         setCurrentData(ResponseData.Statistics);
@@ -74,59 +87,51 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
     }
   };
 
-  let Columns = (DateFrom, DateTo) => {
-    // var DateFrom = dateRange[0],
-    //   DateTo = dateRange[1];
+  let addColumns = (DateFrom, DateTo) => {
     if (!DateFrom || !DateTo) {
       return [];
     }
-    var cols = [];
-    let date = DateFrom,
-      i = 0;
-    for (; !date.isAfter(DateTo, "day"); i++) {
-      cols.push(
-        <ColumnGroup
-          key={`${date.locale("vi").format(`dddd, ${Config.DateFormat}`)}`}
-          title={
-            <Typography.Text autoCapitalize="true">
-              {date.locale("vi").format(`dddd`)}
-              <br />
-              {date.locale("vi").format(Config.DateFormat)}
-            </Typography.Text>
-          }
-          width={200}
-        >
-          <Column
-            title="Check in"
-            dataIndex="FirstCheckin"
-            render={(_, { Date, FirstCheckin }) => {
-              console.log(
-                Date,
-                date.format(Config.DateFormat),
-                dayjs(Date).isSame(date, "date")
-              );
-              return FirstCheckin
-                ? dayjs(FirstCheckin).format(Config.NonSecondFormat)
-                : null;
-            }}
-            width={100}
-          />
-          <Column
-            title="Check out"
-            dataIndex="LastCheckin"
-            render={(_, { LastCheckin }) =>
-              LastCheckin
-                ? dayjs(LastCheckin).format(Config.NonSecondFormat)
-                : null
-            }
-            width={100}
-          />
-        </ColumnGroup>
-      );
+    var cols = [col1];
+    var date = DateFrom;
+    for (; !date.isAfter(DateTo, "day"); ) {
+      var col = {
+        title: (
+          <Typography.Text
+            autoCapitalize="true"
+            style={{ textTransform: "capitalize" }}
+          >
+            {date.locale("vi").format(`dddd`)}
+            <br />
+            {date.locale("vi").format(Config.DateFormat)}
+          </Typography.Text>
+        ),
+        children: [
+          {
+            title: "Check in",
+            dataIndex: [
+              "CheckinList",
+              date.format("YYYY-MM-DD"),
+              "FirstCheckin",
+            ],
+            width: 120,
+            key: `CheckinAt${date.format("YYYY-MM-DD")}`,
+          },
+          {
+            title: "Check out",
+            key: `CheckoutAt${date.format("YYYY-MM-DD")}`,
+            dataIndex: [
+              "CheckinList",
+              date.format("YYYY-MM-DD"),
+              "LastCheckin",
+            ],
+            width: 120
+          },
+        ],
+      };
+      cols.push(col);
       date = date.add(1, "day");
-
-      console.log(date.isSameOrBefore(DateTo, "day"));
     }
+    setColumns(cols);
     return cols;
   };
 
@@ -228,20 +233,21 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
           loading={loading}
           bordered
           scroll={{
-            x: 900,
-            y: 1000,
+            x: "calc(700px + 50%)",
+            y: 240,
           }}
           style={{ borderColor: "black" }}
           dataSource={currentData}
-          rowKey="Date"
+          rowKey="Id"
           locale={locale}
           pagination={{
             pageSize: 15,
             total: totalRecords,
             showTotal: (total) => `Tổng ${total} mục`,
           }}
+          columns={columns}
         >
-          <Column title="Nhân viên" dataIndex="EmployeeName" width={200} />
+          {/* <Column title="Nhân viên" dataIndex="EmployeeName" width={200} /> */}
           {/* <ColumnGroup
             title={`${dayjs()
               .locale("vi")
@@ -269,7 +275,7 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
             />
           </ColumnGroup> */}
 
-          {Columns(dateRange[0], dateRange[1])}
+          {/* {createColumns(dateRange[0], dateRange[1])} */}
         </Table>
       </Content>
     </Space>

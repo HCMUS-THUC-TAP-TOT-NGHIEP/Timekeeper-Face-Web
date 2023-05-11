@@ -1,13 +1,25 @@
-import { BarsOutlined, ControlFilled } from "@ant-design/icons";
-import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import {
+  BarsOutlined,
+  BellFilled,
+  ControlFilled,
+  DashboardFilled,
+  FieldTimeOutlined,
+  UsergroupAddOutlined,
+} from "@ant-design/icons";
 import { Badge, Menu, Space } from "antd";
 import Sider from "antd/es/layout/Sider";
 import React from "react";
 import { NavLink } from "react-router-dom";
 import "./style.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faBell,
+  faClock,
+  faGauge,
+  faList,
+  faUniversalAccess,
+  faUsers,
+} from "@fortawesome/free-solid-svg-icons";
 
 function MySidebar(props) {
   // const [selectedKey, setSelectedKey] = useState("1");
@@ -28,12 +40,12 @@ function MySidebar(props) {
         items={[
           {
             key: "1",
-            icon: <DashboardIcon fontSize="large" />,
+            icon: <FontAwesomeIcon icon={faGauge} />,
             label: <NavLink to="/dashboard">Dashboard</NavLink>,
           },
           {
             key: "group1",
-            icon: <ControlFilled fontSize="large" />,
+            icon: <FontAwesomeIcon icon={faUniversalAccess} />,
             label: <div>Hệ thống</div>,
             children: [
               {
@@ -51,7 +63,7 @@ function MySidebar(props) {
 
           {
             key: "group2",
-            icon: <PeopleAltIcon fontSize="large" />,
+            icon: <FontAwesomeIcon icon={faUsers} />,
             label: <div>Nhân viên</div>,
             children: [
               {
@@ -66,7 +78,7 @@ function MySidebar(props) {
           },
           {
             key: "group3",
-            icon: <BarsOutlined fontSize="large" />,
+            icon: <FontAwesomeIcon icon={faList} />,
             label: <div>Ca làm việc</div>,
             children: [
               {
@@ -91,26 +103,36 @@ function MySidebar(props) {
           },
           {
             key: "sub2",
-            icon: <AccessTimeFilledIcon fontSize="large" />,
+            icon: <FontAwesomeIcon icon={faClock} />,
             label: <div>Chấm công</div>,
             children: [
               {
                 key: "sub2-opt1",
-                label: <NavLink to="/attendance/statistic">Thống kê điểm danh</NavLink>,
+                label: (
+                  <NavLink to="/attendance/statistic">
+                    Thống kê điểm danh
+                  </NavLink>
+                ),
               },
               {
                 key: "sub2-opt2",
-                label: <NavLink to="/attendance/summary">Bảng chấm công</NavLink>,
+                label: (
+                  <NavLink to="/attendance/summary">Bảng chấm công</NavLink>
+                ),
               },
               {
                 key: "sub2-opt3",
-                label: <NavLink to="/attendance/report">Báo cáo đi muộn, về sớm</NavLink>,
+                label: (
+                  <NavLink to="/attendance/report">
+                    Báo cáo đi muộn, về sớm
+                  </NavLink>
+                ),
               },
             ],
           },
           {
             key: "6",
-            icon: <NotificationsActiveIcon fontSize="large" />,
+            icon: <FontAwesomeIcon icon={faBell} />,
             label: (
               <NavLink to="/notification">
                 <Space>

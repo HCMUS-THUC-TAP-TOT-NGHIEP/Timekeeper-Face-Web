@@ -27,6 +27,7 @@ const col1 = {
   title: "Nhân viên",
   dataIndex: "EmployeeName",
   width: 300,
+  fixed: 'left'
 };
 
 const StatisticPage = ({ notify, loginRequired, ...rest }) => {
@@ -245,35 +246,6 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
           }}
           columns={columns}
         >
-          {/* <Column title="Nhân viên" dataIndex="EmployeeName" width={200} /> */}
-          {/* <ColumnGroup
-            title={`${dayjs()
-              .locale("vi")
-              .format(`dddd, ${Config.DateFormat}`)}`}
-          >
-            <Column
-              title="Check in"
-              dataIndex="FirstCheckin"
-              render={(_, { FirstCheckin }) =>
-                FirstCheckin
-                  ? dayjs(FirstCheckin).format(Config.NonSecondFormat)
-                  : null
-              }
-              width={100}
-            />
-            <Column
-              title="Check out"
-              dataIndex="LastCheckin"
-              render={(_, { LastCheckin }) =>
-                LastCheckin
-                  ? dayjs(LastCheckin).format(Config.NonSecondFormat)
-                  : null
-              }
-              width={100}
-            />
-          </ColumnGroup> */}
-
-          {/* {createColumns(dateRange[0], dateRange[1])} */}
         </Table>
       </Content>
     </Space>

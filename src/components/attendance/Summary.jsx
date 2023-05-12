@@ -29,7 +29,7 @@ const col1 = {
   width: 300,
 };
 
-const StatisticPage = ({ notify, loginRequired, ...rest }) => {
+const SummaryPage = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -280,5 +280,5 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
   );
 };
 
-export { StatisticPage };
+export { SummaryPage };
 

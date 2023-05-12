@@ -34,6 +34,7 @@ import {
   AttendanceManagementIndex,
   StatisticPage,
 } from "./components/attendance";
+import { SummaryPage } from "./components/attendance/Summary";
 
 function App() {
   const [notify, contextHolder] = notification.useNotification();
@@ -122,9 +123,11 @@ function App() {
           <Route path="attendance" element={<AttendanceManagementIndex />}>
             <Route
               path="statistic"
-              element={
-                <StatisticPage notify={notify} loginRequired={true} />
-              }
+              element={<StatisticPage notify={notify} loginRequired={true} />}
+            />
+            <Route
+              path="summary"
+              element={<SummaryPage notify={notify} loginRequired={true} />}
             />
           </Route>
           <Route
@@ -159,6 +162,7 @@ function App() {
 
 function CustomLayout(props) {
   const [collapsed, setCollapsed] = useState(false);
+  const [siderWidth, setSiderWidth] = useState(200);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -168,9 +172,23 @@ function CustomLayout(props) {
         minHeight: "100vh",
       }}
     >
-      <MySidebar collapsed={collapsed} />
-      <Layout className="site-layout">
-        <MyHeader collapsed={collapsed} setCollapsed={setCollapsed} />
+      <MySidebar
+        width={siderWidth}
+        setSiderWidth={setSiderWidth}
+        collapsed={collapsed}
+      />
+      <Layout
+        className="site-layout"
+        style={{
+          marginLeft: siderWidth,
+        }}
+      >
+        <MyHeader
+          siderWidth={siderWidth}
+          setSiderWidth={setSiderWidth}
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+        />
         <Layout.Content
           style={{
             margin: "24px 16px",

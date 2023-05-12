@@ -24,8 +24,9 @@ export const AllEmployeesPage = (props) => {
   const [perPage, setPerPage] = useState(10);
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
   const [notify, contextHolder] = notification.useNotification();
+  const [total, setTotal] = useState(40);
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "Tất cả nhân viên";
@@ -41,10 +42,9 @@ export const AllEmployeesPage = (props) => {
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          for (var ob of ResponseData) {
-            ob.key = ob.Id;
-          }
-          setCurrentEmployeeList(ResponseData);
+          const { EmployeeList, Total } = ResponseData;
+          setTotal(Total);
+          setCurrentEmployeeList(EmployeeList);
           return;
         }
         notify.error({
@@ -101,7 +101,7 @@ export const AllEmployeesPage = (props) => {
       title: "ID",
       dataIndex: "Id",
       key: "Id",
-      width: 40,
+      width: 60,
       fixed: "left",
       sorter: (a, b) => a.Id - b.Id,
     },
@@ -109,7 +109,7 @@ export const AllEmployeesPage = (props) => {
       title: "Họ tên",
       dataIndex: "FullName",
       key: "FullName",
-      width: 80,
+      width: 200,
       fixed: "left",
       render: (_, employee) => `${employee.LastName} ${employee.FirstName}`,
       sorter: (a, b) =>
@@ -122,20 +122,20 @@ export const AllEmployeesPage = (props) => {
       key: "DateOfBirth",
       render: (_, { DateOfBirth }) =>
         DateOfBirth ? dayjs(DateOfBirth).format(Config.DateFormat) : "",
-      width: 60,
+      width: 150,
     },
     {
       title: "Giới tính",
       dataIndex: "Gender",
       key: "Gender",
       render: (_, employee) => (employee.Gender ? "Nam" : "Nữ"),
-      width: 40,
+      width: 80,
     },
     {
       title: "Chức vụ",
       dataIndex: "Position",
       key: "Position",
-      width: 100,
+      width: 200,
       sorter: (a, b) => String(a.Position).localeCompare(String(b.Position)),
       filters: [],
       onFilter: (value, record) => record.address.startsWith(value),
@@ -143,10 +143,10 @@ export const AllEmployeesPage = (props) => {
     },
     {
       title: "Phòng ban",
-      dataIndex: "DepartmentId",
-      key: "DepartmentId",
+      dataIndex: "DepartmentName",
+      key: "DepartmentName",
       width: 100,
-      sorter: (a, b) => compareString(a.DepartmentId, b.DepartmentId),
+      sorter: (a, b) => compareString(a.DepartmentName, b.DepartmentName),
       // String(a.DepartmentId).localeCompare(String(b.DepartmentId)),
       filters: [
         {
@@ -171,7 +171,7 @@ export const AllEmployeesPage = (props) => {
       key: "JoinDate",
       render: (_, { JoinDate }) =>
         JoinDate ? dayjs(JoinDate).format(Config.DateFormat) : "",
-      width: 60,
+      width: 150,
       sorter: (a, b) => compareDatetime(a, b),
     },
     {
@@ -180,13 +180,13 @@ export const AllEmployeesPage = (props) => {
       key: "LeaveDate",
       render: (_, { LeaveDate }) =>
         LeaveDate ? dayjs(LeaveDate).format(Config.DateFormat) : "",
-      width: 60,
+      width: 150,
     },
     {
       title: "Địa chỉ",
       dataIndex: "Address",
       key: "Address",
-      width: 120,
+      width: 200,
     },
     {
       title: "",
@@ -195,7 +195,7 @@ export const AllEmployeesPage = (props) => {
       render: (_, employee) => (
         <ActionMenu Employee={employee} deleteOneEmployee={deleteOneEmployee} />
       ),
-      width: 78,
+      width: 150,
       // fixed: "right",
     },
   ];
@@ -237,6 +237,17 @@ export const AllEmployeesPage = (props) => {
         }}
         dataSource={currentEmployeeList}
         columns={columns}
+        rowKey="Id"
+        pagination={{
+          onChange: (page, pageSize) => {
+            setPage(page);
+            setPerPage(pageSize);
+          },
+          hideOnSinglePage: true,
+          total: total,
+          pageSizeOptions: [10, 15, 25, 50],
+          showSizeChanger: true,
+        }}
       />
     </Space>
   );

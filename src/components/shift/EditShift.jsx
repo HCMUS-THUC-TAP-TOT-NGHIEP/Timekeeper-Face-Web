@@ -18,6 +18,7 @@ import {
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import dayjs from "dayjs";
+import "dayjs/locale/vi";
 import { default as React, useEffect, useState } from "react";
 import Config from "../../constant";
 import { GetShiftTypeList, UpdateShift } from "./api";
@@ -79,6 +80,8 @@ const EditShift = (props) => {
 
   const onSubmit = (values) => {
     setLoading(true);
+    values.StartDate = dayjs(values.StartDate).format("YYYY-MM-DD")
+    values.FinishDate = dayjs(values.FinishDate).format("YYYY-MM-DD")
     values.StartTime = dayjs(values.StartTime).format(Config.TimeFormat);
     values.FinishTime = dayjs(values.FinishTime).format(Config.TimeFormat);
     if (values.BreakAt) {
@@ -164,10 +167,10 @@ const EditShift = (props) => {
           initialValues={{
             Id: shift.Id,
             Description: shift.Description,
-            StartDate: dayjs(shift.StartDate),
-            EndDate: dayjs(shift.EndDate),
-            StartTime: dayjs(shift.StartTime, Config.NonSecondFormat),
-            FinishTime: dayjs(shift.FinishTime, Config.NonSecondFormat),
+            StartDate: dayjs(shift.StartDate).locale('vi'),
+            EndDate: dayjs(shift.EndDate).locale('vi'),
+            StartTime: dayjs(shift.StartTime, Config.NonSecondFormat).locale('vi'),
+            FinishTime: dayjs(shift.FinishTime, Config.NonSecondFormat).locale('vi'),
             BreakAt: shift.BreakAt
               ? dayjs(shift.BreakAt, Config.NonSecondFormat)
               : undefined,

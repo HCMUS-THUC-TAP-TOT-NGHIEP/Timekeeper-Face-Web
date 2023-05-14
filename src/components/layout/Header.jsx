@@ -148,7 +148,7 @@ function MyHeader(props) {
                 margin: 0,
               }}
             >
-              Trang web quản lý
+              Chấm công
             </Typography.Title>
           </Space>
         </Col>

@@ -133,7 +133,7 @@ const ShiftAssignmentPage = (props) => {
         }
         setShiftList(response2.ResponseData);
         setAssignmentTypeList(response1.ResponseData);
-        setEmployeeList(response5.ResponseData);
+        setEmployeeList(response5.ResponseData.EmployeeList);
         setDepartmentList(response3.ResponseData);
         return;
       } catch (error) {
@@ -313,7 +313,7 @@ const ShiftAssignmentPage = (props) => {
                       .includes(input.toLowerCase());
                   }}
                   mode="multiple"
-                  options={employeeList.map((ob) => ({
+                  options={(employeeList || []).map((ob) => ({
                     value: ob.Id,
                     label: `${ob.Id} - ${ob.FirstName} ${ob.LastName}`,
                   }))}
@@ -592,7 +592,7 @@ const EditShiftAssignmentPage = (props) => {
         setAssignmentTypeList(response1.ResponseData);
         setShiftList(response2.ResponseData);
         setDepartmentList(response3.ResponseData);
-        setEmployeeList(response5.ResponseData);
+        setEmployeeList(response5.ResponseData.EmployeeList);
         const { Assignment, AssignmentDetail, ShiftDetail } =
           response.ResponseData;
         setAssignment(Assignment);
@@ -786,7 +786,7 @@ const EditShiftAssignmentPage = (props) => {
                         .includes(input.toLowerCase());
                     }}
                     mode="multiple"
-                    options={employeeList.map((ob) => ({
+                    options={(employeeList || []).map((ob) => ({
                       value: ob.Id,
                       label: `${ob.Id} - ${ob.FirstName} ${ob.LastName}`,
                     }))}

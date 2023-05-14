@@ -60,8 +60,8 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
 
   let loadStatistic = async (values) => {
     try {
-      var DateFromObject = dateRange[0],
-        DateToObject = dateRange[1],
+      var DateFromObject = values.DateFrom,
+        DateToObject = values.DateTo,
         Keyword = searchString;
       setLoading(true);
       if (DateFromObject) {
@@ -77,6 +77,7 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
       });
       const { Status, ResponseData } = response;
       if (Status === 1) {
+        setDateRange([DateFromObject, DateToObject]);
         setCurrentData(ResponseData.Statistics);
         setTotalRecords(ResponseData.Total);
       }
@@ -183,7 +184,7 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
           >
             <DatePicker
               locale={locale}
-              onChange={(value) => setDateRange([value, dateRange[1]])}
+              // onChange={(value) => setDateRange([value, dateRange[1]])}
               placeholder="Từ ngày"
               format={Config.DateFormat}
             />
@@ -211,7 +212,7 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
               locale={locale}
               placeholder="đến ngày"
               format={Config.DateFormat}
-              onChange={(value) => setDateRange([dateRange[0], value])}
+              // onChange={(value) => setDateRange([dateRange[0], value])}
             />
           </Form.Item>
 
@@ -233,14 +234,13 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
           bordered
           scroll={{
             x: "calc(700px + 50%)",
-            y: 240,
           }}
           style={{ borderColor: "black" }}
           dataSource={currentData}
           rowKey="Id"
           locale={locale}
           pagination={{
-            pageSize: 15,
+            pageSize: 10,
             total: totalRecords,
             showTotal: (total) => `Tổng ${total} mục`,
           }}

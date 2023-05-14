@@ -15,6 +15,7 @@ import { DepartmentList } from "./components/department";
 import {
   AllEmployeesPage,
   EditEmployeePage,
+  EmployeePageIndex,
   EmployeeProfile,
   NewEmployeePage,
 } from "./components/employee";
@@ -50,46 +51,49 @@ function App() {
           />
           <Route
             path="/manage/account"
-            element={<AccountIndexPage loginRequired={true} />}
+            element={<AccountIndexPage notify={notify} loginRequired={true} />}
           >
             <Route
               path=""
               exact
-              element={<AccountListPage loginRequired={true} />}
+              element={<AccountListPage notify={notify} loginRequired={true} />}
             />
           </Route>
           <Route
-            path="/employee"
-            element={<AllEmployeesPage loginRequired={true} />}
-          />
-          <Route
-            path="/employee/all"
-            element={<AllEmployeesPage loginRequired={true} />}
-          />
-          <Route
-            path="/employee/add"
-            element={<NewEmployeePage loginRequired={true} />}
-          />
-          <Route
-            path="/employee/edit/:employeeId"
-            element={<EditEmployeePage loginRequired={true} />}
-          />
-          <Route
-            path="/employee/:employeeId"
-            element={<EmployeeProfile loginRequired={true} />}
-          />
+            path="employee"
+            element={<EmployeePageIndex loginRequired={true} notify={notify} />}
+          >
+            <Route
+              path=""
+              element={<AllEmployeesPage notify={notify} loginRequired={true} />}
+            />
+            <Route
+              path="add"
+              element={<NewEmployeePage notify={notify} loginRequired={true} />}
+            />
+            <Route
+              exact
+              path="edit/:employeeId"
+              element={<EditEmployeePage notify={notify} loginRequired={true} />}
+            />
+            <Route
+              exact
+              path=":employeeId"
+              element={<EmployeeProfile notify={notify} loginRequired={true} />}
+            />
+          </Route>
           <Route
             path="/department"
-            element={<DepartmentList loginRequired={true} />}
+            element={<DepartmentList notify={notify} loginRequired={true} />}
           />
           <Route
             path="/department/all"
-            element={<DepartmentList loginRequired={true} />}
+            element={<DepartmentList notify={notify} loginRequired={true} />}
           />
 
           <Route
             path="shift"
-            element={<ShiftManagementIndex loginRequired={true} />}
+            element={<ShiftManagementIndex notify={notify} loginRequired={true} />}
           >
             <Route
               path=""
@@ -162,7 +166,6 @@ function App() {
 
 function CustomLayout(props) {
   const [collapsed, setCollapsed] = useState(false);
-  const [siderWidth, setSiderWidth] = useState(200);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -172,23 +175,9 @@ function CustomLayout(props) {
         minHeight: "100vh",
       }}
     >
-      <MySidebar
-        width={siderWidth}
-        setSiderWidth={setSiderWidth}
-        collapsed={collapsed}
-      />
-      <Layout
-        className="site-layout"
-        style={{
-          marginLeft: siderWidth,
-        }}
-      >
-        <MyHeader
-          siderWidth={siderWidth}
-          setSiderWidth={setSiderWidth}
-          collapsed={collapsed}
-          setCollapsed={setCollapsed}
-        />
+      <MySidebar collapsed={collapsed} />
+      <Layout className="site-layout" style={{}}>
+        <MyHeader collapsed={collapsed} setCollapsed={setCollapsed} />
         <Layout.Content
           style={{
             margin: "24px 16px",

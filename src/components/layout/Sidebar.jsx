@@ -41,26 +41,8 @@ function MySidebar(props) {
           {
             key: "1",
             icon: <FontAwesomeIcon icon={faGauge} />,
-            label: <NavLink to="/dashboard">Dashboard</NavLink>,
+            label: <NavLink to="/dashboard">Tổng quan</NavLink>,
           },
-          {
-            key: "group1",
-            icon: <FontAwesomeIcon icon={faUniversalAccess} />,
-            label: <div>Hệ thống</div>,
-            children: [
-              {
-                key: "group1-opt1",
-                label: <NavLink to="/manage/account">Tài khoản</NavLink>,
-              },
-              {
-                key: "group1-opt2",
-                label: (
-                  <NavLink to="/manage/account">Phân quyền sử dụng</NavLink>
-                ),
-              },
-            ],
-          },
-
           {
             key: "group2",
             icon: <FontAwesomeIcon icon={faUsers} />,
@@ -129,6 +111,11 @@ function MySidebar(props) {
                 ),
               },
             ],
+          },
+          {
+            key: "group1",
+            icon: <FontAwesomeIcon icon={faUniversalAccess} />,
+            label: <NavLink to="/manage/account">Người dùng</NavLink>,
           },
           {
             key: "6",

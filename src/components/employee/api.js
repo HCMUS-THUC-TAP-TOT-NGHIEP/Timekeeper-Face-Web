@@ -75,6 +75,7 @@ export const DeleteOneEmployee = async (requestData) => {
 
 export const ImportDataBE = async ({ fileList, ...rest }) => {
   var formData = new FormData();
+  console.log(fileList[0].arrayBuffer());
   formData.append("ImportData", fileList[0], fileList[0].name);
   formData.append("Type", fileList[0].type);
   formData.append("Target", "Employee");
@@ -85,6 +86,17 @@ export const ImportDataBE = async ({ fileList, ...rest }) => {
       Authorization: "Bearer " + localStorage.getItem("access_token"),
       "Content-Type": "multipart/form-data",
     },
+  });
+  return response.data;
+};
+
+export const GetTemplateFile = async (req) => {
+  var response = await AxiosInstance.get("employee/import/templates", {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+    responseType: "blob"
   });
   return response.data;
 };

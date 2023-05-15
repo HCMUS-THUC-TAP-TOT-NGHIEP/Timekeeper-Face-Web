@@ -89,9 +89,17 @@ function MySidebar(props) {
             label: <div>Chấm công</div>,
             children: [
               {
+                key: "sub2-timekeeper_v2",
+                label: (
+                  <NavLink to="/timesheet/timekeeper_v2">
+                    Dữ liệu chấm công
+                  </NavLink>
+                ),
+              },
+              {
                 key: "sub2-opt1",
                 label: (
-                  <NavLink to="/attendance/statistic">
+                  <NavLink to="/timesheet/timekeeper">
                     Thống kê điểm danh
                   </NavLink>
                 ),
@@ -99,13 +107,13 @@ function MySidebar(props) {
               {
                 key: "sub2-opt2",
                 label: (
-                  <NavLink to="/attendance/summary">Bảng chấm công</NavLink>
+                  <NavLink to="/timesheet/summary">Bảng chấm công tổng hợp</NavLink>
                 ),
               },
               {
                 key: "sub2-opt3",
                 label: (
-                  <NavLink to="/attendance/report">
+                  <NavLink to="/timesheet/late_early">
                     Báo cáo đi muộn, về sớm
                   </NavLink>
                 ),

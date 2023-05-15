@@ -20,3 +20,14 @@ export const GetStatistic = async (requestData) => {
     });
     return response.data;
 };
+
+export const GetStatisticV2 = async (requestData) => {
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.post("checkin/list/v2", requestData, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + access_token,
+    },
+  });
+  return response.data;
+};

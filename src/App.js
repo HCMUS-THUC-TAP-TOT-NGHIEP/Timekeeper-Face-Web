@@ -34,6 +34,7 @@ import { ShiftList } from "./components/shift/ShiftList";
 import {
   AttendanceManagementIndex,
   StatisticPage,
+  StatisticPageV2,
 } from "./components/attendance";
 import { SummaryPage } from "./components/attendance/Summary";
 
@@ -124,10 +125,14 @@ function App() {
               }
             />
           </Route>
-          <Route path="attendance" element={<AttendanceManagementIndex />}>
+          <Route path="timesheet" element={<AttendanceManagementIndex loginRequired={true} />}>
             <Route
-              path="statistic"
+              path="timekeeper"
               element={<StatisticPage notify={notify} loginRequired={true} />}
+            />
+            <Route
+              path="timekeeper_v2"
+              element={<StatisticPageV2 notify={notify} loginRequired={true} />}
             />
             <Route
               path="summary"

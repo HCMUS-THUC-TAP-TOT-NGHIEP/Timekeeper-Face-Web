@@ -77,21 +77,6 @@ export const AllEmployeesPage = (props) => {
     );
   };
 
-  const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
-    },
-    getCheckboxProps: (record) => ({
-      disabled: record.name === "Disabled User",
-      // Column configuration not to be checked
-      name: record.name,
-    }),
-  };
-
   const columns = [
     {
       title: "ID",
@@ -256,10 +241,7 @@ export const AllEmployeesPage = (props) => {
         loading={loading}
         scroll={{
           x: 1500,
-        }}
-        rowSelection={{
-          type: "checkbox",
-          ...rowSelection,
+          // y: 1200
         }}
         dataSource={currentEmployeeList}
         columns={columns}
@@ -272,7 +254,8 @@ export const AllEmployeesPage = (props) => {
           total: total,
           pageSizeOptions: [10, 15, 25, 50],
           showSizeChanger: true,
-          showTotal: (total, range) => `Tổng ${total} nhân viên`,
+          showTotal: (total, range) => `Tổng số bản ghi: ${total}`,
+          position: "",
         }}
       />
     </Space>

@@ -1,5 +1,9 @@
 import { SearchOutlined } from "@ant-design/icons";
 import {
+  faMagnifyingGlass
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
   Breadcrumb,
   Button,
   Col,
@@ -13,6 +17,7 @@ import {
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import { Content } from "antd/es/layout/layout";
+import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
@@ -20,14 +25,9 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
-import { GetStatistic, GetStatisticV2 } from "./api";
-import {
-  faArrowsRotate,
-  faMagnifyingGlass,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Column from "antd/es/table/Column";
-import { useForm } from "antd/es/form/Form";
+import { compareDatetime, compareString } from "../../utils/Comparation";
+import { ImportTimekeeperData } from "./ImportComponent";
+import { GetStatisticV2 } from "./api";
 dayjs.extend(isSameOrBefore);
 
 const col1 = {
@@ -42,9 +42,6 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [currentData, setCurrentData] = useState([]);
-  const [searchString, setSearchString] = useState("");
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [columns, setColumns] = useState([col1]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [total, setTotal] = useState(0);
@@ -59,7 +56,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
     }
     form.setFieldsValue({
       Keyword: "",
-      DateRange: [dayjs(), dayjs()],
+      DateRange: [dayjs().date(1), dayjs()],
     });
     form.submit();
   }, [loginRequired, userDetails]);
@@ -90,7 +87,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
       const { Status, ResponseData } = response;
       if (Status === 1) {
         setCurrentData(ResponseData.Statistics);
-        setTotalRecords(ResponseData.Total);
+        setTotal(ResponseData.Total);
       }
     } catch (err) {
     } finally {
@@ -116,7 +113,9 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
             </Breadcrumb>
           </Space>
         </Col>
-        <Col flex="auto" style={{ textAlign: "right" }}></Col>
+        <Col flex="auto" style={{ textAlign: "right" }}>
+          <ImportTimekeeperData notify={notify} />
+        </Col>
       </Row>
       <Row wrap>
         <Form layout="inline" onFinish={loadStatistic} form={form}>
@@ -150,7 +149,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           bordered
           scroll={{
             x: "calc(700px + 50%)",
-            y: "1000px"
+            y: "800px",
           }}
           style={{ borderColor: "black" }}
           dataSource={currentData}
@@ -158,19 +157,58 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           pagination={{
             total: total,
             showTotal: (total) => `Tổng ${total} bản ghi`,
+            defaultPageSize: 50,
             pageSizeOptions: [50, 100],
+            onChange: (page, pageSize) => {
+              setPageSize(pageSize);
+              setPage(page);
+            },
+            showSizeChanger: true,
           }}
-          rowKey={(record) => `${record.Id}_${record.Date}`}
+          rowKey={(record) => `${record.Id}${record.Time}`}
+          caption={<b>Chỉ lấy giờ chấm công vào sớm nhất và ra trễ nhất</b>}
         >
-          <Column title="Mã nhân viên" dataIndex="Id" width={100} />
-          <Column title="Họ và tên" dataIndex="EmployeeName" width={200} />
-          <Column title="Vị trí công việc" dataIndex="Position" width={100}/>
-          <Column title="Ngày chấm công" dataIndex="Date" width={100}/>
-          <Column title="Chấm công vào" dataIndex="FirstCheckin" width={100}/>
-          <Column title="Chấm công ra" dataIndex="LastCheckin" width={100}/>
-          <Column title="Chấm công ra" dataIndex="LastCheckin" width={100}/>
-          <Column title="Ảnh đính kèm" dataIndex="AttachedImage" />
-          <Column title="Phương thức chấm công" dataIndex="Method" width={100}/>
+          <Column
+            title="Mã nhân viên"
+            dataIndex="Id"
+            width={150}
+            sorter={(a, b) => a.Id > b.Id}
+          />
+          <Column
+            title="Họ và tên"
+            dataIndex="EmployeeName"
+            width={200}
+            sorter={(a, b) => compareString(a, b, "EmployeeName")}
+          />
+          <Column
+            title="Vị trí công việc"
+            dataIndex="Position"
+            width={200}
+            sorter={(a, b) => compareString(a, b, "EmployeeName")}
+          />
+          <Column
+            title="Ngày chấm công"
+            dataIndex="Date"
+            width={150}
+            sorter={(a, b) => compareDatetime(a, b, "Date")}
+            // defaultSortOrder={["descending"]}
+            // render={(record) => dayjs(record.Date).format(Config.DateFormat)}
+          />
+          <Column
+            title="Giờ công vào"
+            dataIndex="Time"
+            width={150}
+            render={(_, record) =>
+              dayjs(record.Time).format(Config.NonSecondFormat)
+            }
+            defaultSortOrder={["ascending"]}
+          />
+          <Column
+            title="Phương thức chấm công"
+            dataIndex="MethodText"
+            width={150}
+          />
+          <Column title="Ảnh đính kèm" dataIndex="AttachedImage" width={200} />
         </Table>
       </Content>
     </Space>
@@ -178,3 +216,4 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
 };
 
 export { StatisticPageV2 };
+

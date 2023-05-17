@@ -1,7 +1,5 @@
 import { SearchOutlined } from "@ant-design/icons";
-import {
-  faMagnifyingGlass
-} from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
@@ -88,8 +86,29 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
       if (Status === 1) {
         setCurrentData(ResponseData.Statistics);
         setTotal(ResponseData.Total);
+        return;
       }
-    } catch (err) {
+      notify.error({
+        message: "",
+        description: response.Description,
+      });
+    } catch (error) {
+      if (error.response) {
+        notify.error({
+          message: "Có lỗi ở response.",
+          description: `[${error.response.statusText}]`,
+        });
+      } else if (error.request) {
+        notify.error({
+          message: "Có lỗi ở request.",
+          description: error,
+        });
+      } else {
+        notify.error({
+          message: "Có lỗi ở máy khách",
+          description: error.message,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -216,4 +235,3 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
 };
 
 export { StatisticPageV2 };
-

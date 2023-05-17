@@ -1,18 +1,4 @@
 import {
-  BarsOutlined,
-  BellFilled,
-  ControlFilled,
-  DashboardFilled,
-  FieldTimeOutlined,
-  UsergroupAddOutlined,
-} from "@ant-design/icons";
-import { Badge, Menu, Space } from "antd";
-import Sider from "antd/es/layout/Sider";
-import React from "react";
-import { NavLink } from "react-router-dom";
-import "./style.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
   faBell,
   faClock,
   faGauge,
@@ -20,6 +6,12 @@ import {
   faUniversalAccess,
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Badge, Menu, Space } from "antd";
+import Sider from "antd/es/layout/Sider";
+import React from "react";
+import { NavLink } from "react-router-dom";
+import "./style.css";
 
 function MySidebar(props) {
   // const [selectedKey, setSelectedKey] = useState("1");
@@ -29,8 +21,16 @@ function MySidebar(props) {
       // trigger={null}
       collapsible
       collapsed={collapsed}
-      // breakpoint="lg"
-      // collapsedWidth="0"
+      breakpoint="lg"
+      collapsedWidth="0"
+      style={{
+        overflow: "auto",
+        height: "100vh",
+        position: "fixed",
+        left: 0,
+        top: 0,
+        bottom: 0,
+      }}
     >
       <div className="logo" />
 
@@ -97,24 +97,26 @@ function MySidebar(props) {
                 ),
               },
               {
-                key: "sub2-opt1",
+                key: "sub2-timesheet-detail",
                 label: (
-                  <NavLink to="/timesheet/timekeeper">
-                    Thống kê điểm danh
+                  <NavLink to="/timesheet/timekeeping/timesheet-detail">
+                    Bảng chấm công chi tiết
                   </NavLink>
                 ),
               },
               {
-                key: "sub2-opt2",
+                key: "sub2-summary",
                 label: (
-                  <NavLink to="/timesheet/summary">Bảng chấm công tổng hợp</NavLink>
+                  <NavLink to="/timesheet/timekeeping/timesheet-summary">
+                    Bảng chấm công tổng hợp
+                  </NavLink>
                 ),
               },
               {
-                key: "sub2-opt3",
+                key: "sub2-opt1",
                 label: (
-                  <NavLink to="/timesheet/late_early">
-                    Báo cáo đi muộn, về sớm
+                  <NavLink to="/timesheet/timekeeper">
+                    Thống kê điểm danh
                   </NavLink>
                 ),
               },
@@ -125,18 +127,18 @@ function MySidebar(props) {
             icon: <FontAwesomeIcon icon={faUniversalAccess} />,
             label: <NavLink to="/manage/account">Người dùng</NavLink>,
           },
-          {
-            key: "6",
-            icon: <FontAwesomeIcon icon={faBell} />,
-            label: (
-              <NavLink to="/notification">
-                <Space>
-                  Thông báo
-                  <Badge count={0} />
-                </Space>
-              </NavLink>
-            ),
-          },
+          // {
+          //   key: "6",
+          //   icon: <FontAwesomeIcon icon={faBell} />,
+          //   label: (
+          //     <NavLink to="/notification">
+          //       <Space>
+          //         Thông báo
+          //         <Badge count={0} />
+          //       </Space>
+          //     </NavLink>
+          //   ),
+          // },
         ]}
       />
     </Sider>

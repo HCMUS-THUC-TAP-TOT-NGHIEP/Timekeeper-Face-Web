@@ -126,9 +126,9 @@ function MyHeader(props) {
       style={{
         padding: 0,
         background: colorBgContainer,
-        position: "sticky",
-        zIndex: 999,
-        top: 0,
+        // position: "sticky",
+        // zIndex: 999,
+        // top: 0,
       }}
     >
       {contextHolder}

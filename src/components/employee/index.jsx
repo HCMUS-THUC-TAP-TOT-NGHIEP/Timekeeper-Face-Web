@@ -14,7 +14,7 @@ const EmployeePageIndex = ({ notify, loginRequired, ...rest }) => {
     document.title = "Nhân viên";
     if (loginRequired && !userDetails.token) {
       notify.warning({
-        message: "Yêu cầu đăng nhập để đổi mật khẩu.",
+        message: "Yêu cầu đăng nhập để tiếp tục.",
       });
       navigate("/login");
       return;

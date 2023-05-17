@@ -51,11 +51,31 @@ export const ImportDataBE = async ({ fileList, ...rest }) => {
   formData.append("Type", fileList[0].type);
   formData.append("Target", "TimekeeperData");
 
-  var response = await AxiosInstance.post("checkin/timekeeper/import", formData, {
+  var response = await AxiosInstance.post(
+    "checkin/timekeeper/import",
+    formData,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: "Bearer " + localStorage.getItem("access_token"),
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const GetTimesheetList = async (req) => {
+  const response = await AxiosInstance.get("checkin/timesheet", {
+    params: {
+      Page: req.Page,
+      PageSize: req.PageSize,
+      Keyword: req.Keyword,
+    },
     headers: {
       "Access-Control-Allow-Origin": "*",
       Authorization: "Bearer " + localStorage.getItem("access_token"),
-      "Content-Type": "multipart/form-data",
+      "Content-Type": "application/json",
     },
   });
   return response.data;

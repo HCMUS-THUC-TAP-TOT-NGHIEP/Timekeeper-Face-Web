@@ -84,13 +84,6 @@ export const EmployeeProfile = (props) => {
           >
             Cập nhật hồ sơ
           </Button>
-          <Button
-            style={{ margin: "5px 5px" }}
-            type="primary"
-            onClick={() => alert("Đăng ký thông tin nhận diện")}
-          >
-            Đăng ký thông tin nhận diện
-          </Button>
         </Col>
       </Row>
       <Card bordered={false}>

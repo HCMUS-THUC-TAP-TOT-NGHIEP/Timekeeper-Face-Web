@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { useAuthDispatch, useAuthState } from "../../Contexts/AuthContext";
+import { useAuthState } from "../../Contexts/AuthContext";
 const AttendanceManagementIndex = ({ loginRequired, notify, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
@@ -17,8 +17,9 @@ const AttendanceManagementIndex = ({ loginRequired, notify, ...rest }) => {
   return <Outlet />;
 };
 
-export { AttendanceManagementIndex };
 export * from "./StatisticPage";
 export * from "./StatisticPageV2";
-export * from "./DetailAttendanceCheckPage";
-export * from "./Summary";
+export * from "./TimesheetSummaryTablePage";
+export * from "./TimesheetDetailPage";
+export * from "./TimesheetTablePage";
+export { AttendanceManagementIndex };

@@ -3,6 +3,14 @@ import React, { useState } from "react";
 import { Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./Contexts/AuthContext";
 import { AccountIndexPage, AccountListPage } from "./components/account";
+import {
+  AttendanceManagementIndex,
+  StatisticPage,
+  StatisticPageV2,
+  TimesheetDetailPage,
+  TimesheetTablePage,
+  TimesheetSummaryTablePage
+} from "./components/attendance";
 import { ChangePasswordPage } from "./components/authentication/ChangePassword";
 import {
   ForgotPasswordPage,
@@ -31,12 +39,6 @@ import {
   ShiftManagementIndex,
 } from "./components/shift";
 import { ShiftList } from "./components/shift/ShiftList";
-import {
-  AttendanceManagementIndex,
-  StatisticPage,
-  StatisticPageV2,
-} from "./components/attendance";
-import { SummaryPage } from "./components/attendance/Summary";
 
 function App() {
   const [notify, contextHolder] = notification.useNotification();
@@ -66,7 +68,9 @@ function App() {
           >
             <Route
               path=""
-              element={<AllEmployeesPage notify={notify} loginRequired={true} />}
+              element={
+                <AllEmployeesPage notify={notify} loginRequired={true} />
+              }
             />
             <Route
               path="add"
@@ -75,7 +79,9 @@ function App() {
             <Route
               exact
               path="edit/:employeeId"
-              element={<EditEmployeePage notify={notify} loginRequired={true} />}
+              element={
+                <EditEmployeePage notify={notify} loginRequired={true} />
+              }
             />
             <Route
               exact
@@ -94,7 +100,9 @@ function App() {
 
           <Route
             path="shift"
-            element={<ShiftManagementIndex notify={notify} loginRequired={true} />}
+            element={
+              <ShiftManagementIndex notify={notify} loginRequired={true} />
+            }
           >
             <Route
               path=""
@@ -125,7 +133,10 @@ function App() {
               }
             />
           </Route>
-          <Route path="timesheet" element={<AttendanceManagementIndex loginRequired={true} />}>
+          <Route
+            path="timesheet"
+            element={<AttendanceManagementIndex loginRequired={true} />}
+          >
             <Route
               path="timekeeper"
               element={<StatisticPage notify={notify} loginRequired={true} />}
@@ -135,9 +146,28 @@ function App() {
               element={<StatisticPageV2 notify={notify} loginRequired={true} />}
             />
             <Route
-              path="summary"
-              element={<SummaryPage notify={notify} loginRequired={true} />}
+              exact
+              path="timekeeping/timesheet-detail"
+              element={
+                <TimesheetTablePage notify={notify} loginRequired={true} />
+              }
             />
+            <Route
+              exact
+              path="timekeeping/timesheet-detail/:TimesheetId"
+              element={
+                <TimesheetDetailPage notify={notify} loginRequired={true} />
+              }
+            />
+
+            <Route
+             exact path="timekeeping/timesheet-summary"
+              element={<TimesheetSummaryTablePage notify={notify} loginRequired={true} />}
+            />
+            {/* <Route
+              exact path="timekeeping/timesheet-summary/:SummaryId"
+              element={< TimesheetSummaryDetailPage notify={notify} loginRequired={true} />}
+            /> */}
           </Route>
           <Route
             path="/profile/changepwd"
@@ -179,13 +209,18 @@ function CustomLayout(props) {
       style={{
         minHeight: "100vh",
       }}
+      
     >
       <MySidebar collapsed={collapsed} />
-      <Layout className="site-layout" style={{}}>
+      <Layout className="site-layout" style={{
+          marginLeft: collapsed ? 0 : 200,
+        }}>
         <MyHeader collapsed={collapsed} setCollapsed={setCollapsed} />
         <Layout.Content
           style={{
-            margin: "24px 16px",
+            // margin: "24px 16px",
+            margin: '24px 16px 0',
+            overflow: 'initial',
             padding: 24,
             minHeight: 280,
             background: colorBgContainer,

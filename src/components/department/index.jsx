@@ -1,6 +1,8 @@
 import {
   CloseOutlined,
   DeleteFilled,
+  DeleteOutlined,
+  DeleteTwoTone,
   EditFilled,
   EditTwoTone,
   InfoCircleTwoTone,
@@ -19,6 +21,7 @@ import {
   Select,
   Space,
   Table,
+  Tooltip,
   Typography,
   notification,
 } from "antd";
@@ -38,20 +41,20 @@ const DepartmentList = (props) => {
   const [currentDepartmentList, setCurrentDepartmentList] = useState([]);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [total, setTotal] = useState(0);
   const [form] = Form.useForm();
   useEffect(() => {
     document.title = "Danh sách phòng ban";
   }, []);
   useEffect(() => {
-    GetDepartmentList()
+    setLoading(true);
+    GetDepartmentList({ Page: page, PerPage: perPage })
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          for (var ob of ResponseData) {
-            ob.key = ob.Id;
-          }
-          setCurrentDepartmentList(ResponseData);
-          setLoading(false);
+          const { DepartmentList, Total } = ResponseData;
+          setTotal(Total);
+          setCurrentDepartmentList(DepartmentList);
           return;
         }
         notification.error({
@@ -120,7 +123,7 @@ const DepartmentList = (props) => {
       title: "Mã",
       dataIndex: "Id",
       key: "Id",
-      width: 150,
+      width: 80,
       sorter: (a, b) => a.Id - b.Id,
       fixed: "left",
     },
@@ -128,15 +131,15 @@ const DepartmentList = (props) => {
       title: "Tên",
       dataIndex: "Name",
       key: "Name",
-      width: 300,
+      width: 200,
       sorter: (a, b) => a.Name.localeCompare(b.Name),
     },
     {
       title: "Trưởng phòng",
       dataIndex: "Manager",
       key: "Manager",
-      render: (_, { ManagerId, ManagerName }) =>
-        ManagerId ? `${ManagerId} - ${ManagerName}` : "",
+      render: (_, { ManagerId, ManagerName }) => ManagerName,
+      with: 200,
     },
     {
       title: "",
@@ -150,7 +153,7 @@ const DepartmentList = (props) => {
           updateOneDepartment={updateOneDepartment}
         />
       ),
-      width: 50,
+      width: 120,
       fixed: "right",
     },
   ];
@@ -183,14 +186,23 @@ const DepartmentList = (props) => {
       <Table
         loading={loading}
         bordered
+        rowKey="Id"
         scroll={{
           x: 900,
         }}
-        rowSelection={{
-          type: "checkbox",
-        }}
         dataSource={currentDepartmentList}
         columns={columns}
+        pagination={{
+          pageSize: perPage,
+          current: page,
+          pageSizeOptions: [10, 20, 50],
+          showSizeChanger: true,
+          onChange: (page, pageSize) => {
+            setPage(page);
+            setPerPage(pageSize);
+          },
+          showTotal: (total) => "Tổng " + total + " bản ghi.",
+        }}
       />
     </Space>
   );
@@ -260,48 +272,32 @@ function ActionMenu(props) {
     });
   };
 
-  const items = [
-    {
-      label: (
-        <Space onClick={showEditForm}>
-          <EditFilled />
-          Chỉnh sửa
-        </Space>
-      ),
-      key: "0",
-    },
-    {
-      label: (
-        <Popconfirm
-          title={`Xóa phòng ban ID ${department.Id}`}
-          description={`Bạn có chắc muốn xóa nhân viên ID ${department.Id} - ${department.Name}?`}
-          okText="Yes"
-          okType="danger"
-          cancelText="No"
-          placement="top"
-          onConfirm={deleteDepartment}
-        >
-          <Space>
-            <DeleteFilled key="1" />
-            Xóa
-          </Space>
-        </Popconfirm>
-      ),
-      key: "1",
-    },
-  ];
   return (
-    <>
-      <Dropdown
-        menu={{ items }}
-        trigger={["click"]}
-        placement="bottomRight"
-        arrow
+    <Space wrap>
+      <Tooltip title="Chỉnh sửa" placement="bottom">
+        <Button
+          icon={<EditTwoTone />}
+          type="text"
+          shape="circle"
+          onClick={showEditForm}
+        ></Button>
+      </Tooltip>
+      <Popconfirm
+        title={`Xóa phòng ban ID ${department.Id}`}
+        description={`Bạn có chắc muốn xóa nhân viên ID ${department.Id} - ${department.Name}?`}
+        okText="Yes"
+        okType="danger"
+        cancelText="No"
+        placement="top"
+        onConfirm={deleteDepartment}
       >
-        <MoreOutlined />
-      </Dropdown>
+        <Tooltip title="Xoá" placement="bottom">
+          <Button icon={<DeleteOutlined />} danger type="text" shape="circle" />
+        </Tooltip>
+      </Popconfirm>
+
       {contextHolder}
-    </>
+    </Space>
   );
 }
 

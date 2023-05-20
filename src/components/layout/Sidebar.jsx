@@ -1,13 +1,12 @@
 import {
-  faBell,
   faClock,
   faGauge,
   faList,
   faUniversalAccess,
-  faUsers,
+  faUsers
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Badge, Menu, Space } from "antd";
+import { Menu } from "antd";
 import Sider from "antd/es/layout/Sider";
 import React from "react";
 import { NavLink } from "react-router-dom";
@@ -22,7 +21,7 @@ function MySidebar(props) {
       collapsible
       collapsed={collapsed}
       breakpoint="lg"
-      collapsedWidth="0"
+      collapsedWidth="80"
       style={{
         overflow: "auto",
         height: "100vh",
@@ -65,19 +64,19 @@ function MySidebar(props) {
             children: [
               {
                 key: "group3-opt1",
-                label: <NavLink to="/shift">Danh mục ca làm việc</NavLink>,
+                label: <NavLink to="/shift">Ca làm việc</NavLink>,
               },
-              {
-                key: "group3-opt2",
-                label: (
-                  <NavLink to="/shift/assignment">Phân ca làm việc</NavLink>
-                ),
-              },
+              // {
+              //   key: "group3-opt2",
+              //   label: (
+              //     <NavLink to="/shift/assignment">Phân ca chi tiết</NavLink>
+              //   ),
+              // },
               {
                 key: "group3-opt3",
                 label: (
                   <NavLink to="/shift/assignment/list">
-                    Bảng phân ca làm việc
+                    Phân ca chi tiết
                   </NavLink>
                 ),
               },

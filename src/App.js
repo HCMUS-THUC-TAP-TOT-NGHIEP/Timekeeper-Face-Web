@@ -9,7 +9,7 @@ import {
   StatisticPageV2,
   TimesheetDetailPage,
   TimesheetTablePage,
-  TimesheetSummaryTablePage
+  TimesheetSummaryTablePage,
 } from "./components/attendance";
 import { ChangePasswordPage } from "./components/authentication/ChangePassword";
 import {
@@ -32,10 +32,12 @@ import MyHeader from "./components/layout/Header";
 import NoMatch from "./components/layout/NoMatch";
 import MySidebar from "./components/layout/Sidebar";
 import {
+  AddShiftPage,
   EditShiftAssignmentPage,
   ShiftAssignmentDetail,
   ShiftAssignmentListPage,
   ShiftAssignmentPage,
+  ShiftDetailPage,
   ShiftManagementIndex,
 } from "./components/shift";
 import { ShiftList } from "./components/shift/ShiftList";
@@ -105,19 +107,42 @@ function App() {
             }
           >
             <Route
+              exact
               path=""
               element={<ShiftList notify={notify} loginRequired={true} />}
             />
+            <Route
+              exact
+              path="add"
+              element={<AddShiftPage notify={notify} loginRequired={true} />}
+            />
+            <Route
+              exact
+              path="detail/:shiftId"
+              element={<ShiftDetailPage notify={notify} loginRequired={true} />}
+            />
+            <Route
+              exact
+              path="edit/:shiftId"
+              element={<ShiftDetailPage editable={true} notify={notify} loginRequired={true} />}
+            />
+
+
             <Route
               path="assignment"
               element={
                 <ShiftAssignmentPage notify={notify} loginRequired={true} />
               }
             />
+
             <Route
               path="assignment/edit/:id"
               element={
-                <EditShiftAssignmentPage notify={notify} loginRequired={true} />
+                <EditShiftAssignmentPage
+                  editable={true}
+                  notify={notify}
+                  loginRequired={true}
+                />
               }
             />
             <Route
@@ -129,7 +154,12 @@ function App() {
             <Route
               path="assignment/detail/:id"
               element={
-                <ShiftAssignmentDetail notify={notify} loginRequired={true} />
+                // <ShiftAssignmentDetail notify={notify} loginRequired={true} />
+                <EditShiftAssignmentPage
+                  editable={false}
+                  notify={notify}
+                  loginRequired={true}
+                />
               }
             />
           </Route>
@@ -161,8 +191,14 @@ function App() {
             />
 
             <Route
-             exact path="timekeeping/timesheet-summary"
-              element={<TimesheetSummaryTablePage notify={notify} loginRequired={true} />}
+              exact
+              path="timekeeping/timesheet-summary"
+              element={
+                <TimesheetSummaryTablePage
+                  notify={notify}
+                  loginRequired={true}
+                />
+              }
             />
             {/* <Route
               exact path="timekeeping/timesheet-summary/:SummaryId"
@@ -209,21 +245,22 @@ function CustomLayout(props) {
       style={{
         minHeight: "100vh",
       }}
-      
     >
       <MySidebar collapsed={collapsed} />
-      <Layout className="site-layout" style={{
-          marginLeft: collapsed ? 0 : 200,
-        }}>
+      <Layout
+        className="site-layout"
+        style={{
+          marginLeft: collapsed ? 80 : 200,
+        }}
+      >
         <MyHeader collapsed={collapsed} setCollapsed={setCollapsed} />
         <Layout.Content
           style={{
             // margin: "24px 16px",
-            margin: '24px 16px 0',
-            overflow: 'initial',
+            margin: "24px 16px 0",
+            overflow: "initial",
             padding: 24,
             minHeight: 280,
-            background: colorBgContainer,
           }}
         >
           <Outlet />

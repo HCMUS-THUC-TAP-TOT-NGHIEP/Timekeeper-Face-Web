@@ -319,7 +319,7 @@ const EditDepartmentFrom = function (props) {
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          setCurrentEmployeeList(ResponseData);
+          setCurrentEmployeeList(ResponseData.EmployeeList);
           form.setFieldsValue({ ManagerId: department.ManagerId });
           return;
         }
@@ -441,7 +441,7 @@ const EditDepartmentFrom = function (props) {
         ]}
       >
         <Select>
-          {currentEmployeeList.map((employee, index) => (
+          {(currentEmployeeList || []).map((employee, index) => (
             <Select.Option
               key={index}
               value={employee.Id}

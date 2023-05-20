@@ -123,12 +123,13 @@ function MyHeader(props) {
 
   return (
     <Header
+      className="boxShadow89"
       style={{
         padding: 0,
         background: colorBgContainer,
-        // position: "sticky",
-        // zIndex: 999,
-        // top: 0,
+        position: "sticky",
+        zIndex: 999,
+        top: 0,
       }}
     >
       {contextHolder}

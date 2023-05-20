@@ -10,15 +10,18 @@ import {
   Checkbox,
   Col,
   DatePicker,
+  Divider,
   Form,
   Input,
   InputNumber,
+  Modal,
   Radio,
   Row,
   Select,
   Skeleton,
   Space,
   Spin,
+  Table,
   TimePicker,
   Typography,
   theme,
@@ -46,22 +49,32 @@ const ShiftAssignmentPage = (props) => {
   const navigate = useNavigate();
   const [assignmentTypeList, setAssignmentTypeList] = useState([]);
   const [shiftList, setShiftList] = useState([]);
-  const [shiftDetail, setShiftDetail] = useState(null);
-  const [departmentList, setDepartmentList] = useState([]);
-  const [employeeList, setEmployeeList] = useState([]);
-  const [assignmentType, setAssignmentType] = useState(-1);
+  const [shiftDetail, setShiftDetail] = useState({});
+  const [assignmentType, setAssignmentType] = useState(_TargeType.ByEmployee);
   const [loading, setLoading] = useState(true);
+  const [appliedEmployeeList, setAppliedEmployeeList] = useState([]);
+  const [appliedDepartmentList, setAppliedDepartmentList] = useState([]);
+  const [form] = Form.useForm();
+  const {
+    token: { colorBgContainer, colorBgLayout },
+  } = theme.useToken();
 
-  const assignShift = (values) => {
-    console.log(values);
-    if (values.StartDate) {
-      values.StartDate = dayjs(values.StartDate).format(Config.DateFormat);
-    }
-    if (values.EndDate) {
-      values.EndDate = dayjs(values.EndDate).format(Config.DateFormat);
-    }
-    console.log(values);
-    AssignShift(values)
+  const onAssigningShift = (values) => {
+    var requestData = {
+      ShiftId: shiftDetail.Id,
+      StartDate: values.StartDate
+        ? dayjs(values.StartDate).format("YYYY-MM-DD")
+        : null,
+      EndDate: values.EndDate
+        ? dayjs(values.EndDate).format("YYYY-MM-DD")
+        : null,
+      EmployeeList: appliedEmployeeList.map((ob) => ob.Id),
+      DepartmentList: appliedDepartmentList.map((ob) => ob.Id),
+      Note: values.Note,
+      Description: values.Description,
+      DaysInWeek: values.DaysInWeek,
+    };
+    AssignShift(requestData)
       .then((response) => {
         console.log(response);
         const { Status, ResponseData, Description } = response;
@@ -99,42 +112,27 @@ const ShiftAssignmentPage = (props) => {
   useEffect(() => {
     async function loadData() {
       try {
-        const response1 = await GetAssignmentType();
-        if (response1.Status !== 1) {
+        response = await GetShiftList();
+        if (response.Status !== 1) {
           notify.error({
-            message: "Không thành công",
-            description: response1.Description,
+            message: "Truy vấn danh sách ca làm việc không thành công",
+            description: response.Description,
           });
-          return;
+          // return;
+        } else {
+          const { ShiftList } = response.ResponseData;
+          setShiftList(ShiftList);
         }
-        const response2 = await GetShiftList();
-        if (response2.Status !== 1) {
+        var response = await GetAssignmentType();
+        if (response.Status !== 1) {
           notify.error({
-            message: "Không thành công",
-            description: response2.Description,
+            message: "Truy vấn danh sách kiểu phân ca không thành công",
+            description: response.Description,
           });
-          return;
+          // return;
+        } else {
+          setAssignmentTypeList(response.ResponseData);
         }
-        const response3 = await GetDepartmentList();
-        if (response3.Status !== 1) {
-          notify.error({
-            message: "Không thành công",
-            description: response3.Description,
-          });
-          return;
-        }
-        const response5 = await GetManyEmployee();
-        if (response5.Status !== 1) {
-          notify.error({
-            message: "Không thành công",
-            description: response5.Description,
-          });
-          return;
-        }
-        setShiftList(response2.ResponseData);
-        setAssignmentTypeList(response1.ResponseData);
-        setEmployeeList(response5.ResponseData.EmployeeList);
-        setDepartmentList(response3.ResponseData);
         return;
       } catch (error) {
         if (error.response) {
@@ -159,6 +157,7 @@ const ShiftAssignmentPage = (props) => {
     }
     loadData();
   }, [notify]);
+
   const changeAssignType = ({ value }) => {
     setAssignmentType(value);
   };
@@ -184,74 +183,61 @@ const ShiftAssignmentPage = (props) => {
           </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <Button type="primary" icon={<PlusOutlined />}>
-            Tạo phân ca mới
-          </Button>
+          <Space wrap>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<SaveOutlined />}
+              onClick={() => form.submit()}
+            >
+              Lưu
+            </Button>
+            <Button type="default" icon={<RollbackOutlined />}>
+              Trở lại danh sách ca
+            </Button>
+          </Space>
         </Col>
       </Row>
-      <Content style={{ padding: 20 }}>
+      <Content style={{ background: colorBgContainer, padding: "5px 20px" }}>
         <Spin spinning={loading}>
           <Form
             layout="horizontal"
             labelCol={{ sm: { span: 6 }, md: { span: 4 } }}
             wrapperCol={{ sm: { span: 18 }, md: { span: 20 } }}
             labelWrap
-            onFinish={assignShift}
+            onFinish={onAssigningShift}
             labelAlign="left"
+            form={form}
           >
+            {/* region Thông tin chung */}
+
+            <Typography.Title
+              level={4}
+              style={{
+                background: colorBgLayout,
+                padding: "4px 8px",
+              }}
+            >
+              Thông tin chung
+            </Typography.Title>
             <Form.Item
-              label="Tiêu đề"
+              label="Tên bảng phân ca"
               name="Description"
               required
               rules={[
                 {
                   required: true,
-                  message: "Tiêu đề là trường bắt buộc.",
+                  message: "Tên bảng phân ca là trường bắt buộc.",
                 },
               ]}
             >
-              <Input placeholder="Nhập tiêu đề" />
+              <Input placeholder="Nhập Tên bảng phân ca" />
+            </Form.Item>
+            <Form.Item label="Ghi chú" name="Note">
+              <TextArea showCount rows={2} maxLength={1000} />
             </Form.Item>
             <Form.Item
-              label="Kiểu phân ca"
-              name="AssignType"
-              required
-              rules={[
-                {
-                  required: true,
-                  message: "Kiểu phân ca là trường bắt buộc.",
-                },
-              ]}
-            >
-              {/* <Select
-                    showSearch
-                    placeholder="Chọn kiểu phân ca"
-                    optionFilterProp="children"
-                    filterOption={(input, option) => {
-                      if (!option) return false;
-                      return (option.label || "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase());
-                    }}
-                    options={assignmentTypeList.map((ob) => ({
-                      value: ob.Id,
-                      label: ob.Name,
-                    }))}
-                    onChange={changeAssignType}
-                  /> */}
-
-              <Radio.Group
-                optionType="button"
-                buttonStyle="solid"
-                onChange={(e) => changeAssignType(e.target)}
-                options={assignmentTypeList.map((assignmentType) => ({
-                  label: assignmentType.Name,
-                  value: assignmentType.Id,
-                }))}
-              />
-            </Form.Item>
-            <Form.Item
-              label="Ca"
+              label="Chọn ca làm việc"
               name="ShiftId"
               required
               rules={[
@@ -275,178 +261,147 @@ const ShiftAssignmentPage = (props) => {
                   var shift = shiftList.find((s) => s.Id == value);
                   setShiftDetail(shift);
                 }}
-                options={shiftList.map((ob) => ({
+                options={(shiftList || []).map((ob) => ({
                   value: ob.Id,
                   label: ob.Description,
                 }))}
               />
             </Form.Item>
-            {assignmentType == _TargeType.ByDepartment ? (
-              <Form.Item label="Phòng ban" name="DepartmentId" required>
-                <Select
-                  showSearch
-                  placeholder="Chọn phòng ban"
-                  optionFilterProp="children"
-                  filterOption={(input, option) => {
-                    if (!option) return false;
-                    return (option.label || "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase());
-                  }}
-                  mode="multiple"
-                  options={departmentList.map((ob) => ({
-                    value: ob.Id,
-                    label: ob.Name,
-                  }))}
+
+            {/* endregion */}
+            <Divider />
+            {/* region Thời gian áp dụng */}
+
+            <Typography.Title
+              level={4}
+              style={{
+                background: colorBgLayout,
+                padding: "4px 8px",
+              }}
+            >
+              Thời gian áp dụng
+            </Typography.Title>
+            <Form.Item>
+              <Form.Item
+                label="Ngày bắt đầu"
+                name="StartDate"
+                required
+                style={{ display: "inline-block", width: "50%" }}
+                labelCol={{ span: 8 }}
+                wrapperCol={{ span: 16 }}
+              >
+                <DatePicker
+                  format={Config.DateFormat}
+                  locale={locale}
+                  inputReadOnly={true}
+                  aria-readonly={true}
                 />
               </Form.Item>
-            ) : assignmentType == _TargeType.ByEmployee ? (
-              <Form.Item label="Chọn nhân viên" name="EmployeeId" required>
-                <Select
-                  showSearch
-                  placeholder="Chọn nhân viên"
-                  optionFilterProp="children"
-                  filterOption={(input, option) => {
-                    if (!option) return false;
-                    return (option.label || "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase());
-                  }}
-                  mode="multiple"
-                  options={(employeeList || []).map((ob) => ({
-                    value: ob.Id,
-                    label: `${ob.Id} - ${ob.FirstName} ${ob.LastName}`,
-                  }))}
+              <Form.Item
+                label="Ngày kết thúc"
+                name="EndDate"
+                required
+                labelCol={{ span: 8 }}
+                wrapperCol={{ span: 16 }}
+                style={{ display: "inline-block", width: "50%" }}
+              >
+                <DatePicker
+                  value={
+                    shiftDetail.EndDate ? dayjs(shiftDetail.EndDate) : null
+                  }
+                  format={Config.DateFormat}
+                  locale={locale}
+                  inputReadOnly={true}
+                  aria-readonly={true}
                 />
               </Form.Item>
-            ) : (
-              <></>
-            )}
-            {shiftDetail ? (
+            </Form.Item>
+            {(shiftDetail || {}) !== {} ? (
               <>
-                <Form.Item label="Từ ngày" required>
-                  <DatePicker
-                    value={
-                      shiftDetail.StartDate
-                        ? dayjs(shiftDetail.StartDate)
-                        : null
-                    }
-                    format={Config.DateFormat}
-                    locale={locale}
-                    // style={{ width: "100%" }}
-                    inputReadOnly={true}
-                    aria-readonly={true}
-                    style={{ display: "inline-block", width: "calc(40%)" }}
-                  />
-                  <span
-                    style={{
-                      display: "inline-block",
-                      lineHeight: "32px",
-                      textAlign: "center",
-                      marginRight: "12px",
-                      marginLeft: "12px",
-                    }}
+                <Form.Item>
+                  <Form.Item
+                    label="Giờ bắt đầu ca"
+                    required
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    style={{ display: "inline-block", width: "50%" }}
                   >
-                    đến
-                  </span>
-                  <DatePicker
-                    value={
-                      shiftDetail.EndDate ? dayjs(shiftDetail.EndDate) : null
-                    }
-                    format={Config.DateFormat}
-                    locale={locale}
-                    inputReadOnly={true}
-                    aria-readonly={true}
-                    style={{ display: "inline-block", width: "calc(40%)" }}
-                  />
-                </Form.Item>
-                <Form.Item label="Giờ làm việc" required>
-                  <TimePicker
-                    value={
-                      shiftDetail.StartTime
-                        ? dayjs(shiftDetail.StartTime, Config.TimeFormat)
-                        : null
-                    }
-                    format={Config.NonSecondFormat}
-                    locale={locale}
-                    style={{ display: "inline-block", width: "calc(40%)" }}
-                    inputReadOnly={true}
-                    aria-readonly={true}
-                  />
-                  <span
-                    style={{
-                      display: "inline-block",
-                      lineHeight: "32px",
-                      textAlign: "center",
-                      marginRight: "12px",
-                      marginLeft: "12px",
-                    }}
+                    <TimePicker
+                      value={
+                        shiftDetail.StartTime
+                          ? dayjs(shiftDetail.StartTime, Config.TimeFormat)
+                          : null
+                      }
+                      format={Config.NonSecondFormat}
+                      locale={locale}
+                      inputReadOnly={true}
+                      aria-readonly={true}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label="Giờ kết thúc ca"
+                    required
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    style={{ display: "inline-block", width: "50%" }}
                   >
-                    đến
-                  </span>
-                  <TimePicker
-                    value={
-                      shiftDetail.FinishTime
-                        ? dayjs(shiftDetail.FinishTime, Config.TimeFormat)
-                        : null
-                    }
-                    format={Config.NonSecondFormat}
-                    locale={locale}
-                    inputReadOnly={true}
-                    aria-readonly={true}
-                    style={{ display: "inline-block", width: "calc(40%)" }}
-                  />
+                    <TimePicker
+                      value={
+                        shiftDetail.FinishTime
+                          ? dayjs(shiftDetail.FinishTime, Config.TimeFormat)
+                          : null
+                      }
+                      format={Config.NonSecondFormat}
+                      locale={locale}
+                      inputReadOnly={true}
+                      aria-readonly={true}
+                    />
+                  </Form.Item>
                 </Form.Item>
-                <Form.Item label="Giờ nghỉ">
-                  <TimePicker
-                    value={
-                      shiftDetail.BreakAt
-                        ? dayjs(shiftDetail.BreakAt, Config.TimeFormat)
-                        : null
-                    }
-                    format={Config.NonSecondFormat}
-                    locale={locale}
-                    style={{ display: "inline-block", width: "calc(40%)" }}
-                    inputReadOnly={true}
-                    aria-readonly={true}
-                  />
-                  <span
-                    style={{
-                      display: "inline-block",
-                      lineHeight: "32px",
-                      textAlign: "center",
-                      marginRight: "12px",
-                      marginLeft: "12px",
-                    }}
+                <Form.Item>
+                  <Form.Item
+                    label="Giờ bắt đầu nghỉ giữa ca"
+                    // name="BreakAt"
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    style={{ display: "inline-block", width: "50%" }}
                   >
-                    đến
-                  </span>
-                  <TimePicker
-                    value={
-                      shiftDetail.BreakEnd
-                        ? dayjs(shiftDetail.BreakEnd, Config.TimeFormat)
-                        : null
-                    }
-                    format={Config.NonSecondFormat}
-                    locale={locale}
-                    inputReadOnly={true}
-                    aria-readonly={true}
-                    style={{ display: "inline-block", width: "calc(40%)" }}
-                  />
-                </Form.Item>
-                <Form.Item label="Thời gian nghỉ">
-                  <InputNumber
-                    value={shiftDetail.BreakMinutes}
-                    addonAfter="phút"
-                    readOnly
-                  />
-                </Form.Item>
-                <Form.Item label="Ngày trong tuần" required>
-                  <Checkbox.Group
-                    value={
-                      shiftDetail.DayIndexList ? shiftDetail.DayIndexList : []
-                    }
+                    <TimePicker
+                      value={
+                        shiftDetail.BreakAt
+                          ? dayjs(shiftDetail.BreakAt, Config.TimeFormat)
+                          : null
+                      }
+                      format={Config.NonSecondFormat}
+                      locale={locale}
+                      inputReadOnly={true}
+                      aria-readonly={true}
+                      placeholder=""
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label="Giờ kết thúc nghỉ giữa ca"
+                    // name="BreakEnd"
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    style={{ display: "inline-block", width: "50%" }}
                   >
+                    <TimePicker
+                      value={
+                        shiftDetail.BreakEnd
+                          ? dayjs(shiftDetail.BreakEnd, Config.TimeFormat)
+                          : null
+                      }
+                      format={Config.NonSecondFormat}
+                      locale={locale}
+                      inputReadOnly={true}
+                      aria-readonly={true}
+                      placeholder=""
+                    />
+                  </Form.Item>
+                </Form.Item>
+                <Form.Item name="DaysInWeek" label="Ngày trong tuần" required>
+                  <Checkbox.Group>
                     <Row>
                       <Col span={8}>
                         <Checkbox value={1}>Thứ 2</Checkbox>
@@ -479,36 +434,125 @@ const ShiftAssignmentPage = (props) => {
               <></>
             )}
 
-            <Form.Item label="Ghi chú" name="Note">
-              <TextArea
-                showCount
-                maxLength={1000}
-                style={{
-                  height: 120,
-                  marginBottom: 24,
-                }}
+            {/* endregion */}
+            <Divider />
+            {/* region Đối tượng áp dụng */}
+
+            <Typography.Title
+              level={4}
+              style={{
+                background: colorBgLayout,
+                padding: "4px 8px",
+              }}
+            >
+              Đối tượng áp dụng
+            </Typography.Title>
+            <Form.Item
+              label="Kiểu phân ca"
+              required
+              rules={[
+                {
+                  required: true,
+                  message: "Kiểu phân ca là trường bắt buộc.",
+                },
+              ]}
+              initialValue={_TargeType.ByEmployee}
+            >
+              <Radio.Group
+                buttonStyle="solid"
+                onChange={(e) => changeAssignType(e.target)}
+                options={assignmentTypeList.map((assignmentType) => ({
+                  label: assignmentType.Name,
+                  value: assignmentType.Id,
+                }))}
               />
             </Form.Item>
-            <Form.Item>
-              <Space>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  size="large"
-                  icon={<SaveOutlined />}
-                >
-                  Lưu
-                </Button>
-                <Button
-                  type="default"
-                  size="large"
-                  icon={<RollbackOutlined />}
-                  onClick={() => navigate("/shift")}
-                >
-                  Trở lại danh sách ca
-                </Button>
+            {/* <Form.Item label="Phòng ban" name="DepartmentId" required>
+              <Select
+                loading={loadingTarget}
+                showSearch
+                placeholder="Chọn phòng ban"
+                optionFilterProp="children"
+                filterOption={(input, option) => {
+                  if (!option) return false;
+                  return (option.label || "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase());
+                }}
+                mode="multiple"
+                options={departmentList.map((ob) => ({
+                  value: ob.Id,
+                  label: ob,
+                }))}
+              />
+            </Form.Item>
+            <Form.Item label="Chọn nhân viên" name="EmployeeId" required>
+              <Select
+                loading={loadingTarget}
+                showSearch
+                placeholder="Chọn nhân viên"
+                optionFilterProp="children"
+                filterOption={(input, option) => {
+                  if (!option) return false;
+                  return (option.label || "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase());
+                }}
+                mode="multiple"
+                options={(employeeList || []).map((ob) => ({
+                  value: ob.Id,
+                  label: `${ob.Id} - ${ob.FirstName} ${ob.LastName}`,
+                }))}
+              />
+            </Form.Item> */}
+            <Form.Item wrapperCol={24}>
+              <Space direction="vertical" style={{ maxWidth: "100%" }}>
+                <AppliedTargetTable
+                  type={assignmentType}
+                  notify={notify}
+                  appliedDepartment={[
+                    appliedDepartmentList,
+                    setAppliedDepartmentList,
+                  ]}
+                  appliedEmployee={[
+                    appliedEmployeeList,
+                    setAppliedEmployeeList,
+                  ]}
+                />
+                <Table
+                  bordered
+                  columns={
+                    assignmentType == _TargeType.ByEmployee
+                      ? employeeColumns
+                      : departmentColumns
+                  }
+                  dataSource={
+                    assignmentType == _TargeType.ByEmployee
+                      ? appliedEmployeeList
+                      : appliedDepartmentList
+                  }
+                  rowKey="Id"
+                  scroll={{
+                    x: 800,
+                    y: 800,
+                  }}
+                  rowSelection={{
+                    type: "checkbox",
+                  }}
+                  pagination={{
+                    total:
+                      assignmentType == _TargeType.ByEmployee
+                        ? appliedEmployeeList.length
+                        : appliedDepartmentList.length,
+                    showSizeChanger: true,
+                    showTotal: (total) => `Tổng ${total} bản ghi.`,
+                    pageSizeOptions: [10, 25, 50],
+                  }}
+                ></Table>
               </Space>
             </Form.Item>
+
+            {/* endregion */}
           </Form>
         </Spin>
       </Content>
@@ -528,12 +572,33 @@ const EditShiftAssignmentPage = (props) => {
   const [assignment, setAssignment] = useState({});
   const [assignmentDetail, setAssignmentDetail] = useState({});
   const [shiftDetail, setShiftDetail] = useState({});
+  const [editable, setEditable] = useState((props.editable || false));
+  const [appliedDepartmentList, setAppliedDepartmentList] = useState([]);
+  const [appliedEmployeeList, setAppliedEmployeeList] = useState([]);
+  const [assignmentType, setAssignmentType] = useState(_TargeType.ByEmployee);
+  const [form] = Form.useForm();
 
   const {
-    token: { colorBgContainer },
+    token: { colorBgContainer, colorBgLayout },
   } = theme.useToken();
-  const assignShift = (values) => {
-    UpdateShiftAssignment(values)
+  const onUpdatingAssigningShift = (values) => {
+    var requestData = {
+      Id: assignment.Id,
+      StartDate: values.StartDate
+        ? dayjs(values.StartDate).format("YYYY-MM-DD")
+        : null,
+      EndDate: values.EndDate
+        ? dayjs(values.EndDate).format("YYYY-MM-DD")
+        : null,
+      EmployeeList: appliedEmployeeList.map((ob) => ob.Id),
+      DepartmentList: appliedDepartmentList.map((ob) => ob.Id),
+      Note: values.Note,
+      Description: values.Description,
+      DaysInWeek: form.getFieldValue("DaysInWeek"),
+      ShiftId: values.ShiftId
+    };
+
+    UpdateShiftAssignment(requestData)
       .then((response) => {
         const { Status, Description } = response;
         if (Status === 1) {
@@ -590,14 +655,21 @@ const EditShiftAssignmentPage = (props) => {
           return;
         }
         setAssignmentTypeList(response1.ResponseData);
-        setShiftList(response2.ResponseData);
-        setDepartmentList(response3.ResponseData);
+        setShiftList(response2.ResponseData.ShiftList);
+        setDepartmentList(response3.ResponseData.DepartmentList);
         setEmployeeList(response5.ResponseData.EmployeeList);
-        const { Assignment, AssignmentDetail, ShiftDetail } =
-          response.ResponseData;
+        const {
+          Assignment,
+          AssignmentDetail,
+          ShiftDetail,
+          DepartmentList,
+          EmployeeList,
+        } = response.ResponseData;
         setAssignment(Assignment);
         setAssignmentDetail(AssignmentDetail);
         setShiftDetail(ShiftDetail);
+        setAppliedDepartmentList(DepartmentList);
+        setAppliedEmployeeList(EmployeeList);
         return;
       } catch (error) {
         if (error.response) {
@@ -622,6 +694,17 @@ const EditShiftAssignmentPage = (props) => {
     }
     loadData();
   }, [id]);
+  useEffect(() => {
+    form.setFieldsValue({
+      // Id: shift.Id,
+      Description: assignment.Description,
+      Note: assignment.Note,
+      ShiftId: assignmentDetail.ShiftId,
+      StartDate: dayjs(assignmentDetail.StartDate, "YYYY-MM-DD"),
+      EndDate: dayjs(assignmentDetail.EndDate, "YYYY-MM-DD"),
+      DaysInWeek: assignmentDetail.DaysInWeek,
+    });
+  }, [editable]);
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
@@ -645,113 +728,92 @@ const EditShiftAssignmentPage = (props) => {
           </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <Button
-            type="primary"
-            onClick={() => navigate("/shift/assignment")}
-            icon={<PlusOutlined />}
-          >
-            Phân ca mới
-          </Button>
+          <Space>
+            {editable ? (
+              <>
+                <Button onClick={() => navigate("/shift")}>Hủy</Button>
+                <Button
+                  type="primary"
+                  // loading={updatingLoading}
+                  onClick={() => form.submit()}
+                >
+                  Lưu
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="primary"
+                onClick={() => setEditable(true)}
+                icon={<EditOutlined />}
+              >
+                Sửa
+              </Button>
+            )}
+          </Space>
         </Col>
       </Row>
       <Content style={{ background: colorBgContainer, padding: 20 }}>
         <Spin spinning={loading}>
           <Skeleton loading={loading}>
-            <Form
-              layout="horizontal"
-              labelCol={{ sm: { span: 6 }, md: { span: 4 } }}
-              wrapperCol={{ sm: { span: 18 }, md: { span: 20 } }}
-              labelAlign="left"
-              onFinish={assignShift}
-              labelWrap
-            >
-              <Form.Item
-                label="Mã"
-                name="Id"
-                initialValue={assignment.Id}
-                required
-                hidden
+            {editable ? (
+              <Form
+                layout="horizontal"
+                labelCol={{ sm: { span: 6 }, md: { span: 4 } }}
+                wrapperCol={{ sm: { span: 18 }, md: { span: 20 } }}
+                labelWrap
+                onFinish={onUpdatingAssigningShift}
+                labelAlign="left"
+                form={form}
               >
-                <Input readOnly placeholder="Nhập tiêu đề" />
-              </Form.Item>
-              <Form.Item
-                label="Tiêu đề"
-                name="Description"
-                initialValue={assignment.Description}
-                required
-                rules={[
-                  {
-                    required: true,
-                    message: "Tiêu đề là trường bắt buộc.",
-                  },
-                ]}
-              >
-                <Input placeholder="Nhập tiêu đề" />
-              </Form.Item>
-              <Form.Item
-                label="Kiểu phân ca"
-                name="AssignType"
-                required
-                rules={[
-                  {
-                    required: true,
-                    message: "Kiểu phân ca là trường bắt buộc.",
-                  },
-                ]}      
-                initialValue={assignment.AssignType}          
-              >
-                <Radio.Group
-                  optionType="button"
-                  buttonStyle="solid"
-                  options={assignmentTypeList.map((ob) => ({
-                    value: ob.Id,
-                    label: ob.Name,
-                  }))}
-                  value={assignment.AssignType}
-                />
-              </Form.Item>
-              <Form.Item
-                label="Ca"
-                name="ShiftId"
-                required
-                rules={[
-                  {
-                    required: true,
-                    message: "Ca là trường bắt buộc.",
-                  },
-                ]}
-                initialValue={shiftDetail.ShiftId}
-              >
-                <Select
-                  showSearch
-                  placeholder="Chọn Ca"
-                  optionFilterProp="children"
-                  filterOption={(input, option) => {
-                    if (!option) return false;
-                    return (option.label || "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase());
+                {/* region Thông tin chung */}
+
+                <Typography.Title
+                  level={4}
+                  style={{
+                    background: colorBgLayout,
+                    padding: "4px 8px",
                   }}
-                  options={shiftList.map((ob) => ({
-                    value: ob.Id,
-                    label: ob.Description,
-                  }))}
-                  value={assignment.ShiftId}
-                  disabled
-                />
-              </Form.Item>
-              {assignment.AssignType == _TargeType.ByDepartment ? (
-                <Form.Item
-                  label="Phòng ban"
-                  name="DepartmentId"
+                >
+                  Thông tin chung
+                </Typography.Title>
+                {/* <Form.Item
+                  name="Id"
                   required
-                  initialValue={assignmentDetail
-                    .filter((s) => s.TargetType == _TargeType.ByDepartment)
-                    .map((t) => t.Target)}
+                  hidden
+                >
+                  <Input readonly />
+                </Form.Item>
+ */}
+                <Form.Item
+                  label="Tên bảng phân ca"
+                  name="Description"
+                  required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Tên bảng phân ca là trường bắt buộc.",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Nhập Tên bảng phân ca" />
+                </Form.Item>
+                <Form.Item label="Ghi chú" name="Note">
+                  <TextArea showCount rows={2} maxLength={1000} />
+                </Form.Item>
+                <Form.Item
+                  label="Chọn ca làm việc"
+                  name="ShiftId"
+                  required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Ca là trường bắt buộc.",
+                    },
+                  ]}
                 >
                   <Select
                     showSearch
-                    placeholder="Chọn phòng ban"
+                    placeholder="Chọn Ca"
                     optionFilterProp="children"
                     filterOption={(input, option) => {
                       if (!option) return false;
@@ -759,225 +821,778 @@ const EditShiftAssignmentPage = (props) => {
                         .toLowerCase()
                         .includes(input.toLowerCase());
                     }}
-                    mode="multiple"
-                    options={departmentList.map((ob) => ({
-                      value: ob.Id,
-                      label: ob.Name,
-                    }))}
-                  />
-                </Form.Item>
-              ) : assignment.AssignType == _TargeType.ByEmployee ? (
-                <Form.Item
-                  label="Chọn nhân viên"
-                  name="EmployeeId"
-                  required
-                  initialValue={assignmentDetail
-                    .filter((s) => s.TargetType == _TargeType.ByEmployee)
-                    .map((t) => t.Target)}
-                >
-                  <Select
-                    showSearch
-                    placeholder="Chọn nhân viên"
-                    optionFilterProp="children"
-                    filterOption={(input, option) => {
-                      if (!option) return false;
-                      return (option.label || "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase());
+                    onChange={(value, option) => {
+                      var shift = shiftList.find((s) => s.Id == value);
+                      setShiftDetail(shift);
                     }}
-                    mode="multiple"
-                    options={(employeeList || []).map((ob) => ({
+                    options={(shiftList || []).map((ob) => ({
                       value: ob.Id,
-                      label: `${ob.Id} - ${ob.FirstName} ${ob.LastName}`,
+                      label: ob.Description,
                     }))}
                   />
                 </Form.Item>
-              ) : (
-                <></>
-              )}
-              <Form.Item label="Từ ngày" required>
-                <DatePicker
-                  value={
-                    assignment.StartDate ? dayjs(assignment.StartDate) : null
-                  }
-                  format={Config.DateFormat}
-                  locale={locale}
-                  // style={{ width: "100%" }}
-                  inputReadOnly={true}
-                  aria-readonly={true}
-                  style={{ display: "inline-block", width: "calc(40%)" }}
-                />
-                <span
+
+                {/* endregion */}
+                <Divider />
+                {/* region Thời gian áp dụng */}
+
+                <Typography.Title
+                  level={4}
                   style={{
-                    display: "inline-block",
-                    lineHeight: "32px",
-                    textAlign: "center",
-                    marginRight: "12px",
-                    marginLeft: "12px",
+                    background: colorBgLayout,
+                    padding: "4px 8px",
                   }}
                 >
-                  đến
-                </span>
-                <DatePicker
-                  value={assignment.EndDate ? dayjs(assignment.EndDate) : null}
-                  format={Config.DateFormat}
-                  locale={locale}
-                  inputReadOnly={true}
-                  aria-readonly={true}
-                  style={{ display: "inline-block", width: "calc(40%)" }}
-                />
-              </Form.Item>
-              <Form.Item label="Giờ làm việc" required>
-                <TimePicker
-                  value={
-                    shiftDetail.StartTime
-                      ? dayjs(shiftDetail.StartTime, Config.TimeFormat)
-                      : null
-                  }
-                  format={Config.NonSecondFormat}
-                  locale={locale}
-                  style={{ display: "inline-block", width: "calc(40%)" }}
-                  inputReadOnly={true}
-                  aria-readonly={true}
-                />
-                <span
-                  style={{
-                    display: "inline-block",
-                    lineHeight: "32px",
-                    textAlign: "center",
-                    marginRight: "12px",
-                    marginLeft: "12px",
-                  }}
-                >
-                  đến
-                </span>
-                <TimePicker
-                  value={
-                    shiftDetail.FinishTime
-                      ? dayjs(shiftDetail.FinishTime, Config.TimeFormat)
-                      : null
-                  }
-                  format={Config.NonSecondFormat}
-                  locale={locale}
-                  inputReadOnly={true}
-                  aria-readonly={true}
-                  style={{ display: "inline-block", width: "calc(40%)" }}
-                />
-              </Form.Item>
-              <Form.Item label="Giờ nghỉ">
-                <TimePicker
-                  value={
-                    shiftDetail.BreakAt
-                      ? dayjs(shiftDetail.BreakAt, Config.TimeFormat)
-                      : null
-                  }
-                  format={Config.NonSecondFormat}
-                  locale={locale}
-                  style={{ display: "inline-block", width: "calc(40%)" }}
-                  inputReadOnly={true}
-                  aria-readonly={true}
-                />
-                <span
-                  style={{
-                    display: "inline-block",
-                    lineHeight: "32px",
-                    textAlign: "center",
-                    marginRight: "12px",
-                    marginLeft: "12px",
-                  }}
-                >
-                  đến
-                </span>
-                <TimePicker
-                  value={
-                    shiftDetail.BreakEnd
-                      ? dayjs(shiftDetail.BreakEnd, Config.TimeFormat)
-                      : null
-                  }
-                  format={Config.NonSecondFormat}
-                  locale={locale}
-                  inputReadOnly={true}
-                  aria-readonly={true}
-                  style={{ display: "inline-block", width: "calc(40%)" }}
-                />
-              </Form.Item>
-              <Form.Item label="Thời gian nghỉ">
-                <InputNumber
-                  value={shiftDetail.BreakMinutes}
-                  addonAfter="phút"
-                  readOnly
-                />
-              </Form.Item>
-              <Form.Item label="Ngày trong tuần" required>
-                <Checkbox.Group
-                  value={
-                    shiftDetail.DayIndexList ? shiftDetail.DayIndexList : []
-                  }
-                >
-                  <Row>
-                    <Col span={8}>
-                      <Checkbox value={1}>Thứ 2</Checkbox>
-                    </Col>
-                    <Col span={8}>
-                      <Checkbox value={2}>Thứ 3</Checkbox>
-                    </Col>
-                    <Col span={8}>
-                      <Checkbox value={3}>Thứ 4</Checkbox>
-                    </Col>
-                    <Col span={8}>
-                      <Checkbox value={4}>Thứ 5</Checkbox>
-                    </Col>
-                    <Col span={8}>
-                      <Checkbox value={5}>Thứ 6</Checkbox>
-                    </Col>
-                    <Col span={8}>
-                      <Checkbox value={6} checked>
-                        Thứ 7
-                      </Checkbox>
-                    </Col>
-                    <Col span={8}>
-                      <Checkbox value={0}>Chủ nhật</Checkbox>
-                    </Col>
-                  </Row>
-                </Checkbox.Group>
-              </Form.Item>
-              <Form.Item
-                label="Ghi chú"
-                name="Note"
-                initialValue={assignment.Note}
-              >
-                <TextArea
-                  showCount
-                  maxLength={1000}
-                  style={{
-                    height: 120,
-                    marginBottom: 24,
-                  }}
-                />
-              </Form.Item>
-              <Form.Item>
-                <div style={{ textAlign: "center" }}>
-                  <Space style={{ width: "100%" }}>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      size="middle"
-                      icon={<EditOutlined />}
+                  Thời gian áp dụng
+                </Typography.Title>
+                <Form.Item>
+                  <Form.Item
+                    label="Ngày bắt đầu"
+                    name="StartDate"
+                    required
+                    style={{ display: "inline-block", width: "50%" }}
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                  >
+                    <DatePicker
+                      format={Config.DateFormat}
+                      locale={locale}
+                      inputReadOnly={true}
+                      aria-readonly={true}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label="Ngày kết thúc"
+                    name="EndDate"
+                    required
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    style={{ display: "inline-block", width: "50%" }}
+                  >
+                    <DatePicker
+                      value={
+                        shiftDetail.EndDate ? dayjs(shiftDetail.EndDate) : null
+                      }
+                      format={Config.DateFormat}
+                      locale={locale}
+                      inputReadOnly={true}
+                      aria-readonly={true}
+                    />
+                  </Form.Item>
+                </Form.Item>
+                {(shiftDetail || {}) !== {} ? (
+                  <>
+                    <Form.Item>
+                      <Form.Item
+                        label="Giờ bắt đầu ca"
+                        required
+                        labelCol={{ span: 8 }}
+                        wrapperCol={{ span: 16 }}
+                        style={{ display: "inline-block", width: "50%" }}
+                      >
+                        <TimePicker
+                          value={
+                            shiftDetail.StartTime
+                              ? dayjs(shiftDetail.StartTime, Config.TimeFormat)
+                              : null
+                          }
+                          format={Config.NonSecondFormat}
+                          locale={locale}
+                          inputReadOnly={true}
+                          aria-readonly={true}
+                        />
+                      </Form.Item>
+                      <Form.Item
+                        label="Giờ kết thúc ca"
+                        required
+                        labelCol={{ span: 8 }}
+                        wrapperCol={{ span: 16 }}
+                        style={{ display: "inline-block", width: "50%" }}
+                      >
+                        <TimePicker
+                          value={
+                            shiftDetail.FinishTime
+                              ? dayjs(shiftDetail.FinishTime, Config.TimeFormat)
+                              : null
+                          }
+                          format={Config.NonSecondFormat}
+                          locale={locale}
+                          inputReadOnly={true}
+                          aria-readonly={true}
+                        />
+                      </Form.Item>
+                    </Form.Item>
+                    <Form.Item>
+                      <Form.Item
+                        label="Giờ bắt đầu nghỉ giữa ca"
+                        // name="BreakAt"
+                        labelCol={{ span: 8 }}
+                        wrapperCol={{ span: 16 }}
+                        style={{ display: "inline-block", width: "50%" }}
+                      >
+                        <TimePicker
+                          value={
+                            shiftDetail.BreakAt
+                              ? dayjs(shiftDetail.BreakAt, Config.TimeFormat)
+                              : null
+                          }
+                          format={Config.NonSecondFormat}
+                          locale={locale}
+                          inputReadOnly={true}
+                          aria-readonly={true}
+                          placeholder=""
+                        />
+                      </Form.Item>
+                      <Form.Item
+                        label="Giờ kết thúc nghỉ giữa ca"
+                        // name="BreakEnd"
+                        labelCol={{ span: 8 }}
+                        wrapperCol={{ span: 16 }}
+                        style={{ display: "inline-block", width: "50%" }}
+                      >
+                        <TimePicker
+                          value={
+                            shiftDetail.BreakEnd
+                              ? dayjs(shiftDetail.BreakEnd, Config.TimeFormat)
+                              : null
+                          }
+                          format={Config.NonSecondFormat}
+                          locale={locale}
+                          inputReadOnly={true}
+                          aria-readonly={true}
+                          placeholder=""
+                        />
+                      </Form.Item>
+                    </Form.Item>
+                    <Form.Item
+                      name="DaysInWeek"
+                      label="Ngày trong tuần"
+                      valuePropName="checked"
+                      required
                     >
-                      Cập nhật
-                    </Button>
-                    <Button type="default" onClick={() => navigate(-1)}>
-                      Hủy
-                    </Button>
+                      <Checkbox.Group >
+                        <Row>
+                          <Col span={8}>
+                            <Checkbox value={1}>Thứ 2</Checkbox>
+                          </Col>
+                          <Col span={8}>
+                            <Checkbox value={2}>Thứ 3</Checkbox>
+                          </Col>
+                          <Col span={8}>
+                            <Checkbox value={3}>Thứ 4</Checkbox>
+                          </Col>
+                          <Col span={8}>
+                            <Checkbox value={4}>Thứ 5</Checkbox>
+                          </Col>
+                          <Col span={8}>
+                            <Checkbox value={5}>Thứ 6</Checkbox>
+                          </Col>
+                          <Col span={8}>
+                            <Checkbox value={6} checked>
+                              Thứ 7
+                            </Checkbox>
+                          </Col>
+                          <Col span={8}>
+                            <Checkbox value={0}>Chủ nhật</Checkbox>
+                          </Col>
+                        </Row>
+                      </Checkbox.Group>
+                    </Form.Item>
+                  </>
+                ) : (
+                  <></>
+                )}
+
+                {/* endregion */}
+                <Divider />
+                {/* region Đối tượng áp dụng */}
+
+                <Typography.Title
+                  level={4}
+                  style={{
+                    background: colorBgLayout,
+                    padding: "4px 8px",
+                  }}
+                >
+                  Đối tượng áp dụng
+                </Typography.Title>
+                <Form.Item
+                  label="Kiểu phân ca"
+                  required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Kiểu phân ca là trường bắt buộc.",
+                    },
+                  ]}
+                  initialValue={assignmentType}
+                >
+                  <Radio.Group
+                    buttonStyle="solid"
+                    onChange={(e) => setAssignmentType(e.target.value)}
+                    options={assignmentTypeList.map((assignmentType) => ({
+                      label: assignmentType.Name,
+                      value: assignmentType.Id,
+                    }))}
+                  />
+                </Form.Item>
+                <Form.Item wrapperCol={24}>
+                  <Space direction="vertical" style={{ maxWidth: "100%" }}>
+                    <AppliedTargetTable
+                      type={assignmentType}
+                      notify={notify}
+                      appliedDepartment={[
+                        appliedDepartmentList,
+                        setAppliedDepartmentList,
+                      ]}
+                      appliedEmployee={[
+                        appliedEmployeeList,
+                        setAppliedEmployeeList,
+                      ]}
+                    />
+                    <Table
+                      bordered
+                      columns={
+                        assignmentType == _TargeType.ByEmployee
+                          ? employeeColumns
+                          : departmentColumns
+                      }
+                      dataSource={
+                        assignmentType == _TargeType.ByEmployee
+                          ? appliedEmployeeList
+                          : appliedDepartmentList
+                      }
+                      rowKey="Id"
+                      scroll={{
+                        x: 800,
+                        y: 800,
+                      }}
+                      rowSelection={{
+                        type: "checkbox",
+                      }}
+                      pagination={{
+                        total:
+                          assignmentType == _TargeType.ByEmployee
+                            ? appliedEmployeeList.length
+                            : appliedDepartmentList.length,
+                        showSizeChanger: true,
+                        showTotal: (total) => `Tổng ${total} bản ghi.`,
+                        pageSizeOptions: [10, 25, 50],
+                      }}
+                    ></Table>
                   </Space>
-                </div>
-              </Form.Item>
-            </Form>
+                </Form.Item>
+
+                {/* endregion */}
+              </Form>
+            ) : assignment && assignmentDetail && shiftDetail ? (
+              <OnlyViewPage
+                assignment={assignment}
+                assignmentDetail={assignmentDetail}
+                shiftDetail={shiftDetail}
+                assignmentTypeList={assignmentTypeList}
+                notify={notify}
+                appliedEmployeeList={appliedEmployeeList}
+                appliedDepartmentList={appliedDepartmentList}
+                type={assignmentType}
+              />
+            ) : (
+              <></>
+            )}
           </Skeleton>
         </Spin>
       </Content>
     </Space>
   );
 };
-export { ShiftAssignmentPage, EditShiftAssignmentPage };
 
+const departmentColumns = [
+  {
+    title: "Mã",
+    dataIndex: "Id",
+    width: 100,
+  },
+  {
+    title: "Tên phòng ban",
+    dataIndex: "Name",
+  },
+];
+const employeeColumns = [
+  {
+    title: "Mã nhân viên",
+    dataIndex: "Id",
+    fixed: "left",
+    width: 100,
+  },
+  {
+    title: "Họ tên",
+    render: (_, record) => `${record.LastName} ${record.FirstName}`,
+    fixed: "left",
+    width: 300,
+  },
+  {
+    title: "Vị trí công việc",
+    dataIndex: "Position",
+    width: 300,
+  },
+  {
+    title: "Phòng ban",
+    dataIndex: "DepartmentName",
+    width: 300,
+  },
+];
+
+const AppliedTargetTable = (props) => {
+  const { type, notify } = props;
+  const {
+    appliedEmployee: [appliedEmployeeList, setAppliedEmployeeList],
+  } = props;
+  const {
+    appliedDepartment: [appliedDepartmentList, setAppliedDepartmentList],
+  } = props;
+  const [innerAppliedEmployeeList, setInnerAppliedEmployeeList] =
+    useState(appliedEmployeeList);
+  const [innerAppliedDepartmentList, setInnerAppliedDepartmentList] = useState(
+    appliedDepartmentList
+  );
+  const [employeeList, setEmployeeList] = useState([]);
+  const [totalEmployee, setTotalEmployee] = useState(0);
+  const [deparmentList, setDepartmentList] = useState([]);
+  const [totaldeparment, setTotalDeparment] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const showModal = () => {
+    setOpen(true);
+  };
+  const handleOk = (e) => {
+    setAppliedEmployeeList(innerAppliedEmployeeList);
+    setAppliedDepartmentList(innerAppliedDepartmentList);
+    setInnerAppliedDepartmentList([]);
+    setInnerAppliedEmployeeList([]);
+    Modal.destroyAll();
+    setOpen(false);
+  };
+  const handleCancel = (e) => {
+    setInnerAppliedDepartmentList([]);
+    setInnerAppliedEmployeeList([]);
+    Modal.destroyAll();
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        if (type == _TargeType.ByDepartment) {
+          const response = await GetDepartmentList();
+          if (response.Status !== 1) {
+            notify.error({
+              message: "Truy vấn nhân phòng ban không thành công",
+              description: response.Description,
+            });
+            return;
+          }
+          const { DepartmentList, Total } = response.ResponseData;
+          setDepartmentList(DepartmentList);
+          setTotalDeparment(Total);
+        }
+        if (type == _TargeType.ByEmployee) {
+          const response = await GetManyEmployee();
+          if (response.Status !== 1) {
+            notify.error({
+              message: "Truy vấn nhân viên không thành công",
+              description: response.Description,
+            });
+            return;
+          }
+          const { EmployeeList, Total } = response.ResponseData;
+          setEmployeeList(EmployeeList);
+          setTotalEmployee(Total);
+        }
+      } catch (error) {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [type]);
+
+  function createModel() {
+    var title = "";
+    var columns = [];
+    var dataSource = [];
+    var total = 0;
+    var selectionObject = {};
+    if (type == _TargeType.ByEmployee) {
+      title = "Chọn nhân viên";
+      columns = employeeColumns;
+      dataSource = employeeList;
+      total = totalEmployee;
+      selectionObject = {
+        type: "checkbox",
+        onSelect: (record, selected) => {
+          if (selected) {
+            setInnerAppliedEmployeeList([...innerAppliedEmployeeList, record]);
+          } else {
+            var filterArray = innerAppliedEmployeeList.filter(
+              (ob) => ob.Id !== record.Id
+            );
+            setInnerAppliedEmployeeList(filterArray);
+          }
+        },
+      };
+    } else if (type == _TargeType.ByDepartment) {
+      title = "Chọn phòng ban";
+      columns = departmentColumns;
+      dataSource = deparmentList;
+      total = totaldeparment;
+      selectionObject = {
+        type: "checkbox",
+        onSelect: (record, selected) => {
+          if (selected) {
+            setInnerAppliedDepartmentList([
+              ...innerAppliedDepartmentList,
+              record,
+            ]);
+          } else {
+            var filterArray = innerAppliedDepartmentList.filter(
+              (ob) => ob.Id !== record.Id
+            );
+            setInnerAppliedDepartmentList(filterArray);
+          }
+        },
+      };
+    }
+
+    return (
+      <Modal
+        title={title}
+        open={open}
+        className="boxShadow89"
+        okText="Chọn"
+        cancelText="Hủy"
+        onOk={handleOk}
+        onCancel={handleCancel}
+        width={1000}
+      >
+        <Table
+          loading={loading}
+          columns={columns}
+          dataSource={dataSource}
+          rowSelection={selectionObject}
+          rowKey="Id"
+          scroll={{
+            x: 800,
+            y: 800,
+          }}
+          pagination={{
+            total: total,
+            showSizeChanger: true,
+            showTotal: (total) => `Tổng ${total} bản ghi.`,
+            pageSizeOptions: [10, 25, 50],
+          }}
+        ></Table>
+      </Modal>
+    );
+  }
+
+  return (
+    <>
+      <Button onClick={showModal} icon={<PlusOutlined />}>
+        Thêm
+      </Button>
+      {createModel()}
+    </>
+  );
+};
+
+const OnlyViewPage = ({
+  assignment,
+  assignmentDetail,
+  shiftDetail,
+  assignmentTypeList,
+  notify,
+  appliedEmployeeList,
+  appliedDepartmentList,
+  type,
+  ...rest
+}) => {
+  const [assignmentType, setAssignmentType] = useState(type);
+  const [form] = Form.useForm();
+  const {
+    token: { colorBgLayout },
+  } = theme.useToken();
+
+  return (
+    <Form
+      layout="horizontal"
+      labelCol={{ sm: { span: 6 }, md: { span: 4 } }}
+      wrapperCol={{ sm: { span: 18 }, md: { span: 20 } }}
+      labelWrap
+      labelAlign="left"
+      form={form}
+    >
+      {/* region Thông tin chung */}
+
+      <Typography.Title
+        level={4}
+        style={{
+          background: colorBgLayout,
+          padding: "4px 8px",
+        }}
+      >
+        Thông tin chung
+      </Typography.Title>
+      <Form.Item label="Tên bảng phân ca" required>
+        <Input
+          readOnly
+          bordered={false}
+          style={{ borderBottom: "solid 1px #ccc" }}
+          // value={(assignment || {}).Description}
+          value={assignment.Description}
+        />
+      </Form.Item>
+      <Form.Item label="Ghi chú">
+        <TextArea readOnly bordered={false} value={(assignment || {}).Note} />
+      </Form.Item>
+      <Form.Item label="Chọn ca làm việc" required>
+        <Input
+          readOnly
+          bordered={false}
+          style={{ borderBottom: "solid 1px #ccc" }}
+          value={(shiftDetail || {}).Description}
+        />
+      </Form.Item>
+
+      {/* endregion */}
+      <Divider />
+      {/* region Thời gian áp dụng */}
+
+      <Typography.Title
+        level={4}
+        style={{
+          background: colorBgLayout,
+          padding: "4px 8px",
+        }}
+      >
+        Thời gian áp dụng
+      </Typography.Title>
+      <Form.Item>
+        <Form.Item
+          label="Ngày bắt đầu"
+          required
+          style={{ display: "inline-block", width: "50%" }}
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 12 }}
+        >
+          <Input
+            readOnly
+            bordered={false}
+            style={{ borderBottom: "solid 1px #ccc" }}
+            value={
+              assignmentDetail.StartDate
+                ? dayjs(assignmentDetail.StartDate, "YYYY-MM-DD").format(
+                    Config.DateFormat
+                  )
+                : ""
+            }
+          />
+        </Form.Item>
+        <Form.Item
+          label="Ngày kết thúc"
+          required
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 12 }}
+          style={{ display: "inline-block", width: "50%" }}
+        >
+          <Input
+            readOnly
+            bordered={false}
+            style={{ borderBottom: "solid 1px #ccc" }}
+            value={
+              assignmentDetail.EndDate
+                ? dayjs(assignmentDetail.EndDate, "YYYY-MM-DD").format(
+                    Config.DateFormat
+                  )
+                : ""
+            }
+          />
+        </Form.Item>
+      </Form.Item>
+      {(shiftDetail || {}) !== {} ? (
+        <>
+          <Form.Item>
+            <Form.Item
+              label="Giờ bắt đầu ca"
+              required
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 12 }}
+              style={{ display: "inline-block", width: "50%" }}
+            >
+              <Input
+                readOnly
+                bordered={false}
+                style={{ borderBottom: "solid 1px #ccc" }}
+                value={(shiftDetail || {}).StartTime}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Giờ kết thúc ca"
+              required
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 12 }}
+              style={{ display: "inline-block", width: "50%" }}
+            >
+              <Input
+                readOnly
+                bordered={false}
+                style={{ borderBottom: "solid 1px #ccc" }}
+                value={(shiftDetail || {}).FinishTime}
+              />
+            </Form.Item>
+          </Form.Item>
+          <Form.Item>
+            <Form.Item
+              label="Giờ bắt đầu nghỉ giữa ca"
+              // name="BreakAt"
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 12 }}
+              style={{ display: "inline-block", width: "50%" }}
+            >
+              <Input
+                readOnly
+                bordered={false}
+                style={{ borderBottom: "solid 1px #ccc" }}
+                value={(shiftDetail || {}).BreakAt}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Giờ kết thúc nghỉ giữa ca"
+              // name="BreakEnd"
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 12 }}
+              style={{ display: "inline-block", width: "50%" }}
+            >
+              <Input
+                readOnly
+                bordered={false}
+                style={{ borderBottom: "solid 1px #ccc" }}
+                value={(shiftDetail || {}).BreakEnd}
+              />
+            </Form.Item>
+          </Form.Item>
+          <Form.Item label="Ngày trong tuần" required>
+            <Checkbox.Group value={assignmentDetail.DaysInWeek || []}>
+              <Row>
+                <Col span={8}>
+                  <Checkbox value={1}>Thứ 2</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={2}>Thứ 3</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={3}>Thứ 4</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={4}>Thứ 5</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={5}>Thứ 6</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={6} checked>
+                    Thứ 7
+                  </Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value={0}>Chủ nhật</Checkbox>
+                </Col>
+              </Row>
+            </Checkbox.Group>
+          </Form.Item>
+        </>
+      ) : (
+        <></>
+      )}
+
+      {/* endregion */}
+      <Divider />
+      {/* region Đối tượng áp dụng */}
+
+      <Typography.Title
+        level={4}
+        style={{
+          background: colorBgLayout,
+          padding: "4px 8px",
+        }}
+      >
+        Đối tượng áp dụng
+      </Typography.Title>
+      <Form.Item label="Kiểu phân ca" required>
+        <Radio.Group
+          defaultValue={assignmentType}
+          buttonStyle="solid"
+          onChange={(e) => setAssignmentType(e.target.value)}
+          options={assignmentTypeList.map((assignmentType) => ({
+            label: assignmentType.Name,
+            value: assignmentType.Id,
+          }))}
+        />
+      </Form.Item>
+      <Form.Item wrapperCol={24}>
+        <Space direction="vertical" style={{ maxWidth: "100%" }}>
+          <Table
+            bordered
+            columns={
+              assignmentType == _TargeType.ByEmployee
+                ? employeeColumns
+                : departmentColumns
+            }
+            dataSource={
+              assignmentType == _TargeType.ByEmployee
+                ? appliedEmployeeList
+                : appliedDepartmentList
+            }
+            rowKey="Id"
+            scroll={{
+              x: 800,
+              y: 800,
+            }}
+            rowSelection={{
+              type: "checkbox",
+            }}
+            pagination={{
+              total:
+                assignmentType == _TargeType.ByEmployee
+                  ? appliedEmployeeList.length
+                  : appliedDepartmentList.length,
+              showSizeChanger: true,
+              showTotal: (total) => `Tổng ${total} bản ghi.`,
+              pageSizeOptions: [10, 25, 50],
+            }}
+          ></Table>
+        </Space>
+      </Form.Item>
+
+      {/* endregion */}
+    </Form>
+  );
+};
+
+export { ShiftAssignmentPage, EditShiftAssignmentPage };

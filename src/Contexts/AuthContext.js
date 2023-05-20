@@ -10,10 +10,14 @@ let user = localStorage.getItem("currentUser")
 let token = localStorage.getItem("access_token")
   ? localStorage.getItem("access_token")
   : "";
+let refresh_token = localStorage.getItem("refresh_token")
+  ? localStorage.getItem("refresh_token")
+  : "";
 
 export const initialState = {
   userDetails: "" || user,
   token: "" || token,
+  refresh_token: "" || refresh_token,
   loading: false,
   errorMessage: null,
 };

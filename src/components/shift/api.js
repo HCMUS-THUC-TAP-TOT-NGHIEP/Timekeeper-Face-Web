@@ -133,6 +133,17 @@ export const UpdateShiftAssignment = async (req) => {
   return response.data;
 };
 
+export const GetShiftDetail = async ({Id, ...rest}) => {
+  var response = await AxiosInstance.get("shift/detail", {
+    params: {Id: Id},
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token")
+    },
+  });
+  return response.data;
+
+}
 
 export const _TargeType = {
   ByDepartment: 1,

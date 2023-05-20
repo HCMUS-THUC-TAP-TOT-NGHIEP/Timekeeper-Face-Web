@@ -24,11 +24,15 @@ import { Link, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { compareString } from "../../utils/Comparation";
 import { GetAssignmentList } from "./api";
+import Column from "antd/es/table/Column";
 
 const ShiftAssignmentListPage = (props) => {
   const { notify } = props;
   const [loading, setLoading] = useState(true);
   const [tabKey, setTabKey] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
   const {
     token: { colorBgContainer },
@@ -88,13 +92,13 @@ const ShiftAssignmentListPage = (props) => {
   ];
 
   useEffect(() => {
-    document.title = "Bảng phân ca";
     GetAssignmentList()
       .then((response) => {
         const { Status, ResponseData, Description } = response;
         if (Status === 1) {
-          setFullShiftAssignmentList(ResponseData);
-          setShiftAssignmentList(ResponseData);
+          const { ShiftAssignmentList, Total } = ResponseData;
+          setShiftAssignmentList(ShiftAssignmentList);
+          setTotal(total);
           return;
         }
         notify.error({
@@ -140,17 +144,17 @@ const ShiftAssignmentListPage = (props) => {
         <Col flex="none">
           <Space direction="vertical">
             <Typography.Title level={2} style={{ marginTop: 0 }}>
-              Bảng phân ca
+              Phân ca chi tiết
             </Typography.Title>
             <Breadcrumb>
               <Breadcrumb.Item>
                 <Link to="">Dashboard</Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <Link to="">Quản lý ca làm việc</Link>
+                <Link to="/shift">Ca làm việc</Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <Link to="">Bảng phân ca</Link>
+                <Link to="">Phân ca chi tiết</Link>
               </Breadcrumb.Item>
             </Breadcrumb>
           </Space>
@@ -167,7 +171,7 @@ const ShiftAssignmentListPage = (props) => {
           </Space>
         </Col>
       </Row>
-      <Tabs
+      {/* <Tabs
         activeKey={tabKey}
         items={[
           {
@@ -200,6 +204,56 @@ const ShiftAssignmentListPage = (props) => {
           bordered
           rowKey="Id"
         />
+      </Content> */}
+      <Content>
+        <Table
+          loading={loading}
+          scroll={{
+            x: 1500,
+          }}
+          rowSelection={{
+            type: "checkbox",
+            onSelect: (record) => navigate(`/shift/assignment/detail/${record.Id}`),
+          }}
+          dataSource={shiftAssignmentList}
+          bordered
+          rowKey="Id"
+          pagination={{
+            total: total,
+            showTotal: (total, _) => `Tổng ${total} bản ghi`,
+            onShowSizeChange: (page, pageSize) => {
+              setPage(page);
+              setPageSize(pageSize);
+            },
+          }}
+        >
+          <Column
+            title="Tên bảng phân ca"
+            dataIndex="Description"
+            width={200}
+          />
+          <Column title="Ca làm việc" dataIndex="Shift" width={200} />
+          <Column
+            title="Thời gian áp dụng"
+            render={(_, record) =>
+              `${dayjs(record.StartDate).format(Config.DateFormat)} - ${dayjs(
+                record.EndDate
+              ).format(Config.DateFormat)}`
+            }
+            width={200}
+          />
+          <Column
+            title="Phòng ban áp dụng"
+            render={(_, record) => record.DepartmentList.join("; ")}
+            width={300}
+          />
+          <Column
+            title="Nhân viên áp dụng"
+            render={(_, record) => record.EmployeeList.join("; ")}
+            width={300}
+          />
+          <Column render={(_,record) => <ActionMenu shiftAssignment={record} />}/>
+        </Table>
       </Content>
     </Space>
   );
@@ -246,5 +300,5 @@ const ActionMenu = (props) => {
     </Space>
   );
 };
-export { ShiftAssignmentListPage };
 
+export { ShiftAssignmentListPage };

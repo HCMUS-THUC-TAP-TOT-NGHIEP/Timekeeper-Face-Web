@@ -22,6 +22,7 @@ import "dayjs/locale/vi";
 import { default as React, useEffect, useState } from "react";
 import Config from "../../constant";
 import { GetShiftTypeList, UpdateShift } from "./api";
+import { useNavigate } from "react-router-dom";
 
 const EditShift = (props) => {
   const { notify, updateOneShift, shiftList, shift } = props;
@@ -36,6 +37,7 @@ const EditShift = (props) => {
   const [startBreakTime, setStartBreakTime] = useState(shift.BreakAt);
   const [endBreakTime, setEndBreakTime] = useState(shift.BreakEnd);
   const [totalWorkingTime, setTotalWorkingTime] = useState([0, 0]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadData() {
@@ -142,7 +144,8 @@ const EditShift = (props) => {
           type="text"
           shape="circle"
           icon={<EditTwoTone />}
-          onClick={showModal}
+          // onClick={showModal}
+          onClick={() => navigate(`/shift/edit/${shift.Id}`)}
         />
       </Tooltip>
       <Modal

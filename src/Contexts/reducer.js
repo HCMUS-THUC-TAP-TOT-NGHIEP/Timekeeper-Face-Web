@@ -6,10 +6,14 @@ let user = localStorage.getItem("currentUser")
 let token = localStorage.getItem("access_token")
   ? localStorage.getItem("access_token")
   : "";
+let refresh_token = localStorage.getItem("refresh_token")
+  ? localStorage.getItem("refresh_token")
+  : "";
 
 export const initialState = {
   userDetails: "" || user,
   token: "" || token,
+  refresh_token: "" || refresh_token,
   loading: false,
   errorMessage: null,
 };
@@ -26,6 +30,7 @@ export const AuthReducer = (initialState, action) => {
         ...initialState,
         user: action.payload.user,
         token: action.payload.access_token,
+        refresh_token: action.payload.refresh_token,
         loading: false,
       };
     case "LOGOUT":
@@ -33,6 +38,7 @@ export const AuthReducer = (initialState, action) => {
         ...initialState,
         user: "",
         token: "",
+        refresh_token: "",
       };
 
     case "LOGIN_ERROR":

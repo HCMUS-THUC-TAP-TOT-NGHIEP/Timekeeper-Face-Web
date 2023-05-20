@@ -1,11 +1,5 @@
 import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { ShiftAssignmentDetail } from "./ShiftAssignmentDetail";
-import { ShiftAssignmentListPage } from "./ShiftAssignmentListPage";
-import {
-  EditShiftAssignmentPage,
-  ShiftAssignmentPage,
-} from "./ShiftAssignmentPage";
 import { useAuthState } from "../../Contexts/AuthContext";
 
 const ShiftManagementIndex = ({ loginRequired, notify, ...rest }) => {
@@ -15,7 +9,7 @@ const ShiftManagementIndex = ({ loginRequired, notify, ...rest }) => {
     document.title = "Quản lý ca làm việc";
     if (loginRequired && !userDetails.token) {
       notify.warning({
-        message: "Yêu cầu đăng nhập để đổi mật khẩu.",
+        message: "Yêu cầu đăng nhập để tiếp tục.",
       });
       navigate("/login");
       return;
@@ -24,10 +18,10 @@ const ShiftManagementIndex = ({ loginRequired, notify, ...rest }) => {
   return <Outlet />;
 };
 
-export {
-  ShiftManagementIndex,
-  ShiftAssignmentPage,
-  ShiftAssignmentListPage,
-  ShiftAssignmentDetail,
-  EditShiftAssignmentPage,
-};
+export * from "./AddShift";
+export * from "./ShiftAssignmentDetail";
+export * from "./ShiftAssignmentListPage";
+export * from "./ShiftAssignmentPage";
+export * from "./ShiftDetailPage";
+export { ShiftManagementIndex };
+

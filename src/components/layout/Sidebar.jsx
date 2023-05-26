@@ -3,7 +3,7 @@ import {
   faGauge,
   faList,
   faUniversalAccess,
-  faUsers
+  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu } from "antd";
@@ -21,7 +21,8 @@ function MySidebar(props) {
       collapsible
       collapsed={collapsed}
       breakpoint="lg"
-      collapsedWidth="80"
+      collapsedWidth={80}
+      width={250}
       style={{
         overflow: "auto",
         height: "100vh",
@@ -49,11 +50,11 @@ function MySidebar(props) {
             children: [
               {
                 key: "group2-opt1",
-                label: <NavLink to="/employee">Tất cả nhân viên</NavLink>,
+                label: <NavLink to="/employee">Danh mục nhân viên</NavLink>,
               },
               {
                 key: "group2-opt2",
-                label: <NavLink to="/department">Phòng ban</NavLink>,
+                label: <NavLink to="/department">Danh mục phòng ban</NavLink>,
               },
             ],
           },

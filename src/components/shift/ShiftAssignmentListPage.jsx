@@ -96,9 +96,10 @@ const ShiftAssignmentListPage = (props) => {
       .then((response) => {
         const { Status, ResponseData, Description } = response;
         if (Status === 1) {
+          console.log(ResponseData)
           const { ShiftAssignmentList, Total } = ResponseData;
           setShiftAssignmentList(ShiftAssignmentList);
-          setTotal(total);
+          setTotal(Total);
           return;
         }
         notify.error({
@@ -171,40 +172,6 @@ const ShiftAssignmentListPage = (props) => {
           </Space>
         </Col>
       </Row>
-      {/* <Tabs
-        activeKey={tabKey}
-        items={[
-          {
-            key: 0,
-            label: "Tất cả",
-          },
-          {
-            key: 1,
-            label: "Phân ca theo phòng ban",
-          },
-          {
-            key: 2,
-            label: "Phân ca cho cá nhân",
-          },
-        ]}
-        onChange={changeTabs}
-      />
-      <Content style={{ background: colorBgContainer }}>
-        <Table
-          loading={loading}
-          scroll={{
-            x: 1500,
-          }}
-          rowSelection={{
-            type: "checkbox",
-            //   ...rowSelection,
-          }}
-          dataSource={shiftAssignmentList}
-          columns={columns}
-          bordered
-          rowKey="Id"
-        />
-      </Content> */}
       <Content>
         <Table
           loading={loading}
@@ -232,7 +199,7 @@ const ShiftAssignmentListPage = (props) => {
             dataIndex="Description"
             width={200}
           />
-          <Column title="Ca làm việc" dataIndex="Shift" width={200} />
+          <Column title="Ca làm việc" dataIndex="ShiftName" width={200} />
           <Column
             title="Thời gian áp dụng"
             render={(_, record) =>

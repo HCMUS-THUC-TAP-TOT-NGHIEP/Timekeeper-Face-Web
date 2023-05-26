@@ -80,3 +80,34 @@ export const GetTimesheetList = async (req) => {
   });
   return response.data;
 };
+
+export const GetTimesheetDetail = async (req) => {
+  const response = await AxiosInstance.get("checkin/timesheet/detail", {
+    params: {
+      Id: req.Id,
+    },
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+
+export const CreatTimesheetBE = async (req) => {
+  alert((req.DepartmentList || []).filter((x) => x !== 0));
+  var requestData = {
+    Name: req.Name,
+    DateFrom: req.DateRange[0] ? req.DateRange[0].format("YYYY-MM-DD") : "",
+    DateTo: req.DateRange[1] ? req.DateRange[1].format("YYYY-MM-DD") : "",
+    DepartmentList: (req.DepartmentList || []).filter((x) => x !== 0),
+  };
+  var response = await AxiosInstance.post("checkin/timesheet", requestData, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
+  return response.data;
+};

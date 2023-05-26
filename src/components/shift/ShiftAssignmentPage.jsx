@@ -73,6 +73,7 @@ const ShiftAssignmentPage = (props) => {
       Note: values.Note,
       Description: values.Description,
       DaysInWeek: values.DaysInWeek,
+      AssignmentType: values.AssignmentType,
     };
     AssignShift(requestData)
       .then((response) => {
@@ -448,6 +449,7 @@ const ShiftAssignmentPage = (props) => {
               Đối tượng áp dụng
             </Typography.Title>
             <Form.Item
+              name="AssignmentType"
               label="Kiểu phân ca"
               required
               rules={[
@@ -660,13 +662,11 @@ const EditShiftAssignmentPage = (props) => {
         setEmployeeList(response5.ResponseData.EmployeeList);
         const {
           Assignment,
-          AssignmentDetail,
           ShiftDetail,
           DepartmentList,
           EmployeeList,
         } = response.ResponseData;
         setAssignment(Assignment);
-        setAssignmentDetail(AssignmentDetail);
         setShiftDetail(ShiftDetail);
         setAppliedDepartmentList(DepartmentList);
         setAppliedEmployeeList(EmployeeList);
@@ -699,10 +699,10 @@ const EditShiftAssignmentPage = (props) => {
       // Id: shift.Id,
       Description: assignment.Description,
       Note: assignment.Note,
-      ShiftId: assignmentDetail.ShiftId,
-      StartDate: dayjs(assignmentDetail.StartDate, "YYYY-MM-DD"),
-      EndDate: dayjs(assignmentDetail.EndDate, "YYYY-MM-DD"),
-      DaysInWeek: assignmentDetail.DaysInWeek,
+      ShiftId: assignment.ShiftId,
+      StartDate: dayjs(assignment.StartDate, "YYYY-MM-DD"),
+      EndDate: dayjs(assignment.EndDate, "YYYY-MM-DD"),
+      DaysInWeek: assignment.DaysInWeek,
     });
   }, [editable]);
 
@@ -1085,10 +1085,9 @@ const EditShiftAssignmentPage = (props) => {
 
                 {/* endregion */}
               </Form>
-            ) : assignment && assignmentDetail && shiftDetail ? (
+            ) : assignment && shiftDetail ? (
               <OnlyViewPage
                 assignment={assignment}
-                assignmentDetail={assignmentDetail}
                 shiftDetail={shiftDetail}
                 assignmentTypeList={assignmentTypeList}
                 notify={notify}
@@ -1246,37 +1245,23 @@ const AppliedTargetTable = (props) => {
       total = totalEmployee;
       selectionObject = {
         type: "checkbox",
-        onSelect: (record, selected) => {
-          if (selected) {
-            setInnerAppliedEmployeeList([...innerAppliedEmployeeList, record]);
-          } else {
-            var filterArray = innerAppliedEmployeeList.filter(
-              (ob) => ob.Id !== record.Id
-            );
-            setInnerAppliedEmployeeList(filterArray);
-          }
-        },
-      };
-    } else if (type == _TargeType.ByDepartment) {
+        onChange: (selectedRowKeys, selectedRows) => {
+          setInnerAppliedEmployeeList(selectedRows)
+          },
+        defaultSelectedRowKeys: appliedEmployeeList.map(x => x.Id)
+        }
+      }
+     else if (type == _TargeType.ByDepartment) {
       title = "Chọn phòng ban";
       columns = departmentColumns;
       dataSource = deparmentList;
       total = totaldeparment;
       selectionObject = {
         type: "checkbox",
-        onSelect: (record, selected) => {
-          if (selected) {
-            setInnerAppliedDepartmentList([
-              ...innerAppliedDepartmentList,
-              record,
-            ]);
-          } else {
-            var filterArray = innerAppliedDepartmentList.filter(
-              (ob) => ob.Id !== record.Id
-            );
-            setInnerAppliedDepartmentList(filterArray);
-          }
+        onChange: (selectedRowKeys, selectedRows) => {
+          setInnerAppliedDepartmentList(selectedRows)
         },
+        defaultSelectedRowKeys:  appliedDepartmentList.map(x => x.Id)
       };
     }
 
@@ -1324,7 +1309,6 @@ const AppliedTargetTable = (props) => {
 
 const OnlyViewPage = ({
   assignment,
-  assignmentDetail,
   shiftDetail,
   assignmentTypeList,
   notify,
@@ -1406,8 +1390,8 @@ const OnlyViewPage = ({
             bordered={false}
             style={{ borderBottom: "solid 1px #ccc" }}
             value={
-              assignmentDetail.StartDate
-                ? dayjs(assignmentDetail.StartDate, "YYYY-MM-DD").format(
+              assignment.StartDate
+                ? dayjs(assignment.StartDate, "YYYY-MM-DD").format(
                     Config.DateFormat
                   )
                 : ""
@@ -1426,8 +1410,8 @@ const OnlyViewPage = ({
             bordered={false}
             style={{ borderBottom: "solid 1px #ccc" }}
             value={
-              assignmentDetail.EndDate
-                ? dayjs(assignmentDetail.EndDate, "YYYY-MM-DD").format(
+              assignment.EndDate
+                ? dayjs(assignment.EndDate, "YYYY-MM-DD").format(
                     Config.DateFormat
                   )
                 : ""
@@ -1498,7 +1482,7 @@ const OnlyViewPage = ({
             </Form.Item>
           </Form.Item>
           <Form.Item label="Ngày trong tuần" required>
-            <Checkbox.Group value={assignmentDetail.DaysInWeek || []}>
+            <Checkbox.Group value={assignment.DaysInWeek || []}>
               <Row>
                 <Col span={8}>
                   <Checkbox value={1}>Thứ 2</Checkbox>
@@ -1546,7 +1530,8 @@ const OnlyViewPage = ({
       </Typography.Title>
       <Form.Item label="Kiểu phân ca" required>
         <Radio.Group
-          defaultValue={assignmentType}
+          disabled
+          value={assignmentType}
           buttonStyle="solid"
           onChange={(e) => setAssignmentType(e.target.value)}
           options={assignmentTypeList.map((assignmentType) => ({

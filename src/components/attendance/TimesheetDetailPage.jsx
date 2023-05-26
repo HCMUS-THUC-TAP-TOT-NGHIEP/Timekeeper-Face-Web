@@ -3,10 +3,21 @@ import {
   PlusOutlined,
   SaveOutlined,
   UndoOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
+import {
+  faCalendarDays,
+  faCalendarXmark,
+  faCheckToSlot,
+  faClock,
+  faLock,
+  faLockOpen,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
+  Card,
   Col,
   DatePicker,
   Form,
@@ -14,7 +25,9 @@ import {
   Row,
   Select,
   Space,
+  Statistic,
   Table,
+  Tag,
   Tooltip,
   Typography,
 } from "antd";
@@ -22,52 +35,206 @@ import locale from "antd/es/date-picker/locale/vi_VN";
 import Search from "antd/es/input/Search";
 import TextArea from "antd/es/input/TextArea";
 import { Content } from "antd/es/layout/layout";
-import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
+import { GetTimesheetDetail } from "./api";
+import Column from "antd/es/table/Column";
+import CountUp from "react-countup";
+const formatter = (value) => <CountUp end={value} separator="," />;
 dayjs.extend(isSameOrBefore);
 
 const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
+  const { TimesheetId } = useParams();
   const [loading, setLoading] = useState(true);
   const [reportList, setReportList] = useState([]);
   const [total, setTotal] = useState(0);
   const [searching, setSearching] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+
+  const [timeSheet, setTimeSheet] = useState({});
+  const [detailRecord, settDetailRecord] = useState([]);
+  const [DateRange, setDateRange] = useState([]);
+  const [clockedIn, setClockedIn] = useState(0);
+  const [offNumber, setOffNumber] = useState(0);
+  const [lateEarly, setLatEarly] = useState(0);
+  const [noTimekeeping, setToTimekeeping] = useState(0);
+  const [columns, setColumns] = useState([]);
 
   const search = async (value) => {
     setSearching(true);
     console.log(value);
   };
 
-  const insertReportFE = (value) => {
-    if (reportList.length < pageSize) {
-      setReportList([...reportList, value]);
+  useEffect(() => {
+    async function LoadData() {
+      try {
+        setLoading(true);
+        var response = await GetTimesheetDetail({ Id: TimesheetId });
+        console.log(response);
+        if (response.Status === 1) {
+          var { Timesheet, Detail, Total } = response.ResponseData;
+          setTimeSheet(Timesheet);
+          setTotal(Total);
+          settDetailRecord(Detail);
+          setDateRange([Timesheet.DateFrom, Timesheet.DateTo]);
+          // if ((timeSheet || {}).DateFrom && (timeSheet || {}).DateTo) {
+          // }
+          createColumns(Timesheet.DateFrom, Timesheet.DateTo);
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     }
-  };
 
-  const deleteReportFE = (value) => {
-    var reportList = reportList.filter((a) => a.Id !== value.Id);
-    if (reportList.length < pageSize) {
-      //todo get total report
+    function createColumns(DateFrom, DateTo) {
+      let start = dayjs(DateFrom);
+      let end = dayjs(DateTo);
+      var cols = [
+        {
+          key: "code",
+          dataIndex: "EmployeeId",
+          title: "Mã nhân viên",
+          width: 100,
+        },
+        {
+          key: "name",
+          title: "Nhân viên",
+          dataIndex: "EmployeeName",
+          width: 300,
+        },
+      ];
+      while (!start.isAfter(end, "day")) {
+        var col = {
+          key: start.format("YYYY-MM-DD"),
+          title: (
+            <Space
+              direction="vertical"
+              align="middle"
+              size={"small"}
+              style={{ textAlign: "center" }}
+            >
+              <div style={{ textTransform: "capitalize" }}>
+                {start.locale("vi").format("dddd")}
+              </div>
+              <div>{start.format(Config.DateFormat)}</div>
+            </Space>
+          ),
+          width: 150,
+          dataIndex: [start.format("YYYY-MM-DD"), "Checkin"],
+          // render: (_, record) => {
+          //   return JSON.stringify(record[start.format("YYYY-MM-DD")])
+          // },
+        };
+        cols.push(col);
+        start = start.add(1, "day");
+      }
+      setColumns(cols);
+      return cols;
     }
-  };
+    LoadData();
+  }, [TimesheetId]);
+
+  const dataSrc = [];
+  const employeeId = [];
+  for (const record of detailRecord) {
+    try {
+      var index = employeeId.indexOf(record.EmployeeId);
+      if (index == -1) {
+        var temp = {
+          EmployeeId: record.EmployeeId,
+          EmployeeName: record.EmployeeName,
+        };
+        temp[`${record.Date}`] = {
+          Checkin: `${
+            record.CheckinTime
+              ? dayjs(record.CheckinTime, Config.TimeFormat).format(
+                  Config.NonSecondFormat
+                )
+              : "-:-"
+          } - ${
+            record.CheckoutTime
+              ? dayjs(record.CheckoutTime, Config.TimeFormat).format(
+                  Config.NonSecondFormat
+                )
+              : "-:-"
+          }`,
+          // CheckinTime: record.CheckinTime,
+          // CheckoutTime: record.CheckoutTime,
+        };
+        employeeId.push(record.EmployeeId);
+        dataSrc.push(temp);
+      } else {
+        dataSrc[index][`${record.Date}`] = {
+          Checkin: `${
+            record.CheckinTime
+              ? dayjs(record.CheckinTime, Config.TimeFormat).format(
+                  Config.NonSecondFormat
+                )
+              : "-:-"
+          } - ${
+            record.CheckoutTime
+              ? dayjs(record.CheckoutTime, Config.TimeFormat).format(
+                  Config.NonSecondFormat
+                )
+              : "-:-"
+          }`,
+          // CheckinTime: record.CheckinTime,
+          // CheckoutTime: record.CheckoutTime,
+        };
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      // console.log(dataSrc);
+      // console.log(columns);
+    }
+  }
 
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <Row wrap={false} align="middle">
         <Col flex="none">
-          <Space direction="vertical">
-            <Typography.Title level={2} style={{ marginTop: 0 }}>
-              Bảng chấm công chi tiết
-            </Typography.Title>
+          <Space direction="vertical" wrap>
+            <Space direction="horizontal" align="center" wrap>
+              <Typography.Title
+                level={2}
+                style={{ marginTop: 0, maxWidth: "100%" }}
+              >
+                {timeSheet.Name}
+              </Typography.Title>
+              {timeSheet.LockedStatus ? (
+                <Tag
+                  icon={
+                    <FontAwesomeIcon
+                      icon={faLock}
+                      style={{ paddingRight: "8px" }}
+                    />
+                  }
+                >
+                  Đã khóa
+                </Tag>
+              ) : (
+                <Tag
+                  icon={
+                    <FontAwesomeIcon
+                      icon={faLockOpen}
+                      style={{ paddingRight: "8px" }}
+                    />
+                  }
+                >
+                  Chưa khóa
+                </Tag>
+              )}
+            </Space>
             <Breadcrumb>
               <Breadcrumb.Item>
                 <NavLink to="/">Dashboard</NavLink>
@@ -79,34 +246,104 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <AddReportComponent notify={notify} insertReportFE={insertReportFE} />
+          <Space wrap>
+            <Button type="primary" icon={<UndoOutlined />} loading={loading}>
+              Cập nhật
+            </Button>
+
+            <Button type="default" icon={<UploadOutlined />}>
+              Nhập khẩu
+            </Button>
+          </Space>
+        </Col>
+      </Row>
+      <Row wrap gutter={[16, 16]}>
+        <Col span={6}>
+          <Card bordered={false} size="small">
+            <Statistic
+              valueStyle={{
+                fontSize: "14px",
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+              value={clockedIn}
+              prefix={
+                <Space>
+                  <FontAwesomeIcon icon={faCheckToSlot} />
+                  Đi làm
+                </Space>
+              }
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card bordered={false} size="small">
+            <Statistic
+              valueStyle={{
+                fontSize: "14px",
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+              value={offNumber}
+              prefix={
+                <Space>
+                  <FontAwesomeIcon icon={faCalendarDays} />
+                  Nghỉ
+                </Space>
+              }
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card bordered={false} size="small">
+            <Statistic
+              valueStyle={{
+                fontSize: "14px",
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+              value={lateEarly}
+              prefix={
+                <Space>
+                  <FontAwesomeIcon icon={faClock} />
+                  Đi trễ về sớm
+                </Space>
+              }
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card bordered={false} size="small">
+            <Statistic
+              valueStyle={{
+                fontSize: "14px",
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+              value={noTimekeeping}
+              formatter={formatter}
+              prefix={
+                <Space>
+                  <FontAwesomeIcon icon={faCalendarXmark} />
+                  Chưa chấm công
+                </Space>
+              }
+            />
+          </Card>
         </Col>
       </Row>
       <Row wrap>
         <Col flex="none">
           <Search
             placeholder="Tìm kiếm"
-            // onSeacrh={search}
             allowClear={true}
             loading={searching}
             enterButton
           />
-        </Col>
-        <Col flex="auto" style={{ textAlign: "right" }}>
-          <Tooltip title="Tải lại" placement="bottom">
-            <Button
-              type="primary"
-              onClick={() => setPage(1)}
-              icon={<UndoOutlined />}
-              // loading={loading}
-              style={{
-                backgroundColor: "#ec5504",
-                border: "1px solid #ec5504",
-              }}
-            >
-              Tải lại
-            </Button>
-          </Tooltip>
+          <Col flex="auto" style={{ textAlign: "right" }}></Col>
         </Col>
       </Row>
       <Content>
@@ -118,213 +355,24 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
             x: "calc(700px + 50%)",
             y: 1000,
           }}
+          rowSelection={{
+            type: "checkbox",
+          }}
           style={{ borderColor: "black" }}
-          dataSource={reportList}
-          rowKey="Id"
+          dataSource={dataSrc}
+          rowKey="EmployeeId"
           locale={locale}
           pagination={{
-            pageSize: pageSize,
-            total: total,
+            total: (dataSrc || []).length,
             showSizeChanger: true,
             pageSizeOptions: [10, 20, 50],
-            onChange: (page, pageSize) => {
-              setPage(page);
-              setPageSize(pageSize);
-            },
             showTotal: (total) => `Tổng ${total} mục`,
           }}
+          columns={columns}
         >
-          <Column title="Thời gian" dataIndex="DateRange" width={120} />
-          <Column title="Tên bảng chấm công" dataIndex="Name" width={250} />
-          <Column title="Chấm công" dataIndex="Type" width={100} />
-          <Column title="Vị trí công việc" dataIndex="Type" width={100} />
-          <Column title="Trạng thái" dataIndex="Status" width={100} />
-          <Column
-            title=""
-            width={100}
-            render={(_, record, index) => {
-              return (
-                <DeleteReportComponent
-                  notify={notify}
-                  report={record}
-                  deleteReportFE={deleteReportFE}
-                />
-              );
-            }}
-          />
         </Table>
       </Content>
     </Space>
-  );
-};
-
-const DeleteReportComponent = ({ notify, report, deleteReportFE, ...rest }) => {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const showModal = () => {
-    setOpen(true);
-  };
-
-  const hideModal = () => {
-    setOpen(false);
-  };
-  const deleteReport = async () => {
-    try {
-      setLoading(true);
-    } catch (error) {
-    } finally {
-      setLoading(false);
-    }
-  };
-  return (
-    <>
-      <Tooltip title="Xóa" placement="bottom">
-        <Button
-          icon={<DeleteOutlined />}
-          danger
-          shape="circle"
-          onClick={showModal}
-        />
-      </Tooltip>
-      <Modal
-        open={open}
-        title="Cảnh báo"
-        onCancel={hideModal}
-        okButtonProps={{ loading: loading, danger: true }}
-        okText="Xoá"
-        cancelText="Hủy"
-        onOk={deleteReport}
-      >
-        Bạn có chắc chắn muốn xóa
-        <Typography.Text strong>{report.Name}</Typography.Text>
-        không?
-      </Modal>
-    </>
-  );
-};
-
-const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [designationOptions, setDesignationOptions] = useState([
-    {
-      Id: 0,
-      Name: "Tất cả vị trí",
-    },
-  ]);
-  const [dateRange, setDateRange] = useState([dayjs().date(1), dayjs()]);
-  const [form] = Form.useForm();
-
-  useEffect(() => {
-    form.setFieldsValue({
-      Name: `Bảng chấm công từ ngày ${dateRange[0].format(
-        Config.DateFormat
-      )} đến ngày ${dateRange[1].format(Config.DateFormat)}`,
-    });
-  }, [dateRange]);
-
-  const showModal = () => {
-    setOpen(true);
-  };
-
-  const hideModal = () => {
-    setOpen(false);
-  };
-  const insertReport = async () => {
-    try {
-      setLoading(true);
-    } catch (error) {
-    } finally {
-      setLoading(false);
-    }
-  };
-  return (
-    <>
-      <Button icon={<PlusOutlined />} type="primary" onClick={showModal}>
-        Thêm
-      </Button>
-      <Modal
-        title="Thêm bảng chấm công chi tiết"
-        maskClosable={true}
-        onCancel={hideModal}
-        open={open}
-        footer={[
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={loading}
-            icon={<SaveOutlined />}
-            key="submit"
-          >
-            Lưu
-          </Button>,
-          <Button type="default" key="cancel" onClick={hideModal}>
-            Hủy
-          </Button>,
-        ]}
-        style={{ maxWidth: "100%" }}
-        width={800}
-      >
-        <Form
-          layout="horizontal"
-          form={form}
-          onFinish={insertReport}
-          labelCol={{ sm: { span: 8 }, md: { span: 8 } }}
-          wrapperCol={{ sm: { span: 16 }, md: { span: 16 } }}
-          labelWrap
-          labelAlign="left"
-        >
-          <Form.Item
-            label="Vị trí công việc"
-            name="DesignationList"
-            key="DesignationList"
-            required
-            initialValue={[0]}
-          >
-            <Select
-              mode="multiple"
-              options={(designationOptions || []).map((option) => ({
-                value: option.Id,
-                label: option.Name,
-              }))}
-              showSearch={true}
-            />
-          </Form.Item>
-          <Form.Item label="Tên bảng chấm công" name="Name" key="Name" required>
-            <TextArea rows={3}></TextArea>
-          </Form.Item>
-          <Form.Item label="Thời gian" key="Time" required>
-            <Form.Item key="select">
-              <Select defaultValue={0}>
-                <Select.Option key={0} value={0}>
-                  Tháng này
-                </Select.Option>
-                <Select.Option key={1} value={1}>
-                  Tháng trước
-                </Select.Option>
-                <Select.Option key={2} value={2}>
-                  Tùy chọn
-                </Select.Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              name="DateRange"
-              wrapperCol={24}
-              initialValue={dateRange}
-              key="DateRange"
-              style={{ width: "100%" }}
-            >
-              <DatePicker.RangePicker
-                onChange={(value) => setDateRange(value)}
-                locale={locale}
-                format={Config.DateFormat}
-              />
-            </Form.Item>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </>
   );
 };
 

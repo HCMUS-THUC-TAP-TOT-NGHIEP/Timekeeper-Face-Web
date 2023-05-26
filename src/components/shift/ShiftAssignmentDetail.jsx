@@ -31,6 +31,8 @@ const ShiftAssignmentDetail = (props) => {
   const [assignment, setAssignment] = useState({});
   const [assignmentDetail, setAssignmentDetail] = useState({});
   const [shiftDetail, setShiftDetail] = useState({});
+  const [employeeList, setEmployeeList] = useState([]);
+  const [departmentList, setDepartmentList] = useState([]);
   const [notify, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -44,10 +46,12 @@ const ShiftAssignmentDetail = (props) => {
           });
           return;
         }
-        const { Assignment, ShiftDetail, AssignmentDetail } = ResponseData;
+        const { Assignment, ShiftDetail, EmployeeList, DepartmentList } =
+          ResponseData;
         setAssignment(Assignment);
-        setAssignmentDetail(AssignmentDetail);
         setShiftDetail(ShiftDetail);
+        setEmployeeList(EmployeeList);
+        setDepartmentList(DepartmentList);
       })
       .catch((error) => {
         if (error.response) {
@@ -130,7 +134,7 @@ const ShiftAssignmentDetail = (props) => {
                   ? dayjs(assignment.CreatedAt).format(Config.DateFormat)
                   : ""}
               </Descriptions.Item>
-              <Descriptions.Item label="Kiểu phân ca">
+              <Descriptions.Item label="Kiểu phân ca" name="AssignmentType">
                 {assignment.AssignmentTypeName
                   ? assignment.AssignmentTypeName
                   : ""}
@@ -224,7 +228,7 @@ const ShiftAssignmentDetail = (props) => {
         </Skeleton>
       </Spin>
       <Title level={4}>Chi tiết</Title>
-      {assignment.AssignType === _TargeType.ByEmployee ? (
+      {assignment.TargetType === _TargeType.ByEmployee ? (
         <Table
           rowKey="Id"
           columns={[
@@ -242,13 +246,11 @@ const ShiftAssignmentDetail = (props) => {
               key: "TargetDescription",
             },
           ]}
-          dataSource={assignmentDetail.filter(
-            (s) => s.TargetType && s.TargetType == _TargeType.ByEmployee
-          )}
+          dataSource={employeeList}
           loading={loading}
           bordered
         />
-      ) : assignment.AssignType === _TargeType.ByDepartment ? (
+      ) : assignment.TargetType === _TargeType.ByDepartment ? (
         <Table
           rowKey="Id"
           columns={[
@@ -267,9 +269,7 @@ const ShiftAssignmentDetail = (props) => {
               key: "TargetDescription",
             },
           ]}
-          dataSource={assignmentDetail.filter(
-            (s) => s.TargetType && s.TargetType == _TargeType.ByDepartment
-          )}
+          dataSource={departmentList}
           loading={loading}
           bordered
         />
@@ -281,4 +281,3 @@ const ShiftAssignmentDetail = (props) => {
 };
 
 export { ShiftAssignmentDetail };
-

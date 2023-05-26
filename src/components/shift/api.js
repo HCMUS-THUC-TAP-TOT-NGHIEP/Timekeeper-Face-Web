@@ -79,9 +79,10 @@ export const AssignShift = async (req) => {
   return response.data;
 };
 
-export const GetAssignmentList = async () => {
+export const GetAssignmentList = async (req) => {
   const accessToken = localStorage.getItem("access_token");
   var response = await AxiosInstance.get("shift/assignment/list", {
+    params: req,
     headers: {
       "Access-Control-Allow-Origin": "*",
       Authorization: "Bearer " + accessToken,
@@ -146,6 +147,6 @@ export const GetShiftDetail = async ({Id, ...rest}) => {
 }
 
 export const _TargeType = {
-  ByDepartment: 1,
-  ByEmployee: 2,
+  ByEmployee: 1,
+  ByDepartment: 2,
 };

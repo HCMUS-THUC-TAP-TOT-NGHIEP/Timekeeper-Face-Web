@@ -250,7 +250,7 @@ function CustomLayout(props) {
       <Layout
         className="site-layout"
         style={{
-          marginLeft: collapsed ? 80 : 200,
+          marginLeft: collapsed ? 80 : 250,
         }}
       >
         <MyHeader collapsed={collapsed} setCollapsed={setCollapsed} />

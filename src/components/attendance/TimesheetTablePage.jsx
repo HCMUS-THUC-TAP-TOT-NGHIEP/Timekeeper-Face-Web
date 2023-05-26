@@ -33,7 +33,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
-import { GetTimesheetList } from "./api";
+import { CreatTimesheetBE, GetTimesheetList } from "./api";
 dayjs.extend(isSameOrBefore);
 
 const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
@@ -208,12 +208,7 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
             width={250}
             fixed="left"
           />
-          <Column
-            key="Type"
-            title="Chấm công"
-            dataIndex="Type"
-            width={100}
-          />
+          <Column key="Type" title="Chấm công" dataIndex="Type" width={100} />
           <Column
             key="Department"
             title="Vị trí công việc"
@@ -238,7 +233,6 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
                       style={{ paddingRight: "8px" }}
                     />
                   }
-                  bordered={false}
                 >
                   Đã khóa
                 </Tag>
@@ -250,7 +244,6 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
                       style={{ paddingRight: "8px" }}
                     />
                   }
-                  bordered={false}
                 >
                   Chưa khóa
                 </Tag>
@@ -327,36 +320,49 @@ const DeleteReportComponent = ({ notify, report, deleteReportFE, ...rest }) => {
 const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [designationOptions, setDesignationOptions] = useState([
     {
       Id: 0,
       Name: "Tất cả vị trí",
     },
   ]);
-  const [dateRange, setDateRange] = useState([dayjs().date(1), dayjs()]);
   const [form] = Form.useForm();
-
-  useEffect(() => {
-    form.setFieldsValue({
-      Name: `Bảng chấm công từ ngày ${dateRange[0].format(
-        Config.DateFormat
-      )} đến ngày ${dateRange[1].format(Config.DateFormat)}`,
-    });
-  }, [dateRange]);
-
   const showModal = () => {
     setOpen(true);
   };
 
   const hideModal = () => {
     setOpen(false);
+    Modal.destroyAll();
   };
-  const insertReport = async () => {
+  const insertReport = async (values) => {
     try {
       setLoading(true);
+      var response = await CreatTimesheetBE(values);
+      if (response.Status === 1) {
+        notify.success({
+          message: (
+            <p>
+              Đã tạo báo cáo chấm công: <b>{values.Name}</b>
+            </p>
+          ),
+        });
+        navigate(
+          `/timesheet/timekeeping/timesheet-detail/${response.ResponseData.Id}`
+        );
+        return;
+      }
+
+      notify.error({
+        message: <p>Không thành công</p>,
+        description: response.Description,
+      });
     } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
+      Modal.destroyAll();
     }
   };
   return (
@@ -375,6 +381,7 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
             htmlType="submit"
             loading={loading}
             icon={<SaveOutlined />}
+            onClick={() => form.submit()}
             key="submit"
           >
             Lưu
@@ -387,18 +394,26 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
         width={800}
       >
         <Form
-          layout="horizontal"
           form={form}
+          layout="horizontal"
           onFinish={insertReport}
           labelCol={{ sm: { span: 8 }, md: { span: 8 } }}
           wrapperCol={{ sm: { span: 16 }, md: { span: 16 } }}
           labelWrap
           labelAlign="left"
+          initialValues={{
+            DateRange: [dayjs().date(1), dayjs()],
+            Name: `Bảng chấm công từ ngày ${dayjs()
+              .date(1)
+              .format(Config.DateFormat)} đến ngày ${dayjs().format(
+              Config.DateFormat
+            )}`,
+          }}
         >
           <Form.Item
             label="Vị trí công việc"
-            name="DesignationList"
-            key="DesignationList"
+            name="DepartmentList"
+            key="DepartmentList"
             required
             initialValue={[0]}
           >
@@ -431,12 +446,17 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
             <Form.Item
               name="DateRange"
               wrapperCol={24}
-              initialValue={dateRange}
               key="DateRange"
               style={{ width: "100%" }}
             >
               <DatePicker.RangePicker
-                onChange={(value) => setDateRange(value)}
+                onChange={(value) => {
+                  form.setFieldsValue({
+                    Name: `Bảng chấm công từ ngày ${value[0].format(
+                      Config.DateFormat
+                    )} đến ngày ${value[1].format(Config.DateFormat)}`,
+                  });
+                }}
                 locale={locale}
                 format={Config.DateFormat}
               />

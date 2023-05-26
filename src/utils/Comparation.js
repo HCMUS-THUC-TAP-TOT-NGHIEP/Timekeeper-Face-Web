@@ -14,14 +14,12 @@ function compareString(a, b, field) {
   }
 }
 
-function compareNumber(a, b, field) {}
-
 function compareDatetime(a, b, field) {
   try {
     if (a[field] == b[field]) {
       return 0;
     }
-    if (a.CreatedAt < b.CreatedAt) {
+    if (a[field] == b[field]) {
       return 1;
     }
     return -1;

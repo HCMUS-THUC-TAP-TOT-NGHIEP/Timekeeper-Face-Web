@@ -11,7 +11,9 @@ import {
   Select,
   Skeleton,
   Space,
+  Spin,
   theme,
+  Typography,
 } from "antd";
 import Title from "antd/es/typography/Title";
 import dayjs from "dayjs";
@@ -19,8 +21,10 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { GetOneEmployeeInfo, ModifyEmployeeInfo } from "./api";
 import "./style.css";
+import { GetDepartmentList } from "../department/api";
+import { useAuthState } from "../../Contexts/AuthContext";
 
-export const EditEmployeePage = () => {
+export const EditEmployeePage = ({ loginRequired, ...rest }) => {
   const navigate = useNavigate();
   const [notify, contextHolder] = notification.useNotification();
 
@@ -29,21 +33,28 @@ export const EditEmployeePage = () => {
   } = theme.useToken();
   const { employeeId } = useParams();
   const [currentEmployee, setCurrentEmployee] = useState({});
+  const [departmentList, setDepartmentList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form] = Form.useForm();
+  const userDetails = useAuthState();
   useEffect(() => {
-    document.title = "Cập nhật hồ sơ nhân viên";
-    const access_token = localStorage.getItem("access_token");
-    if (!access_token) {
-      navigate("/login");
-      return;
+    if (loginRequired) {
+      if (!userDetails.token) {
+        navigate("/login");
+        return;
+      }
     }
   }, []);
   useEffect(() => {
-    GetOneEmployeeInfo({ employeeId })
-      .then((response) => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+
+        var response = await GetOneEmployeeInfo({ employeeId });
         const { Status, ResponseData } = response;
         if (Status === 1) {
+          response = await GetDepartmentList();
+          setDepartmentList(response.ResponseData || []);
           setCurrentEmployee(ResponseData);
           form.setFieldsValue({
             Id: ResponseData.Id,
@@ -58,11 +69,30 @@ export const EditEmployeePage = () => {
             DateOfBirth: dayjs(ResponseData.DateOfBirth),
             Position: ResponseData.Position,
           });
-          setLoading(false);
           return;
         }
-      })
-      .catch(() => {});
+      } catch (error) {
+        if (error.response) {
+          notify.error({
+            message: "Có lỗi ở response.",
+            description: `[${error.response.statusText}]`,
+          });
+        } else if (error.request) {
+          notify.error({
+            message: "Có lỗi ở request.",
+            description: error,
+          });
+        } else {
+          notify.error({
+            message: "Có lỗi ở máy khách",
+            description: error.message,
+          });
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, [employeeId]);
 
   const onSubmit = (values) => {
@@ -104,40 +134,34 @@ export const EditEmployeePage = () => {
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}
-      <Row gutter={[16, 16]}>
+      <Row gutter={[16, 16]} align="middle">
         <Col flex="none">
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Link to="/employee/all">Nhân viên</Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Link to={`/employee/${employeeId}`}>Hồ sơ</Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Link to="">Cập nhật</Link>
-            </Breadcrumb.Item>
-          </Breadcrumb>
-        </Col>
-        <Col flex="auto" style={{ textAlign: "right" }}>
-          <Button
-            style={{ margin: "5px 5px" }}
-            type="primary"
-            ghost
-            onClick={() => navigate(`/employee/edit/${employeeId}`)}
-          >
-            Cập nhật hồ sơ
-          </Button>
-          <Button
-            style={{ margin: "5px 5px" }}
-            type="primary"
-            onClick={() => alert("Đăng ký thông tin nhận diện")}
-          >
-            Đăng ký thông tin nhận diện
-          </Button>
+          <Space direction="vertical">
+            <Skeleton loading={loading}>
+              <Typography.Title level={2} style={{ marginTop: 0 }}>
+                {currentEmployee.LastName + " " + currentEmployee.FirstName}
+              </Typography.Title>
+            </Skeleton>
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                <Link to="/">Dashboard</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <Link to="/employee/all">Nhân viên</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <Link to={`/employee/${employeeId}`}>
+                  <Skeleton loading={loading}>
+                    {currentEmployee.LastName + " " + currentEmployee.FirstName}
+                  </Skeleton>
+                </Link>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Space>
         </Col>
       </Row>
-      <Card style={{ background: colorBgContainer }}>
-        <Title level={4}>Thông tin chi tiết</Title>
+      <Title level={4}>Thông tin chi tiết</Title>
+      <Spin spinning={loading}>
         <Skeleton loading={loading} active={loading}>
           <Form
             form={form}
@@ -332,13 +356,12 @@ export const EditEmployeePage = () => {
                     },
                   ]}
                 >
-                  <Select>
-                    <Select.Option value={0}>
-                      FTS - Phòng Lập trình
-                    </Select.Option>
-                    <Select.Option value={1}>HR</Select.Option>
-                    <Select.Option value={2}>Marketing</Select.Option>
-                  </Select>
+                  <Select
+                    options={(departmentList || []).map((department) => ({
+                      value: department.Id,
+                      label: department.Name,
+                    }))}
+                  ></Select>
                 </Form.Item>
               </Col>
               <Col xs={24} sm={24} md={12} lg={12} xl={8}>
@@ -365,7 +388,7 @@ export const EditEmployeePage = () => {
             </Form.Item>
           </Form>
         </Skeleton>
-      </Card>
+      </Spin>
     </Space>
   );
 };

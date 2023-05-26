@@ -8,22 +8,27 @@ import {
   Row,
   Space,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import React, { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useAuthState } from "../../Contexts/AuthContext";
 import { RequestResetLink, ResetPassword } from "./api";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
-export const ForgotPasswordPage = function(props) {
+export const ForgotPasswordPage = function ({ notify, ...rest }) {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const [notify, contextHolder] = notification.useNotification();
+  const userDetails = useAuthState();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Recover Password";
+    if (userDetails.token) {
+      navigate("/dashboard");
+    }
+    document.title = "Quên mật khẩu";
   }, []);
   const onSubmit = (values) => {
     var requestData = {
@@ -60,11 +65,10 @@ export const ForgotPasswordPage = function(props) {
             description: error.message,
           });
         }
-      })
+      });
   };
   return (
     <Layout style={{ height: "100vh" }}>
-      {contextHolder}
       <Row
         style={{
           height: "inherit",
@@ -82,14 +86,15 @@ export const ForgotPasswordPage = function(props) {
             }}
           >
             <Title level={1} style={{ textAlign: "center" }}>
-              Forgot Password
+              Đặt lại mật khẩu
             </Title>
             <Title
               level={5}
               type="secondary"
               style={{ textAlign: "center", marginBottom: 30 }}
             >
-              Enter your email to get a password reset link
+              {/* Enter your email to get a password reset link */}
+              Nhập email của bạn để nhận link đặt lại mật khẩu
             </Title>
             <Form
               name="basic"
@@ -110,12 +115,12 @@ export const ForgotPasswordPage = function(props) {
                 rules={[
                   {
                     required: true,
-                    message: "Please input your email!",
+                    message:
+                      "Vui lòng nhập email liên kết với tài khoản của bạn!",
                   },
                   {
                     pattern: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-                    message:
-                      "Your email is invalid. Please enter a valid email address.",
+                    message: "Email không hợp lệ.",
                   },
                 ]}
               >
@@ -128,7 +133,8 @@ export const ForgotPasswordPage = function(props) {
                   style={{ width: "100%" }}
                   size="large"
                 >
-                  Reset password
+                  {/* Reset password */}
+                  Gửi yêu cầu
                 </Button>
               </Form.Item>
             </Form>
@@ -138,7 +144,9 @@ export const ForgotPasswordPage = function(props) {
               align="center"
             >
               <Text level={5}>
-                Remember your password? <Link to="/login">Login</Link>
+                {/* Remember your password? */}
+                Bạn nhớ được mật khẩu của mình?
+                <Link to="/login">Login</Link>
               </Text>
             </Space>
           </Content>
@@ -149,7 +157,7 @@ export const ForgotPasswordPage = function(props) {
   );
 };
 
-export const ResetPasswordPage = function(props) {
+export const ResetPasswordPage = function (props) {
   const { access_token } = useParams();
   const {
     token: { colorBgContainer },
@@ -197,7 +205,7 @@ export const ResetPasswordPage = function(props) {
             description: error.message,
           });
         }
-      })
+      });
   };
   return (
     <Layout style={{ height: "100vh" }}>
@@ -278,9 +286,7 @@ export const ResetPasswordPage = function(props) {
                         return Promise.resolve();
                       }
                       return Promise.reject(
-                        new Error(
-                          "The two passwords that you entered do not match!"
-                        )
+                        new Error("Mật khẩu chưa trùng khớp!")
                       );
                     },
                   }),

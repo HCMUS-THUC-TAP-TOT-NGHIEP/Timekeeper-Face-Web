@@ -1,9 +1,12 @@
-import { BarsOutlined, ControlFilled } from "@ant-design/icons";
-import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import { Badge, Menu, Space } from "antd";
+import {
+  faClock,
+  faGauge,
+  faList,
+  faUniversalAccess,
+  faUsers,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Menu } from "antd";
 import Sider from "antd/es/layout/Sider";
 import React from "react";
 import { NavLink } from "react-router-dom";
@@ -14,99 +17,67 @@ function MySidebar(props) {
   const { collapsed } = props;
   return (
     <Sider
-      trigger={null}
+      // trigger={null}
       collapsible
       collapsed={collapsed}
       breakpoint="lg"
-      collapsedWidth="0"
+      collapsedWidth={80}
+      width={250}
+      style={{
+        overflow: "auto",
+        height: "100vh",
+        position: "fixed",
+        left: 0,
+        top: 0,
+        bottom: 0,
+      }}
     >
       <div className="logo" />
+
       <Menu
         theme="dark"
         mode="inline"
         items={[
           {
             key: "1",
-            icon: <DashboardIcon fontSize="large" />,
-            label: <NavLink to="/dashboard">Dashboard</NavLink>,
+            icon: <FontAwesomeIcon icon={faGauge} />,
+            label: <NavLink to="/dashboard">Tổng quan</NavLink>,
           },
-          {
-            key: "group1",
-            icon: <ControlFilled fontSize="large" />,
-            label: <div>Hệ thống</div>,
-            children: [
-              {
-                key: "group1-opt1",
-                label: <NavLink to="/manage/account">Tài khoản</NavLink>,
-              },
-              {
-                key: "group1-opt2",
-                label: (
-                  <NavLink to="/manage/account">Phân quyền sử dụng</NavLink>
-                ),
-              },
-            ],
-          },
-
           {
             key: "group2",
-            icon: <PeopleAltIcon fontSize="large" />,
+            icon: <FontAwesomeIcon icon={faUsers} />,
             label: <div>Nhân viên</div>,
             children: [
               {
                 key: "group2-opt1",
-                label: (
-                  <NavLink
-                    to="/employee"
-                  >
-                    Tất cả nhân viên
-                  </NavLink>
-                ),
+                label: <NavLink to="/employee">Danh mục nhân viên</NavLink>,
               },
               {
                 key: "group2-opt2",
-                label: (
-                  <NavLink
-                    to="/department"
-                  >
-                    Phòng ban
-                  </NavLink>
-                ),
+                label: <NavLink to="/department">Danh mục phòng ban</NavLink>,
               },
             ],
           },
           {
             key: "group3",
-            icon: <BarsOutlined fontSize="large" />,
+            icon: <FontAwesomeIcon icon={faList} />,
             label: <div>Ca làm việc</div>,
             children: [
               {
                 key: "group3-opt1",
-                label: (
-                  <NavLink
-                    to="/shift"
-                  >
-                    Danh mục ca làm việc
-                  </NavLink>
-                ),
+                label: <NavLink to="/shift">Ca làm việc</NavLink>,
               },
-              {
-                key: "group3-opt2",
-                label: (
-                  <NavLink
-                    to="/shift/assignment"
-                  >
-                    Phân ca làm việc
-                  </NavLink>
-                ),
-              },
+              // {
+              //   key: "group3-opt2",
+              //   label: (
+              //     <NavLink to="/shift/assignment">Phân ca chi tiết</NavLink>
+              //   ),
+              // },
               {
                 key: "group3-opt3",
                 label: (
-                  <NavLink
-                    to="/shift/assignment/list"
-                  >
-                    Bảng phân ca làm việc
+                  <NavLink to="/shift/assignment/list">
+                    Phân ca chi tiết
                   </NavLink>
                 ),
               },
@@ -114,45 +85,60 @@ function MySidebar(props) {
           },
           {
             key: "sub2",
-            icon: <AccessTimeFilledIcon fontSize="large" />,
+            icon: <FontAwesomeIcon icon={faClock} />,
             label: <div>Chấm công</div>,
             children: [
               {
-                key: "sub2-opt1",
+                key: "sub2-timekeeper_v2",
                 label: (
-                  <NavLink
-                    to=""
-                  >
-                    Bảng chấm công
+                  <NavLink to="/timesheet/timekeeper_v2">
+                    Dữ liệu chấm công
                   </NavLink>
                 ),
               },
               {
-                key: "sub2-opt2",
+                key: "sub2-timesheet-detail",
                 label: (
-                  <NavLink
-                    to=""
-                  >
-                    Báo cáo đi muộn, về sớm
+                  <NavLink to="/timesheet/timekeeping/timesheet-detail">
+                    Bảng chấm công chi tiết
+                  </NavLink>
+                ),
+              },
+              {
+                key: "sub2-summary",
+                label: (
+                  <NavLink to="/timesheet/timekeeping/timesheet-summary">
+                    Bảng chấm công tổng hợp
+                  </NavLink>
+                ),
+              },
+              {
+                key: "sub2-opt1",
+                label: (
+                  <NavLink to="/timesheet/timekeeper">
+                    Thống kê điểm danh
                   </NavLink>
                 ),
               },
             ],
           },
           {
-            key: "6",
-            icon: <NotificationsActiveIcon fontSize="large" />,
-            label: (
-              <NavLink
-                to="/notification"
-              >
-                <Space>
-                  Thông báo
-                  <Badge count={0} />
-                </Space>
-              </NavLink>
-            ),
+            key: "group1",
+            icon: <FontAwesomeIcon icon={faUniversalAccess} />,
+            label: <NavLink to="/manage/account">Người dùng</NavLink>,
           },
+          // {
+          //   key: "6",
+          //   icon: <FontAwesomeIcon icon={faBell} />,
+          //   label: (
+          //     <NavLink to="/notification">
+          //       <Space>
+          //         Thông báo
+          //         <Badge count={0} />
+          //       </Space>
+          //     </NavLink>
+          //   ),
+          // },
         ]}
       />
     </Sider>

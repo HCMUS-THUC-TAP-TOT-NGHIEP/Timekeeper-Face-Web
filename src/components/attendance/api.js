@@ -10,84 +10,104 @@ let AxiosInstance = axios.create({
   },
 });
 
-export const AssignShift = async (req) => {
-  const accessToken = localStorage.getItem("access_token");
-  var response = await AxiosInstance.post("shift/assignment", req, {
+export const GetStatistic = async (requestData) => {
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.post("checkin/list", requestData, {
     headers: {
       "Access-Control-Allow-Origin": "*",
-      Authorization: "Bearer " + accessToken,
+      Authorization: "Bearer " + access_token,
     },
   });
   return response.data;
 };
 
-export const GetAssignmentList = async () => {
-  const accessToken = localStorage.getItem("access_token");
-  var response = await AxiosInstance.get("shift/assignment/list", {
+export const GetStatisticV2 = async (requestData) => {
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.post("checkin/list/v2", requestData, {
     headers: {
       "Access-Control-Allow-Origin": "*",
-      Authorization: "Bearer " + accessToken,
+      Authorization: "Bearer " + access_token,
     },
   });
   return response.data;
 };
 
-export const GetAssignmentDetail = async (req) => {
-  const accessToken = localStorage.getItem("access_token");
-  var response = await AxiosInstance.post("shift/assignment/detail", req, {
+export const GetTemplateFile = async (req) => {
+  var response = await AxiosInstance.get("checkin/timekeeper/templates", {
+    params: { FileName: req.fileName },
     headers: {
       "Access-Control-Allow-Origin": "*",
-      Authorization: "Bearer " + accessToken,
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
     },
-  });
-  console.log(response.data);
-  return response.data;
-};
-
-export const GetAssignmentType = async () => {
-  const accessToken = localStorage.getItem("access_token");
-  var response = await AxiosInstance.get("shift/assignment/all-type", {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      Authorization: "Bearer " + accessToken,
-    },
+    responseType: "blob",
   });
   return response.data;
 };
 
-export const GetShiftList = async () => {
-  const accessToken = localStorage.getItem("access_token");
-  var response = await AxiosInstance.get("shift/list", {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      Authorization: "Bearer " + accessToken,
-    },
-  });
+export const ImportDataBE = async ({ fileList, ...rest }) => {
+  var formData = new FormData();
+  console.log(fileList[0].arrayBuffer());
+  formData.append("ImportData", fileList[0], fileList[0].name);
+  formData.append("Type", fileList[0].type);
+  formData.append("Target", "TimekeeperData");
+
+  var response = await AxiosInstance.post(
+    "checkin/timekeeper/import",
+    formData,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: "Bearer " + localStorage.getItem("access_token"),
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 };
 
-export const GetDesignationList = async (accessToken) => {
-  var response = await AxiosInstance.get("designation/list", {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      Authorization: "Bearer " + accessToken,
+export const GetTimesheetList = async (req) => {
+  const response = await AxiosInstance.get("checkin/timesheet", {
+    params: {
+      Page: req.Page,
+      PageSize: req.PageSize,
+      Keyword: req.Keyword,
     },
-  });
-  return response.data;
-};
-
-export const UpdateShiftAssignment = async (req) => {
-  const accessToken = localStorage.getItem("access_token");
-  var response = await AxiosInstance.post("shift/assignment/update", req, {
     headers: {
       "Access-Control-Allow-Origin": "*",
-      Authorization: "Bearer " + accessToken,
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+      "Content-Type": "application/json",
     },
   });
   return response.data;
 };
 
-export const _TargeType = {
-  ByDepartment: 1,
-  ByEmployee: 2,
+export const GetTimesheetDetail = async (req) => {
+  const response = await AxiosInstance.get("checkin/timesheet/detail", {
+    params: {
+      Id: req.Id,
+    },
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+
+export const CreatTimesheetBE = async (req) => {
+  alert((req.DepartmentList || []).filter((x) => x !== 0));
+  var requestData = {
+    Name: req.Name,
+    DateFrom: req.DateRange[0] ? req.DateRange[0].format("YYYY-MM-DD") : "",
+    DateTo: req.DateRange[1] ? req.DateRange[1].format("YYYY-MM-DD") : "",
+    DepartmentList: (req.DepartmentList || []).filter((x) => x !== 0),
+  };
+  var response = await AxiosInstance.post("checkin/timesheet", requestData, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
+  return response.data;
 };

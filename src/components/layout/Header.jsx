@@ -1,25 +1,26 @@
 import {
   DownOutlined,
   KeyOutlined,
+  LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import LogoutIcon from "@mui/icons-material/Logout";
 import {
   Avatar,
+  Button,
   Col,
   Dropdown,
-  notification,
   Row,
-  Skeleton,
   Space,
-  theme,
   Typography,
+  notification,
+  theme,
 } from "antd";
 import { Header } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuthState } from "../../Contexts/AuthContext";
 import { getUserInfo } from "../../api";
 import { Logout } from "../authentication/api";
 
@@ -27,7 +28,7 @@ const items = [
   {
     key: "1",
     label: <Link to="/profile">My Profile</Link>,
-    icon: <AccountCircleIcon style={{ fontSize: "16px" }} />,
+    icon: <UserOutlined style={{ fontSize: "16px" }} />,
   },
   {
     key: "2",
@@ -48,27 +49,29 @@ const items = [
         Đăng xuất
       </Link>
     ),
-    icon: <LogoutIcon style={{ fontSize: "16px" }} />,
+    icon: <LogoutOutlined style={{ fontSize: "16px" }} />,
   },
 ];
 
 function MyHeader(props) {
   const { collapsed, setCollapsed } = props;
   const [userInfo, setUserInfo] = useState(null);
-  const [active, setActive] = useState(true);
   const navigate = useNavigate();
   const [notify, contextHolder] = notification.useNotification();
+  const authState = useAuthState();
 
   const {
     token: { colorBgContainer },
   } = theme.useToken();
   useEffect(() => {
+    if (!authState.token) {
+      navigate("/login");
+    }
     getUserInfo()
       .then((response) => {
         const { Status, ResponseData } = response;
         if (Status === 1) {
           setUserInfo(ResponseData);
-          setActive(false);
           return;
         }
         navigate("/login");
@@ -105,26 +108,22 @@ function MyHeader(props) {
       }
     }
     return (
-      <a onClick={(e) => e.preventDefault()}>
-        <Space>
-          <Avatar
-            size={{
-              xs: 24,
-              sm: 32,
-              md: 40,
-            }}
-            style={{ backgroundColor: "#fde3cf", color: "#f56a00" }}
-          >
-            {String(str[0] + str[1])}
-          </Avatar>
-          <DownOutlined fontSize="small" />
-        </Space>
-      </a>
+      <Avatar
+        size={{
+          xs: 24,
+          sm: 32,
+          md: 40,
+        }}
+        style={{ backgroundColor: "#fde3cf", color: "#f56a00" }}
+      >
+        {String(str[0] + str[1])}
+      </Avatar>
     );
   };
 
   return (
     <Header
+      className="boxShadow89"
       style={{
         padding: 0,
         background: colorBgContainer,
@@ -150,7 +149,7 @@ function MyHeader(props) {
                 margin: 0,
               }}
             >
-              TimeKeeping Web
+              Chấm công
             </Typography.Title>
           </Space>
         </Col>
@@ -161,7 +160,12 @@ function MyHeader(props) {
             placement="bottomRight"
             trigger="click"
           >
-            {createAvatar(userInfo)}
+            <Button type="link">
+              <Space>
+                {createAvatar(userInfo)}
+                <DownOutlined fontSize="small" />
+              </Space>
+            </Button>
           </Dropdown>
         </Col>
       </Row>

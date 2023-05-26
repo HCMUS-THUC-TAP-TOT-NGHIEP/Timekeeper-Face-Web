@@ -1,57 +1,53 @@
-import {
-  DeleteFilled,
-  EditFilled,
-  EyeFilled,
-  MoreOutlined,
-} from "@ant-design/icons";
+import { DeleteOutlined, EditTwoTone, EyeTwoTone } from "@ant-design/icons";
+import { faArrowsRotate, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
   Col,
-  Dropdown,
-  notification,
   Popconfirm,
   Row,
-  Skeleton,
   Space,
   Table,
+  Tooltip,
+  Typography,
+  notification,
 } from "antd";
+import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Config from "../../constant";
+import { compareDatetime, compareString } from "../../utils/Comparation";
 import { DeleteOneEmployee, GetManyEmployee } from "./api";
 import "./style.css";
+import { ImportDataComponent } from "./ImportEmployeeList";
 
 export const AllEmployeesPage = (props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
   const [notify, contextHolder] = notification.useNotification();
+  const [total, setTotal] = useState(40);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Tất cả nhân viên";
-    const access_token = localStorage.getItem("access_token");
-    if (!access_token) {
-      navigate("/login");
-      return;
-    }
-  }, []);
-
-  useEffect(() => {
-    GetManyEmployee({ page, perPage })
-      .then((response) => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        var response = await GetManyEmployee({ page, perPage });
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          for (var ob of ResponseData) {
-            ob.key = ob.Id;
-          }
-          setCurrentEmployeeList(ResponseData);
-          setLoading(false);
+          const { EmployeeList, Total } = ResponseData;
+          setTotal(Total);
+          setCurrentEmployeeList(EmployeeList);
           return;
         }
-      })
-      .catch((error) => {
+        notify.error({
+          message: "Không thành công",
+          description: Description,
+        });
+      } catch (error) {
         if (error.response) {
           notify.error({
             message: "Có lỗi ở response.",
@@ -68,65 +64,59 @@ export const AllEmployeesPage = (props) => {
             description: error.message,
           });
         }
-      });
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, [page, perPage]);
 
-  const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
-    },
-    getCheckboxProps: (record) => ({
-      disabled: record.name === "Disabled User",
-      // Column configuration not to be checked
-      name: record.name,
-    }),
+  const deleteOneEmployee = (values) => {
+    setCurrentEmployeeList(
+      currentEmployeeList.filter((a) => a.Id !== values.Id)
+    );
   };
 
   const columns = [
     {
-      title: "Họ tên",
-      dataIndex: "FullName",
-      key: "FullName",
-      width: 80,
-      fixed: "left",
-      render: (_, employee) => `${employee.FirstName} ${employee.LastName}`,
-      sorter: (a, b) =>
-        (a.FirstName + a.LastName).localeCompare(b.FirstName + b.LastName),
-    },
-    {
       title: "ID",
       dataIndex: "Id",
       key: "Id",
-      width: 40,
+      width: 60,
       fixed: "left",
       sorter: (a, b) => a.Id - b.Id,
+    },
+    {
+      title: "Họ tên",
+      dataIndex: "FullName",
+      key: "FullName",
+      width: 200,
+      fixed: "left",
+      render: (_, employee) => `${employee.LastName} ${employee.FirstName}`,
+      sorter: (a, b) =>
+        compareString(a.FirstName + a.LastName, b.FirstName + b.LastName),
+      // (a.FirstName + a.LastName).localeCompare(b.FirstName + b.LastName),
     },
     {
       title: "Ngày sinh",
       dataIndex: "DateOfBirth",
       key: "DateOfBirth",
       render: (_, { DateOfBirth }) =>
-        DateOfBirth
-          ? new Date(Date.parse(DateOfBirth)).toLocaleDateString()
-          : "",
-      width: 60,
+        DateOfBirth ? dayjs(DateOfBirth).format(Config.DateFormat) : "",
+      width: 150,
     },
     {
       title: "Giới tính",
       dataIndex: "Gender",
       key: "Gender",
       render: (_, employee) => (employee.Gender ? "Nam" : "Nữ"),
-      width: 40,
+      width: 80,
     },
     {
-      title: "Chức vụ",
+      title: "Vị trí công việc",
       dataIndex: "Position",
       key: "Position",
-      width: 100,
+      width: "200px",
       sorter: (a, b) => String(a.Position).localeCompare(String(b.Position)),
       filters: [],
       onFilter: (value, record) => record.address.startsWith(value),
@@ -134,11 +124,11 @@ export const AllEmployeesPage = (props) => {
     },
     {
       title: "Phòng ban",
-      dataIndex: "DepartmentId",
-      key: "DepartmentId",
+      dataIndex: "DepartmentName",
+      key: "DepartmentName",
       width: 100,
-      sorter: (a, b) =>
-        String(a.DepartmentId).localeCompare(String(b.DepartmentId)),
+      sorter: (a, b) => compareString(a.DepartmentName, b.DepartmentName),
+      // String(a.DepartmentId).localeCompare(String(b.DepartmentId)),
       filters: [
         {
           text: "HR - Nhân sự",
@@ -161,73 +151,113 @@ export const AllEmployeesPage = (props) => {
       dataIndex: "JoinDate",
       key: "JoinDate",
       render: (_, { JoinDate }) =>
-        JoinDate ? new Date(Date.parse(JoinDate)).toLocaleDateString() : "",
-      width: 60,
-      sorter: (a, b) => Date.parse(a.JoinDate) - Date.parse(b.JoinDate),
-    },
-    {
-      title: "Địa chỉ",
-      dataIndex: "Address",
-      key: "Address",
-      width: 120,
+        JoinDate ? dayjs(JoinDate).format(Config.DateFormat) : "",
+      width: 150,
+      sorter: (a, b) => compareDatetime(a, b),
     },
     {
       title: "Ngày nghỉ",
       dataIndex: "LeaveDate",
       key: "LeaveDate",
       render: (_, { LeaveDate }) =>
-        LeaveDate ? new Date(Date.parse(LeaveDate)).toLocaleDateString() : "",
-      width: 60,
+        LeaveDate ? dayjs(LeaveDate).format(Config.DateFormat) : "",
+      width: 150,
+    },
+    {
+      title: "Địa chỉ",
+      dataIndex: "Address",
+      key: "Address",
+      width: 200,
     },
     {
       title: "",
       dataIndex: "Action",
       key: "Action",
       render: (_, employee) => (
-        <ActionMenu
-          Employee={employee}
-          currentEmployeeList={currentEmployeeList}
-          setCurrentEmployeeList={setCurrentEmployeeList}
-        />
+        <ActionMenu Employee={employee} deleteOneEmployee={deleteOneEmployee} />
       ),
-      width: 20,
-      fixed: "right",
+      width: 150,
+      // fixed: "right",
     },
   ];
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}
-      <Row wrap={false}>
+      <Row gutter={[16, 16]} wrap={false} align="middle">
         <Col flex="none">
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Link to="/employee/all">Nhân viên</Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Link to="/employee/all">Tất cả</Link>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Space direction="vertical">
+            <Typography.Title level={2} style={{ marginTop: 0 }}>
+              Danh sách nhân viên
+            </Typography.Title>
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                <Link to="/">Dashboard</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <Link to="/employee/all">Nhân viên</Link>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <Button type="primary" onClick={() => navigate("/employee/add")}>
-            Thêm nhân viên mới
-          </Button>
+          <Space wrap>
+            <Button
+              type="primary"
+              onClick={() => setPage(1)}
+              icon={
+                <FontAwesomeIcon
+                  icon={faArrowsRotate}
+                  style={{ paddingRight: "8px" }}
+                  spin={loading}
+                />
+              }
+              loading={loading}
+              style={{
+                backgroundColor: "#ec5504",
+                border: "1px solid #ec5504",
+              }}
+            >
+              Lấy lại dữ liệu
+            </Button>
+            <Button
+              type="primary"
+              icon={
+                <FontAwesomeIcon
+                  icon={faPlus}
+                  style={{ paddingRight: "8px" }}
+                />
+              }
+              onClick={() => navigate("/employee/add")}
+            >
+              Thêm nhân viên mới
+            </Button>
+            <ImportDataComponent notify={notify} />
+          </Space>
         </Col>
       </Row>
-      <Skeleton loading={loading} active={loading}>
-        <Table
-          scroll={{
-            x: 1500,
-          }}
-          rowSelection={{
-            type: "checkbox",
-            ...rowSelection,
-          }}
-          dataSource={currentEmployeeList}
-          columns={columns}
-        />
-      </Skeleton>
+      <Table
+        bordered
+        loading={loading}
+        scroll={{
+          x: 1500,
+          // y: 1200
+        }}
+        dataSource={currentEmployeeList}
+        columns={columns}
+        rowKey="Id"
+        pagination={{
+          onChange: (page, pageSize) => {
+            setPage(page);
+            setPerPage(pageSize);
+          },
+          total: total,
+          pageSizeOptions: [10, 15, 25, 50],
+          showSizeChanger: true,
+          showTotal: (total, range) => `Tổng số bản ghi: ${total}`,
+          position: "",
+        }}
+      />
     </Space>
   );
 };
@@ -235,19 +265,48 @@ export const AllEmployeesPage = (props) => {
 // rowSelection object indicates the need for row selection
 
 function ActionMenu(props) {
-  const { Employee, setCurrentEmployeeList, currentEmployeeList } = props;
+  const { Employee, deleteOneEmployee } = props;
   const [notify, contextHolder] = notification.useNotification();
+  const navigate = useNavigate();
+  return (
+    <Space size="small">
+      <Tooltip title="Xem">
+        <Button
+          type="text"
+          icon={<EyeTwoTone />}
+          onClick={() => navigate(`/employee/${Employee.Id}`)}
+        />
+      </Tooltip>
+      <Tooltip title="Sửa">
+        <Button
+          type="text"
+          icon={<EditTwoTone />}
+          onClick={() => navigate(`/employee/edit/${Employee.Id}`)}
+        />
+      </Tooltip>
+      <DeleteEmployee
+        notify={notify}
+        employee={Employee}
+        deleteOneEmployee={deleteOneEmployee}
+      />
+      {contextHolder}
+    </Space>
+  );
+}
+
+const DeleteEmployee = (props) => {
+  const { notify, employee, deleteOneEmployee } = props;
+  const [loading, setLoading] = useState(false);
   const deleteEmployee = () => {
-    DeleteOneEmployee({ EmployeeId: Employee.Id })
+    setLoading(true);
+    DeleteOneEmployee({ EmployeeId: employee.Id })
       .then((response) => {
-        const { Status, Description, ResponseData } = response;
+        const { Status, Description } = response;
         if (Status === 1) {
           notification.success({
-            description: "Xóa nhân viên thành công",
+            description: `Đã xóa nhân viên ${employee.LastName} ${employee.FirstName} - ${employee.Id}`,
           });
-          setCurrentEmployeeList(
-            currentEmployeeList.filter((a) => a.Id !== Employee.Id)
-          );
+          deleteOneEmployee(employee);
           return;
         }
         notification.error({
@@ -272,63 +331,27 @@ function ActionMenu(props) {
             description: error.message,
           });
         }
+      })
+      .finally(function () {
+        setLoading(false);
       });
   };
-  const items = [
-    {
-      label: (
-        <Link to={`/employee/${Employee.Id}`}>
-          <Space>
-            <EyeFilled />
-            Xem
-          </Space>
-        </Link>
-      ),
-      key: "3",
-    },
-    {
-      label: (
-        <Link to={`/employee/edit/${Employee.Id}`}>
-          <Space>
-            <EditFilled />
-            Chỉnh sửa
-          </Space>
-        </Link>
-      ),
-      key: "0",
-    },
-    {
-      label: (
-        <Popconfirm
-          title={`Xóa nhân viên ID ${Employee.Id}`}
-          description={`Bạn có chắc muốn xóa nhân viên ID ${Employee.Id} - ${Employee.FirstName} ${Employee.LastName}?`}
-          okText="Yes"
-          cancelText="No"
-          placement="top"
-          onConfirm={deleteEmployee}
-        >
-          <Space>
-            <DeleteFilled key="1" />
-            Xóa
-          </Space>
-        </Popconfirm>
-      ),
-      key: "1",
-    },
-  ];
+
   return (
     <>
-      {contextHolder}
-      <Dropdown
-        menu={{ items }}
-        trigger={["click"]}
-        placement="bottomRight"
-        arrow
+      <Popconfirm
+        title={`Xóa nhân viên ID ${employee.Id}`}
+        description={`Bạn có chắc muốn xóa nhân viên ID ${employee.Id} - ${employee.LastName} ${employee.FirstName} ?`}
+        onConfirm={deleteEmployee}
+        okText="Xóa"
+        okButtonProps={{ danger: true, loading: loading }}
+        cancelText="Hủy"
+        placement="topRight"
       >
-        <Space>
-          <MoreOutlined />
-        </Space>
-      </Dropdown>
+        <Tooltip title="Xóa">
+          <Button type="text" icon={<DeleteOutlined />} danger></Button>
+        </Tooltip>
+      </Popconfirm>
     </>
   );
-}
+};

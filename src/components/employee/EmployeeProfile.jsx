@@ -9,12 +9,15 @@ import {
   Row,
   Skeleton,
   Space,
+  Spin,
+  theme,
 } from "antd";
 import Meta from "antd/es/card/Meta";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { GetOneEmployeeInfo } from "./api";
 import "./style.css";
+import { Content } from "antd/es/layout/layout";
 
 export const EmployeeProfile = (props) => {
   const navigate = useNavigate();
@@ -22,6 +25,9 @@ export const EmployeeProfile = (props) => {
   const [currentEmployee, setCurrentEmployee] = useState({});
   const [loading, setLoading] = useState(true);
   const [notify, contextHolder] = notification.useNotification();
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
 
   useEffect(() => {
     document.title = "Hồ sơ nhân viên";
@@ -62,88 +68,90 @@ export const EmployeeProfile = (props) => {
   }, [employeeId]);
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
-      {contextHolder}
-      <Row>
-        <Col flex="none">
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Link to="/employee/all">Nhân viên</Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Link to="">Hồ sơ</Link>
-            </Breadcrumb.Item>
-          </Breadcrumb>
-        </Col>
-        <Col flex="auto" style={{ textAlign: "right" }}>
-          <Button
-            style={{ margin: "5px 5px" }}
-            type="primary"
-            ghost
-            onClick={() => navigate(`/employee/edit/${employeeId}`)}
-          >
-            Cập nhật hồ sơ
-          </Button>
-        </Col>
-      </Row>
-      <Card bordered={false}>
-        <Skeleton avatar loading={loading} active={loading}>
-          <Meta
-            avatar={
-              <Avatar
-                style={{ backgroundColor: "#f56a00" }}
-                size={{
-                  xs: 24,
-                  sm: 32,
-                  md: 80,
-                  lg: 100,
-                  xl: 120,
-                }}
-              >
-                {currentEmployee.FirstName}
-              </Avatar>
-            }
-            description=<Descriptions
-              column={{
-                xxl: 2,
-                xl: 2,
-                lg: 2,
-                md: 1,
-                sm: 1,
-                xs: 1,
-              }}
-              title={`${currentEmployee.LastName} ${currentEmployee.FirstName}`}
+    <Spin spinning={loading}>
+      <Space direction="vertical" style={{ width: "100%" }}>
+        {contextHolder}
+        <Row>
+          <Col flex="none">
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                <Link to="/employee/all">Nhân viên</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <Link to="">Hồ sơ</Link>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Col>
+          <Col flex="auto" style={{ textAlign: "right" }}>
+            <Button
+              style={{ margin: "5px 5px" }}
+              type="primary"
+              ghost
+              onClick={() => navigate(`/employee/edit/${employeeId}`)}
             >
-              <Descriptions.Item label="ID">
-                {currentEmployee.Id}
-              </Descriptions.Item>
-              <Descriptions.Item label="Phòng ban/ Nhóm">
-                UI/UX Design Team
-              </Descriptions.Item>
-              <Descriptions.Item label="Vị trí">
-                {currentEmployee.Position}
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày vào">
-                {new Date(
-                  Date.parse(currentEmployee.JoinDate)
-                ).toLocaleDateString()}
-              </Descriptions.Item>
-              <Descriptions.Item label="ĐTDĐ">
-                {currentEmployee.MobilePhone}
-              </Descriptions.Item>
-              <Descriptions.Item label="Địa chỉ">
-                {currentEmployee.Address}
-              </Descriptions.Item>
-              <Descriptions.Item label="Email">
-                {currentEmployee.Email}
-              </Descriptions.Item>
-              <Descriptions.Item label="Giới tính">
-                {currentEmployee.Gender ? "Nam" : "Nữ"}
-              </Descriptions.Item>
-            </Descriptions>
-          />
-        </Skeleton>
-      </Card>
-    </Space>
+              Cập nhật hồ sơ
+            </Button>
+          </Col>
+        </Row>
+        <Content style={{ background: colorBgContainer, padding: 20 }}>
+          <Skeleton avatar loading={loading} active={loading}>
+            <Meta
+              avatar={
+                <Avatar
+                  style={{ backgroundColor: "#f56a00" }}
+                  size={{
+                    xs: 24,
+                    sm: 32,
+                    md: 80,
+                    lg: 100,
+                    xl: 120,
+                  }}
+                >
+                  {currentEmployee.FirstName}
+                </Avatar>
+              }
+              description=<Descriptions
+                column={{
+                  xxl: 2,
+                  xl: 2,
+                  lg: 2,
+                  md: 1,
+                  sm: 1,
+                  xs: 1,
+                }}
+                title={`${currentEmployee.LastName} ${currentEmployee.FirstName}`}
+              >
+                <Descriptions.Item label="ID">
+                  {currentEmployee.Id}
+                </Descriptions.Item>
+                <Descriptions.Item label="Phòng ban/ Nhóm">
+                  {currentEmployee.DepartmentName}
+                </Descriptions.Item>
+                <Descriptions.Item label="Vị trí">
+                  {currentEmployee.Position}
+                </Descriptions.Item>
+                <Descriptions.Item label="Ngày vào">
+                  {new Date(
+                    Date.parse(currentEmployee.JoinDate)
+                  ).toLocaleDateString()}
+                </Descriptions.Item>
+                <Descriptions.Item label="ĐTDĐ">
+                  {currentEmployee.MobilePhone}
+                </Descriptions.Item>
+                <Descriptions.Item label="Địa chỉ">
+                  {currentEmployee.Address}
+                </Descriptions.Item>
+                <Descriptions.Item label="Email">
+                  {currentEmployee.Email}
+                </Descriptions.Item>
+                <Descriptions.Item label="Giới tính">
+                  {currentEmployee.Gender ? "Nam" : "Nữ"}
+                </Descriptions.Item>
+              </Descriptions>
+            />
+          </Skeleton>
+        </Content>
+      </Space>
+    </Spin>
   );
 };

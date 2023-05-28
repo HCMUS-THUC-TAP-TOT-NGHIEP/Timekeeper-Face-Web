@@ -409,7 +409,7 @@ function ActionMenu(props) {
   const [notify, contextHolder] = notification.useNotification();
 
   return (
-    <Space align="center" size="middle" wrap>
+    <Space align="center" size="small" wrap>
       {contextHolder}
       <EditShift
         notify={notify}
@@ -476,7 +476,7 @@ const DeleteShiftComponent = (props) => {
       icon={<DeleteFilled />}
     >
       <Tooltip title="Xóa">
-        <Button type="text" shape="circle" icon={<DeleteOutlined />} danger />
+        <Button size="small" type="text" shape="circle" icon={<DeleteOutlined />} danger />
       </Tooltip>
     </Popconfirm>
   );
@@ -673,12 +673,12 @@ const ShiftList = function ({ notify, ...rest }) {
           />
           <Column
             title="Giờ bắt đầu nghỉ giữa ca"
-            dataIndex="FinishTime"
-            key="FinishTime"
-            sorter={(a, b) => compareDatetime(a, b, "FinishTime")}
+            dataIndex="BreakAt"
+            key="BreakAt"
+            sorter={(a, b) => compareDatetime(a, b, "BreakAt")}
             render={(_, record) =>
-              record.FinishTime
-                ? dayjs(record.FinishTime, Config.TimeFormat).format(
+              record.BreakAt
+                ? dayjs(record.BreakAt, Config.TimeFormat).format(
                     Config.NonSecondFormat
                   )
                 : ""
@@ -688,12 +688,12 @@ const ShiftList = function ({ notify, ...rest }) {
           />
           <Column
             title="Giờ kết thúc nghỉ giữa ca"
-            dataIndex="FinishTime"
-            key="FinishTime"
-            sorter={(a, b) => compareDatetime(a, b, "FinishTime")}
+            dataIndex="BreakEnd"
+            key="BreakEnd"
+            sorter={(a, b) => compareDatetime(a, b, "BreakEnd")}
             render={(_, record) =>
-              record.FinishTime
-                ? dayjs(record.FinishTime, Config.TimeFormat).format(
+              record.BreakEnd
+                ? dayjs(record.BreakEnd, Config.TimeFormat).format(
                     Config.NonSecondFormat
                   )
                 : ""

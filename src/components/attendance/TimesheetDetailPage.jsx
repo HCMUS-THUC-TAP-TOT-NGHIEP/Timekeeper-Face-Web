@@ -45,15 +45,33 @@ import Config from "../../constant";
 import { GetTimesheetDetail } from "./api";
 import Column from "antd/es/table/Column";
 import CountUp from "react-countup";
+import { CustomStatisticsComponent } from "./CustomStatisticsComponent";
 const formatter = (value) => <CountUp end={value} separator="," />;
 dayjs.extend(isSameOrBefore);
+
+
+let defaultCols = [
+  {
+    key: "code",
+    dataIndex: "EmployeeId",
+    title: "Mã nhân viên",
+    width: 100,
+  },
+  {
+    key: "name",
+    title: "Nhân viên",
+    dataIndex: "EmployeeName",
+    width: 300,
+  },
+];
+
+let colsStatics = [...defaultCols]
 
 const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
   const { TimesheetId } = useParams();
   const [loading, setLoading] = useState(true);
-  const [reportList, setReportList] = useState([]);
   const [total, setTotal] = useState(0);
   const [searching, setSearching] = useState(false);
 
@@ -98,20 +116,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
     function createColumns(DateFrom, DateTo) {
       let start = dayjs(DateFrom);
       let end = dayjs(DateTo);
-      var cols = [
-        {
-          key: "code",
-          dataIndex: "EmployeeId",
-          title: "Mã nhân viên",
-          width: 100,
-        },
-        {
-          key: "name",
-          title: "Nhân viên",
-          dataIndex: "EmployeeName",
-          width: 300,
-        },
-      ];
+      var cols = defaultCols;
       while (!start.isAfter(end, "day")) {
         var col = {
           key: start.format("YYYY-MM-DD"),
@@ -167,8 +172,6 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
                 )
               : "-:-"
           }`,
-          // CheckinTime: record.CheckinTime,
-          // CheckoutTime: record.CheckoutTime,
         };
         employeeId.push(record.EmployeeId);
         dataSrc.push(temp);
@@ -187,8 +190,6 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
                 )
               : "-:-"
           }`,
-          // CheckinTime: record.CheckinTime,
-          // CheckoutTime: record.CheckoutTime,
         };
       }
     } catch (error) {
@@ -259,6 +260,15 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
       </Row>
       <Row wrap gutter={[16, 16]}>
         <Col span={6}>
+          <CustomStatisticsComponent
+            key="off-employee"
+            cols={colsStatics}
+            dataSrc={[]}
+            title="Đi làm"
+            total={10}
+            modalTitle="Danh sách nhân viên"
+            icon={<FontAwesomeIcon icon={faCheckToSlot} />}
+          />
           <Card bordered={false} size="small">
             <Statistic
               valueStyle={{
@@ -369,8 +379,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
             showTotal: (total) => `Tổng ${total} mục`,
           }}
           columns={columns}
-        >
-        </Table>
+        ></Table>
       </Content>
     </Space>
   );

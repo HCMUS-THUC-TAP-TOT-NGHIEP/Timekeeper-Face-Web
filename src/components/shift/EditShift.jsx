@@ -144,8 +144,7 @@ const EditShift = (props) => {
           type="text"
           shape="circle"
           icon={<EditTwoTone />}
-          // onClick={showModal}
-          onClick={() => navigate(`/shift/edit/${shift.Id}`)}
+size="small"          onClick={() => navigate(`/shift/edit/${shift.Id}`)}
         />
       </Tooltip>
       <Modal

@@ -8,8 +8,8 @@ import {
   StatisticPage,
   StatisticPageV2,
   TimesheetDetailPage,
-  TimesheetTablePage,
   TimesheetSummaryTablePage,
+  TimesheetTablePage,
 } from "./components/attendance";
 import { ChangePasswordPage } from "./components/authentication/ChangePassword";
 import {
@@ -19,7 +19,7 @@ import {
 import LoginPage from "./components/authentication/Login";
 import RegisterPage from "./components/authentication/Register";
 import { Dashboard } from "./components/dashboard";
-import { DepartmentList } from "./components/department";
+import { DepartmentList, DepartmentPageIndex } from "./components/department";
 import {
   AllEmployeesPage,
   EditEmployeePage,
@@ -34,11 +34,10 @@ import MySidebar from "./components/layout/Sidebar";
 import {
   AddShiftPage,
   EditShiftAssignmentPage,
-  ShiftAssignmentDetail,
   ShiftAssignmentListPage,
   ShiftAssignmentPage,
   ShiftDetailPage,
-  ShiftManagementIndex,
+  ShiftManagementIndex
 } from "./components/shift";
 import { ShiftList } from "./components/shift/ShiftList";
 
@@ -93,12 +92,20 @@ function App() {
           </Route>
           <Route
             path="/department"
-            element={<DepartmentList notify={notify} loginRequired={true} />}
-          />
-          <Route
-            path="/department/all"
-            element={<DepartmentList notify={notify} loginRequired={true} />}
-          />
+            element={<DepartmentPageIndex notify={notify} loginRequired={true} />}
+          >
+            <Route
+            exact
+              path=""
+              element={<DepartmentList notify={notify} loginRequired={true} />}
+            />
+            <Route
+            exact
+              path="all"
+              element={<DepartmentList notify={notify} loginRequired={true} />}
+            />
+
+          </Route>
 
           <Route
             path="shift"
@@ -200,10 +207,6 @@ function App() {
                 />
               }
             />
-            {/* <Route
-              exact path="timekeeping/timesheet-summary/:SummaryId"
-              element={< TimesheetSummaryDetailPage notify={notify} loginRequired={true} />}
-            /> */}
           </Route>
           <Route
             path="/profile/changepwd"

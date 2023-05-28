@@ -583,115 +583,121 @@ const EditShiftAssignmentPage = (props) => {
   const {
     token: { colorBgContainer, colorBgLayout },
   } = theme.useToken();
-  const onUpdatingAssigningShift = (values) => {
-    var requestData = {
-      Id: assignment.Id,
-      StartDate: values.StartDate
-        ? dayjs(values.StartDate).format("YYYY-MM-DD")
-        : null,
-      EndDate: values.EndDate
-        ? dayjs(values.EndDate).format("YYYY-MM-DD")
-        : null,
-      EmployeeList: appliedEmployeeList.map((ob) => ob.Id),
-      DepartmentList: appliedDepartmentList.map((ob) => ob.Id),
-      Note: values.Note,
-      Description: values.Description,
-      DaysInWeek: form.getFieldValue("DaysInWeek"),
-      ShiftId: values.ShiftId
-    };
+  async function loadData() {
+    try {
+      const response = await GetAssignmentDetail({ Id: id });
+      if (response.Status != 1) {
+        return;
+      }
+      const response1 = await GetAssignmentType();
+      if (response.Status != 1) {
+        return;
+      }
+      const response2 = await GetShiftList();
+      if (response.Status != 1) {
+      }
+      const response3 = await GetDepartmentList();
+      if (response.Status != 1) {
+        return;
+      }
+      const response5 = await GetManyEmployee();
+      if (response.Status != 1) {
+        return;
+      }
+      setAssignmentTypeList(response1.ResponseData);
+      setShiftList(response2.ResponseData.ShiftList);
+      setDepartmentList(response3.ResponseData.DepartmentList);
+      setEmployeeList(response5.ResponseData.EmployeeList);
+      const {
+        Assignment,
+        ShiftDetail,
+        DepartmentList,
+        EmployeeList,
+      } = response.ResponseData;
+      setAssignment(Assignment);
+      setShiftDetail(ShiftDetail);
+      setAppliedDepartmentList(DepartmentList);
+      setAppliedEmployeeList(EmployeeList);
+      return;
+    } catch (error) {
+      if (error.response) {
+        notify.error({
+          message: "Có lỗi ở response.",
+          description: `[${error.response.statusText}]`,
+        });
+      } else if (error.request) {
+        notify.error({
+          message: "Có lỗi ở request.",
+          description: error,
+        });
+      } else {
+        notify.error({
+          message: "Có lỗi ở máy khách",
+          description: error.message,
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    UpdateShiftAssignment(requestData)
-      .then((response) => {
-        const { Status, Description } = response;
+  const onUpdatingAssigningShift = async (values) => {
+    try {
+      setLoading(true);
+      var requestData = {
+        Id: assignment.Id,
+        StartDate: values.StartDate
+          ? dayjs(values.StartDate).format("YYYY-MM-DD")
+          : null,
+        EndDate: values.EndDate
+          ? dayjs(values.EndDate).format("YYYY-MM-DD")
+          : null,
+        EmployeeList: appliedEmployeeList.map((ob) => ob.Id),
+        DepartmentList: appliedDepartmentList.map((ob) => ob.Id),
+        Note: values.Note,
+        Description: values.Description,
+        DaysInWeek: form.getFieldValue("DaysInWeek"),
+        ShiftId: values.ShiftId,
+        TargetType: values.TargetType,
+      };
+      var response = await UpdateShiftAssignment(requestData);
+      const { Status, Description } = response;
         if (Status === 1) {
           notify.success({
             description: "Cập nhật phân ca thành công.",
           });
-          navigate("/shift/assignment/detail/" + id);
+          setEditable(false);
+          await loadData();
+          // navigate("/shift/assignment/detail/" + id);
           return;
         }
         notify.error({
           message: "Không thành công",
           description: Description,
         });
-      })
-      .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
-      });
+    }catch(error){
+      if (error.response) {
+        notify.error({
+          message: "Có lỗi ở response.",
+          description: `[${error.response.statusText}]`,
+        });
+      } else if (error.request) {
+        notify.error({
+          message: "Có lỗi ở request.",
+          description: error,
+        });
+      } else {
+        notify.error({
+          message: "Có lỗi ở máy khách",
+          description: error.message,
+        });
+      }
+    }finally{
+      setLoading(false);
+
+    }
   };
   useEffect(() => {
-    async function loadData() {
-      try {
-        const response = await GetAssignmentDetail({ Id: id });
-        if (response.Status != 1) {
-          return;
-        }
-        const response1 = await GetAssignmentType();
-        if (response.Status != 1) {
-          return;
-        }
-        const response2 = await GetShiftList();
-        if (response.Status != 1) {
-        }
-        const response3 = await GetDepartmentList();
-        if (response.Status != 1) {
-          return;
-        }
-        const response5 = await GetManyEmployee();
-        if (response.Status != 1) {
-          return;
-        }
-        setAssignmentTypeList(response1.ResponseData);
-        setShiftList(response2.ResponseData.ShiftList);
-        setDepartmentList(response3.ResponseData.DepartmentList);
-        setEmployeeList(response5.ResponseData.EmployeeList);
-        const {
-          Assignment,
-          ShiftDetail,
-          DepartmentList,
-          EmployeeList,
-        } = response.ResponseData;
-        setAssignment(Assignment);
-        setShiftDetail(ShiftDetail);
-        setAppliedDepartmentList(DepartmentList);
-        setAppliedEmployeeList(EmployeeList);
-        return;
-      } catch (error) {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
   }, [id]);
   useEffect(() => {
@@ -703,6 +709,7 @@ const EditShiftAssignmentPage = (props) => {
       StartDate: dayjs(assignment.StartDate, "YYYY-MM-DD"),
       EndDate: dayjs(assignment.EndDate, "YYYY-MM-DD"),
       DaysInWeek: assignment.DaysInWeek,
+      TargetType: assignment.TargetType,
     });
   }, [editable]);
 
@@ -731,7 +738,7 @@ const EditShiftAssignmentPage = (props) => {
           <Space>
             {editable ? (
               <>
-                <Button onClick={() => navigate("/shift")}>Hủy</Button>
+                <Button onClick={() => navigate("shift/assignment/list")}>Hủy</Button>
                 <Button
                   type="primary"
                   // loading={updatingLoading}
@@ -776,14 +783,6 @@ const EditShiftAssignmentPage = (props) => {
                 >
                   Thông tin chung
                 </Typography.Title>
-                {/* <Form.Item
-                  name="Id"
-                  required
-                  hidden
-                >
-                  <Input readonly />
-                </Form.Item>
- */}
                 <Form.Item
                   label="Tên bảng phân ca"
                   name="Description"
@@ -970,7 +969,7 @@ const EditShiftAssignmentPage = (props) => {
                       valuePropName="checked"
                       required
                     >
-                      <Checkbox.Group >
+                      <Checkbox.Group value={assignment.DaysInWeek || []}>
                         <Row>
                           <Col span={8}>
                             <Checkbox value={1}>Thứ 2</Checkbox>
@@ -1018,6 +1017,7 @@ const EditShiftAssignmentPage = (props) => {
                 </Typography.Title>
                 <Form.Item
                   label="Kiểu phân ca"
+                  name="TargetType"
                   required
                   rules={[
                     {

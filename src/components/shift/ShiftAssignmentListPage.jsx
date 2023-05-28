@@ -230,7 +230,7 @@ const ActionMenu = (props) => {
   const { shiftAssignment } = props;
   const navigate = useNavigate();
   return (
-    <Space>
+    <Space size="small">
       <Tooltip title="Xem nhanh">
         <Button
           onClick={() =>
@@ -239,6 +239,7 @@ const ActionMenu = (props) => {
           type="text"
           shape="circle"
           icon={<EyeTwoTone />}
+          size="small"
         />
       </Tooltip>
       <Tooltip title="Chỉnh sửa">
@@ -261,7 +262,7 @@ const ActionMenu = (props) => {
         //   onConfirm={deleteDepartment}
       >
         <Tooltip title="Xoá">
-          <Button icon={<DeleteOutlined />} type="text" shape="circle" danger />
+          <Button size="small" icon={<DeleteOutlined />} type="text" shape="circle" danger />
         </Tooltip>
       </Popconfirm>
     </Space>

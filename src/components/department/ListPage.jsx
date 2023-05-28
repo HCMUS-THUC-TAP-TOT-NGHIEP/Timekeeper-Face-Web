@@ -1,4 +1,5 @@
 import { DeleteOutlined } from "@ant-design/icons";
+import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import {
   Breadcrumb,
   Button,
@@ -10,20 +11,19 @@ import {
   Table,
   Tooltip,
   Typography,
-  notification
+  notification,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AddDepartmentFrom } from "./AddComponent";
 import { EditDepartmentForm } from "./EditComponent";
-import {
-  DeleteOneDepartment,
-  GetDepartmentList
-} from "./api";
+import { DeleteOneDepartment, GetDepartmentList } from "./api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const DepartmentList = (props) => {
   const { notify } = props;
   const [loading, setLoading] = useState(true);
+  const [reload, setReload] = useState(true);
   const [currentDepartmentList, setCurrentDepartmentList] = useState([]);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -66,7 +66,7 @@ const DepartmentList = (props) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [perPage, page]);
+  }, [perPage, page, reload]);
 
   const updateOneDepartment = (values) => {
     const newCurrentDepartmentList = currentDepartmentList.map((department) => {
@@ -96,14 +96,13 @@ const DepartmentList = (props) => {
       title: "Tên",
       dataIndex: "Name",
       key: "Name",
-      width: 200,
       sorter: (a, b) => a.Name.localeCompare(b.Name),
     },
     {
       title: "Trưởng phòng",
       dataIndex: "Manager",
       key: "Manager",
-      render: (_, { ManagerId, ManagerName }) => ManagerName,
+      render: (_, { ManagerName }) => ManagerName,
       with: 200,
     },
     {
@@ -118,8 +117,9 @@ const DepartmentList = (props) => {
           updateOneDepartment={updateOneDepartment}
         />
       ),
-      width: 120,
       fixed: "right",
+      align: "center",
+      width: 100,
     },
   ];
   return (
@@ -141,7 +141,25 @@ const DepartmentList = (props) => {
           </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <Space wrap>
+          <Space wrap align="center">
+            <Button
+              type="primary"
+              onClick={() => setReload(!reload)}
+              icon={
+                <FontAwesomeIcon
+                  icon={faArrowsRotate}
+                  style={{ paddingRight: "8px" }}
+                  spin={loading}
+                />
+              }
+              loading={loading}
+              style={{
+                backgroundColor: "#ec5504",
+                border: "1px solid #ec5504",
+              }}
+            >
+              Lấy lại dữ liệu
+            </Button>
             <AddDepartmentFrom
               form={form}
               listState={[insertOneDepartment, currentDepartmentList]}
@@ -161,6 +179,7 @@ const DepartmentList = (props) => {
         pagination={{
           pageSize: perPage,
           current: page,
+          total: total,
           pageSizeOptions: [10, 20, 50],
           showSizeChanger: true,
           onChange: (page, pageSize) => {
@@ -220,11 +239,11 @@ function ActionMenu(props) {
 
   return (
     <Space wrap size="small">
-        <EditDepartmentForm
-          form={form}
-          content={department}
-          listState={[updateOneDepartment, departmentList]}
-        />
+      <EditDepartmentForm
+        form={form}
+        content={department}
+        listState={[updateOneDepartment, departmentList]}
+      />
       <Popconfirm
         title={`Xóa phòng ban ID ${department.Id}`}
         description={`Bạn có chắc muốn xóa nhân viên ID ${department.Id} - ${department.Name}?`}
@@ -235,7 +254,13 @@ function ActionMenu(props) {
         onConfirm={deleteDepartment}
       >
         <Tooltip title="Xoá" placement="bottom">
-          <Button size="small" icon={<DeleteOutlined />} danger type="text" shape="circle" />
+          <Button
+            size="small"
+            icon={<DeleteOutlined />}
+            danger
+            type="text"
+            shape="circle"
+          />
         </Tooltip>
       </Popconfirm>
 
@@ -244,6 +269,4 @@ function ActionMenu(props) {
   );
 }
 
-
 export { DepartmentList };
-

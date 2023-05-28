@@ -15,7 +15,7 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
 import { ImportDataComponent } from "./ImportEmployeeList";
@@ -80,22 +80,34 @@ export const AllEmployeesPage = (props) => {
 
   const columns = [
     {
-      title: "ID",
+      title: "Stt",
+      align: "right",
+      render: (_, record, index) => index + 1,
+      fixed: "left",
+      width: 60,
+    },
+    {
+      title: "Mã NV",
       dataIndex: "Id",
       key: "Id",
-      width: 50,
+      width: 100,
       fixed: "left",
       sorter: (a, b) => a.Id - b.Id,
+      align: "right",
     },
     {
       title: "Họ tên",
       dataIndex: "FullName",
       key: "FullName",
       fixed: "left",
-      render: (_, employee) => `${employee.LastName} ${employee.FirstName}`,
+      render: (_, employee) => (
+        <NavLink to={`/employee/${employee.Id}`}>
+          {`${employee.LastName} ${employee.FirstName}`}
+        </NavLink>
+      ),
       sorter: (a, b) =>
         compareString(a.FirstName + a.LastName, b.FirstName + b.LastName),
-      width: 300,
+      width: 200,
     },
     {
       title: "Ngày sinh",
@@ -103,6 +115,7 @@ export const AllEmployeesPage = (props) => {
       key: "DateOfBirth",
       render: (_, { DateOfBirth }) =>
         DateOfBirth ? dayjs(DateOfBirth).format(Config.DateFormat) : "",
+      align: "center",
       width: 150,
     },
     {
@@ -110,17 +123,15 @@ export const AllEmployeesPage = (props) => {
       dataIndex: "Gender",
       key: "Gender",
       render: (_, employee) => (employee.Gender ? "Nam" : "Nữ"),
-      width: 80,
+      align: "center",
+      width: 100,
     },
     {
       title: "Vị trí công việc",
       dataIndex: "Position",
       key: "Position",
       sorter: (a, b) => String(a.Position).localeCompare(String(b.Position)),
-      filters: [],
-      onFilter: (value, record) => record.address.startsWith(value),
-      filterSearch: true,
-      width: 300,
+      width: 200,
     },
     {
       title: "Phòng ban",
@@ -128,8 +139,7 @@ export const AllEmployeesPage = (props) => {
       key: "DepartmentName",
       sorter: (a, b) => compareString(a.DepartmentName, b.DepartmentName),
       onFilter: (value, record) => record.DepartmentId.startsWith(value),
-      filterSearch: true,
-      width: 300,
+      width: 200,
     },
     {
       title: "Ngày vào",
@@ -154,7 +164,7 @@ export const AllEmployeesPage = (props) => {
       title: "Địa chỉ",
       dataIndex: "Address",
       key: "Address",
-      width: 300,
+      width: 400,
     },
     {
       title: "",
@@ -164,8 +174,7 @@ export const AllEmployeesPage = (props) => {
         <ActionMenu Employee={employee} deleteOneEmployee={deleteOneEmployee} />
       ),
       width: 120,
-      align: "middle",
-      fixed: "right",
+      align: "center",
     },
   ];
 
@@ -405,6 +414,12 @@ export const SimpleEmployeeLListPage = (props) => {
   };
 
   const columns = [
+    {
+      title: "Stt",
+      width: 60,
+      align: "right",
+      render: (_, record, index) => index + 1,
+    },
     {
       title: "Mã NV",
       dataIndex: "Id",

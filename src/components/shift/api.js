@@ -10,6 +10,8 @@ let AxiosInstance = axios.create({
   },
 });
 
+const controller = new AbortController();
+
 export const GetShiftList = async (requestData) => {
   const params = requestData;
   const accessToken = localStorage.getItem("access_token");
@@ -19,6 +21,7 @@ export const GetShiftList = async (requestData) => {
       "Access-Control-Allow-Origin": "*",
       Authorization: "Bearer " + accessToken,
     },
+    signal: controller.signal, //Aborts request after 6 seconds
   });
   return response.data;
 };
@@ -134,17 +137,16 @@ export const UpdateShiftAssignment = async (req) => {
   return response.data;
 };
 
-export const GetShiftDetail = async ({Id, ...rest}) => {
+export const GetShiftDetail = async ({ Id, ...rest }) => {
   var response = await AxiosInstance.get("shift/detail", {
-    params: {Id: Id},
+    params: { Id: Id },
     headers: {
       "Access-Control-Allow-Origin": "*",
-      Authorization: "Bearer " + localStorage.getItem("access_token")
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
     },
   });
   return response.data;
-
-}
+};
 
 export const _TargeType = {
   ByEmployee: 1,

@@ -35,7 +35,6 @@ import {
   AddShiftPage,
   EditShiftAssignmentPage,
   ShiftAssignmentListPage,
-  ShiftAssignmentPage,
   ShiftDetailPage,
   ShiftManagementIndex
 } from "./components/shift";
@@ -134,13 +133,13 @@ function App() {
               element={<ShiftDetailPage editable={true} notify={notify} loginRequired={true} />}
             />
 
-
+{/* 
             <Route
               path="assignment"
               element={
                 <ShiftAssignmentPage notify={notify} loginRequired={true} />
               }
-            />
+            /> */}
 
             <Route
               path="assignment/edit/:id"
@@ -161,7 +160,6 @@ function App() {
             <Route
               path="assignment/detail/:id"
               element={
-                // <ShiftAssignmentDetail notify={notify} loginRequired={true} />
                 <EditShiftAssignmentPage
                   editable={false}
                   notify={notify}

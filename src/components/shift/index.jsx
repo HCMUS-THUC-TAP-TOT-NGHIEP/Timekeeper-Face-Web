@@ -19,7 +19,6 @@ const ShiftManagementIndex = ({ loginRequired, notify, ...rest }) => {
 };
 
 export * from "./AddShift";
-export * from "./ShiftAssignmentDetail";
 export * from "./ShiftAssignmentListPage";
 export * from "./ShiftAssignmentPage";
 export * from "./ShiftDetailPage";

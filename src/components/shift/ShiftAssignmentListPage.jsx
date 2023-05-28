@@ -4,6 +4,8 @@ import {
   EyeTwoTone,
   PlusOutlined,
 } from "@ant-design/icons";
+import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
@@ -12,91 +14,33 @@ import {
   Row,
   Space,
   Table,
-  Tabs,
   Tooltip,
-  Typography,
-  theme,
+  Typography
 } from "antd";
 import { Content } from "antd/es/layout/layout";
+import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
-import { compareString } from "../../utils/Comparation";
 import { GetAssignmentList } from "./api";
-import Column from "antd/es/table/Column";
 
 const ShiftAssignmentListPage = (props) => {
   const { notify } = props;
   const [loading, setLoading] = useState(true);
-  const [tabKey, setTabKey] = useState(0);
+  const [reload, setReload] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
   const [shiftAssignmentList, setShiftAssignmentList] = useState([]);
-  const [fullShiftAssignmentList, setFullShiftAssignmentList] = useState([]);
-
-  const columns = [
-    {
-      title: "Tiêu đề",
-      dataIndex: "Description",
-      key: "Description",
-      width: 200,
-      sorter: (a, b) => compareString(a, b, "Description"),
-    },
-    {
-      title: "Ca",
-      dataIndex: "ShiftDescription",
-      key: "ShiftDescription",
-      width: 100,
-      sorter: (a, b) => compareString(a, b, "ShiftDescription"),
-    },
-    {
-      title: "Từ ngày",
-      dataIndex: "StartDate",
-      key: "StartDate",
-      width: 100,
-      sorter: (a, b) => compareString(a, b, "StartDate"),
-      render: (_, { StartDate }) => dayjs(StartDate).format(Config.DateFormat),
-    },
-    {
-      title: "Đến ngày",
-      dataIndex: "EndDate",
-      key: "EndDate",
-      width: 100,
-      sorter: (a, b) => compareString(a, b, "EndDate"),
-      render: (_, { EndDate }) => dayjs(EndDate).format(Config.DateFormat),
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "CreatedDate",
-      key: "CreatedDate",
-      width: 100,
-      render: (_, { CreatedDate }) =>
-        dayjs(CreatedDate).format(Config.DateFormat),
-      sorter: (a, b) => compareString(a, b, "CreatedDate"),
-    },
-    {
-      title: "",
-      dataIndex: "",
-      key: "Action",
-      width: 30,
-      render: (_, shiftAssignment) => (
-        <ActionMenu shiftAssignment={shiftAssignment} />
-      ),
-    },
-  ];
 
   useEffect(() => {
-    GetAssignmentList()
+    GetAssignmentList({ Page: page, PageSize: pageSize })
       .then((response) => {
         const { Status, ResponseData, Description } = response;
         if (Status === 1) {
-          console.log(ResponseData)
+          console.log(ResponseData);
           const { ShiftAssignmentList, Total } = ResponseData;
           setShiftAssignmentList(ShiftAssignmentList);
           setTotal(Total);
@@ -128,17 +72,8 @@ const ShiftAssignmentListPage = (props) => {
       .finally((done) => {
         setLoading(false);
       });
-  }, []);
-  const changeTabs = (activeKey) => {
-    setTabKey(activeKey);
-    if (activeKey == 0) {
-      setShiftAssignmentList(fullShiftAssignmentList);
-    } else {
-      setShiftAssignmentList(
-        fullShiftAssignmentList.filter((a) => a.AssignType == activeKey)
-      );
-    }
-  };
+  }, [page, pageSize, reload]);
+
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       <Row wrap={false} align="middle">
@@ -164,6 +99,24 @@ const ShiftAssignmentListPage = (props) => {
           <Space wrap>
             <Button
               type="primary"
+              onClick={() => setReload(!reload)}
+              icon={
+                <FontAwesomeIcon
+                  icon={faArrowsRotate}
+                  style={{ paddingRight: "8px" }}
+                  spin={loading}
+                />
+              }
+              loading={loading}
+              style={{
+                backgroundColor: "#ec5504",
+                border: "1px solid #ec5504",
+              }}
+            >
+              Lấy lại dữ liệu
+            </Button>
+            <Button
+              type="primary"
               onClick={() => navigate("/shift/assignment")}
               icon={<PlusOutlined />}
             >
@@ -177,17 +130,17 @@ const ShiftAssignmentListPage = (props) => {
           loading={loading}
           scroll={{
             x: 1500,
-          }}
-          rowSelection={{
-            type: "checkbox",
-            onSelect: (record) => navigate(`/shift/assignment/detail/${record.Id}`),
+            y: 1200,
           }}
           dataSource={shiftAssignmentList}
           bordered
           rowKey="Id"
           pagination={{
+            page: page,
+            pageSize: pageSize,
             total: total,
             showTotal: (total, _) => `Tổng ${total} bản ghi`,
+            showSizeChanger: true,
             onShowSizeChange: (page, pageSize) => {
               setPage(page);
               setPageSize(pageSize);
@@ -195,13 +148,25 @@ const ShiftAssignmentListPage = (props) => {
           }}
         >
           <Column
+            title="Stt"
+            width={60}
+            align="right"
+            render={(_, record, index) => index + 1}
+          />
+          <Column
             title="Tên bảng phân ca"
             dataIndex="Description"
-            width={200}
+            width={300}
+            render={(_, record) => (
+              <NavLink to={`/shift/assignment/detail/${record.Id}`}>
+                {record.Description}
+              </NavLink>
+            )}
           />
           <Column title="Ca làm việc" dataIndex="ShiftName" width={200} />
           <Column
             title="Thời gian áp dụng"
+            align="center"
             render={(_, record) =>
               `${dayjs(record.StartDate).format(Config.DateFormat)} - ${dayjs(
                 record.EndDate
@@ -211,15 +176,25 @@ const ShiftAssignmentListPage = (props) => {
           />
           <Column
             title="Phòng ban áp dụng"
-            render={(_, record) => record.DepartmentList.join("; ")}
+            render={(_, record) =>
+              (record.DepartmentList || []).length > 0
+                ? record.DepartmentList.join(";")
+                : ""
+            }
             width={300}
           />
           <Column
             title="Nhân viên áp dụng"
-            render={(_, record) => record.EmployeeList.join("; ")}
+            render={(_, record) =>
+              (record.EmployeeList || []).length > 0
+                ? record.EmployeeList.join(";")
+                : ""
+            }
             width={300}
           />
-          <Column render={(_,record) => <ActionMenu shiftAssignment={record} />}/>
+          <Column
+            render={(_, record) => <ActionMenu shiftAssignment={record} />}
+          />
         </Table>
       </Content>
     </Space>
@@ -259,10 +234,15 @@ const ActionMenu = (props) => {
         cancelText="Hủy"
         okType="danger"
         placement="top"
-        //   onConfirm={deleteDepartment}
       >
         <Tooltip title="Xoá">
-          <Button size="small" icon={<DeleteOutlined />} type="text" shape="circle" danger />
+          <Button
+            size="small"
+            icon={<DeleteOutlined />}
+            type="text"
+            shape="circle"
+            danger
+          />
         </Tooltip>
       </Popconfirm>
     </Space>
@@ -270,3 +250,4 @@ const ActionMenu = (props) => {
 };
 
 export { ShiftAssignmentListPage };
+

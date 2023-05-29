@@ -1,15 +1,8 @@
+import { UndoOutlined, UploadOutlined } from "@ant-design/icons";
 import {
-  DeleteOutlined,
-  PlusOutlined,
-  SaveOutlined,
-  UndoOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
-import {
+  faArrowLeft,
   faCalendarDays,
-  faCalendarXmark,
   faCheckToSlot,
-  faClock,
   faLock,
   faLockOpen,
 } from "@fortawesome/free-solid-svg-icons";
@@ -17,15 +10,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
-  Card,
   Col,
-  DatePicker,
-  Form,
-  Modal,
   Row,
-  Select,
   Space,
-  Statistic,
   Table,
   Tag,
   Tooltip,
@@ -33,39 +20,48 @@ import {
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import Search from "antd/es/input/Search";
-import TextArea from "antd/es/input/TextArea";
 import { Content } from "antd/es/layout/layout";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import React, { useEffect, useState } from "react";
+import CountUp from "react-countup";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
-import { GetTimesheetDetail } from "./api";
-import Column from "antd/es/table/Column";
-import CountUp from "react-countup";
+import { defaultColumns } from "../employee";
 import { CustomStatisticsComponent } from "./CustomStatisticsComponent";
+import { GetTimesheetDetail, UpdateTimesheetBE } from "./api";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 const formatter = (value) => <CountUp end={value} separator="," />;
 dayjs.extend(isSameOrBefore);
-
 
 let defaultCols = [
   {
     key: "code",
+    title: "Stt",
+    width: 60,
+    align: "right",
+    fixed: "left",
+    render: (_, __, index) => index + 1,
+  },
+  {
+    key: "code",
     dataIndex: "EmployeeId",
-    title: "Mã nhân viên",
+    title: "Mã NV",
     width: 100,
+    align: "right",
+    fixed: "left",
+    sorter: (a, b) => a.EmployeeId > b.EmployeeId,
   },
   {
     key: "name",
     title: "Nhân viên",
     dataIndex: "EmployeeName",
-    width: 300,
+    width: 250,
+    fixed: "left",
   },
 ];
-
-let colsStatics = [...defaultCols]
 
 const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
@@ -77,12 +73,13 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
 
   const [timeSheet, setTimeSheet] = useState({});
   const [detailRecord, settDetailRecord] = useState([]);
-  const [DateRange, setDateRange] = useState([]);
+  const [dateRange, setDateRange] = useState([]);
   const [clockedIn, setClockedIn] = useState(0);
   const [offNumber, setOffNumber] = useState(0);
   const [lateEarly, setLatEarly] = useState(0);
   const [noTimekeeping, setToTimekeeping] = useState(0);
   const [columns, setColumns] = useState([]);
+  const [reloading, setReloading] = useState(false);
 
   const search = async (value) => {
     setSearching(true);
@@ -101,8 +98,6 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           setTotal(Total);
           settDetailRecord(Detail);
           setDateRange([Timesheet.DateFrom, Timesheet.DateTo]);
-          // if ((timeSheet || {}).DateFrom && (timeSheet || {}).DateTo) {
-          // }
           createColumns(Timesheet.DateFrom, Timesheet.DateTo);
           return;
         }
@@ -125,7 +120,10 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
               direction="vertical"
               align="middle"
               size={"small"}
-              style={{ textAlign: "center" }}
+              style={{
+                textAlign: "center",
+                color: [0, 6].includes(start.get("day")) ? "red" : "black",
+              }}
             >
               <div style={{ textTransform: "capitalize" }}>
                 {start.locale("vi").format("dddd")}
@@ -135,9 +133,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           ),
           width: 150,
           dataIndex: [start.format("YYYY-MM-DD"), "Checkin"],
-          // render: (_, record) => {
-          //   return JSON.stringify(record[start.format("YYYY-MM-DD")])
-          // },
+          align: "center",
         };
         cols.push(col);
         start = start.add(1, "day");
@@ -146,7 +142,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
       return cols;
     }
     LoadData();
-  }, [TimesheetId]);
+  }, [TimesheetId, reloading]);
 
   const dataSrc = [];
   const employeeId = [];
@@ -200,12 +196,46 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
     }
   }
 
+  const updateTimeSheet = async () => {
+    try {
+      setLoading(true);
+      let response = await UpdateTimesheetBE(TimesheetId);
+      let { Description, Status } = response;
+      if (Status === 1) {
+        notify.success({
+          message: "Đã cập nhật xong",
+        });
+        setReloading(!reloading);
+        return;
+      }
+      notify.error({
+        message: "Không thể cập nhật",
+        description: Description,
+      });
+      return;
+    } catch (error) {
+      handleErrorOfRequest({ error: error, notify: notify });
+    }
+    finally{
+      setLoading(false);
+    }
+  };
+
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <Row wrap={false} align="middle">
         <Col flex="none">
           <Space direction="vertical" wrap>
             <Space direction="horizontal" align="center" wrap>
+            <Tooltip title="Quay lại">
+                <Button
+                  onClick={() => navigate(-1)}
+                  icon={<FontAwesomeIcon icon={faArrowLeft} size="2x" />}
+                  type="text"
+                  shape="circle"
+                />
+              </Tooltip>
+
               <Typography.Title
                 level={2}
                 style={{ marginTop: 0, maxWidth: "100%" }}
@@ -248,7 +278,12 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
           <Space wrap>
-            <Button type="primary" icon={<UndoOutlined />} loading={loading}>
+            <Button
+              type="primary"
+              icon={<UndoOutlined />}
+              loading={loading}
+              onClick={updateTimeSheet}
+            >
               Cập nhật
             </Button>
 
@@ -262,87 +297,58 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
         <Col span={6}>
           <CustomStatisticsComponent
             key="off-employee"
-            cols={colsStatics}
+            cols={defaultColumns}
             dataSrc={[]}
             title="Đi làm"
             total={10}
-            modalTitle="Danh sách nhân viên"
+            modalTitle={
+              <span style={{ fontSize: 20 }}>Danh sách nhân viên </span>
+            }
             icon={<FontAwesomeIcon icon={faCheckToSlot} />}
           />
-          <Card bordered={false} size="small">
-            <Statistic
-              valueStyle={{
-                fontSize: "14px",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-              value={clockedIn}
-              prefix={
-                <Space>
-                  <FontAwesomeIcon icon={faCheckToSlot} />
-                  Đi làm
-                </Space>
-              }
-              formatter={formatter}
-            />
-          </Card>
         </Col>
         <Col span={6}>
-          <Card bordered={false} size="small">
-            <Statistic
-              valueStyle={{
-                fontSize: "14px",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-              value={offNumber}
-              prefix={
-                <Space>
-                  <FontAwesomeIcon icon={faCalendarDays} />
-                  Nghỉ
-                </Space>
-              }
-              formatter={formatter}
-            />
-          </Card>
+          <CustomStatisticsComponent
+            key="off-employee"
+            cols={defaultColumns}
+            dataSrc={[]}
+            title="Nghỉ"
+            total={offNumber}
+            modalTitle={
+              <span style={{ fontSize: 20 }}>Danh sách nhân viên nghỉ </span>
+            }
+            icon={<FontAwesomeIcon icon={faCalendarDays} />}
+          />
         </Col>
         <Col span={6}>
-          <Card bordered={false} size="small">
-            <Statistic
-              valueStyle={{
-                fontSize: "14px",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-              value={lateEarly}
-              prefix={
-                <Space>
-                  <FontAwesomeIcon icon={faClock} />
-                  Đi trễ về sớm
-                </Space>
-              }
-              formatter={formatter}
-            />
-          </Card>
+          <CustomStatisticsComponent
+            key="off-employee"
+            cols={defaultColumns}
+            dataSrc={[]}
+            title="Đi trễ về sớm"
+            total={lateEarly}
+            modalTitle={
+              <span style={{ fontSize: 20 }}>
+                Danh sách nhân viên Đi trễ về sớm{" "}
+              </span>
+            }
+            icon={<FontAwesomeIcon icon={faCalendarDays} />}
+          />
         </Col>
         <Col span={6}>
-          <Card bordered={false} size="small">
-            <Statistic
-              valueStyle={{
-                fontSize: "14px",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-              value={noTimekeeping}
-              formatter={formatter}
-              prefix={
-                <Space>
-                  <FontAwesomeIcon icon={faCalendarXmark} />
-                  Chưa chấm công
-                </Space>
-              }
-            />
-          </Card>
+          <CustomStatisticsComponent
+            key="off-employee"
+            cols={defaultColumns}
+            dataSrc={[]}
+            title="Chưa chấm công"
+            total={lateEarly}
+            modalTitle={
+              <span style={{ fontSize: 20 }}>
+                Danh sách nhân viên chưa chấm công{" "}
+              </span>
+            }
+            icon={<FontAwesomeIcon icon={faCalendarDays} />}
+          />
         </Col>
       </Row>
       <Row wrap>
@@ -363,10 +369,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           bordered
           scroll={{
             x: "calc(700px + 50%)",
-            y: 1000,
-          }}
-          rowSelection={{
-            type: "checkbox",
+            y: 1200,
           }}
           style={{ borderColor: "black" }}
           dataSource={dataSrc}

@@ -33,6 +33,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { CreatTimesheetBE, GetTimesheetList } from "./api";
 dayjs.extend(isSameOrBefore);
 
@@ -68,22 +69,7 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
         description: response.Description,
       });
     } catch (error) {
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
+      handleErrorOfRequest({ notify, error });
     } finally {
       setLoading(false);
     }
@@ -180,35 +166,30 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
             },
             showTotal: (total) => `Tổng ${total} mục`,
           }}
-          rowSelection={{
-            type: "none",
-            onSelect: (record) =>
-              navigate(`/timesheet/timekeeping/timesheet-detail/${record.Id}`),
-          }}
-          onRow={(data, index) => {
-            console.log(data, index);
-          }}
         >
+          <Column title="Stt" render={(_, __, index) => index} align="right"  width={40} />
           <Column
             key="DateRange"
             title="Thời gian"
-            // dataIndex="DateRange"
             width={120}
             render={(_, record) =>
               `${dayjs(record.DateFrom).format(Config.DateFormat)} - ${dayjs(
                 record.DateTo
               ).format(Config.DateFormat)}`
             }
-            fixed="left"
           />
           <Column
             key="Name"
             title="Tên bảng chấm công"
-            dataIndex="Name"
             width={250}
-            fixed="left"
+            render={(_, record) => (
+              <NavLink
+                to={`/timesheet/timekeeping/timesheet-detail/${record.Id}`}
+              >
+                {record.Name}
+              </NavLink>
+            )}
           />
-          <Column key="Type" title="Chấm công" dataIndex="Type" width={100} />
           <Column
             key="Department"
             title="Vị trí công việc"

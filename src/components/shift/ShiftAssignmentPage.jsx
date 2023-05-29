@@ -30,7 +30,7 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Config from "../../constant";
-// import { handleErrorOfRequest } from "../../utils/Helpers";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetDepartmentList } from "../department/api";
 import { GetManyEmployee } from "../employee/api";
 import {
@@ -61,46 +61,27 @@ const EditShiftAssignmentPage = (props) => {
   } = theme.useToken();
   async function loadData() {
     try {
-      const response = await GetAssignmentDetail({ Id: id });
+      let response = await GetAssignmentDetail({ Id: id });
       if (response.Status != 1) {
         return;
       }
-      const response1 = await GetAssignmentType();
-      if (response.Status != 1) {
-        return;
-      }
-      const response2 = await GetShiftList();
-      if (response.Status != 1) {
-      }
-      setAssignmentTypeList(response1.ResponseData);
-      setShiftList(response2.ResponseData.ShiftList);
-      const { Assignment, ShiftDetail, DepartmentList, EmployeeList } =
-        response.ResponseData;
+      let { Assignment, ShiftDetail, DepartmentList, EmployeeList } =  response.ResponseData;
       setAssignment(Assignment);
       setShiftDetail(ShiftDetail);
       setAppliedDepartmentList(DepartmentList);
       setAppliedEmployeeList(EmployeeList);
+      response = await GetAssignmentType();
+      if (response.Status != 1) {
+        return;
+      }
+      setAssignmentTypeList(response.ResponseData);
+      response = await GetShiftList();
+      if (response.Status != 1) {
+      }
+      setShiftList(response.ResponseData.ShiftList);
       return;
     } catch (error) {
-      
-      // handleErrorOfRequest({ error, notify });
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
-
+      handleErrorOfRequest({ error, notify });
     } finally {
       setLoading(false);
     }
@@ -140,22 +121,7 @@ const EditShiftAssignmentPage = (props) => {
         description: Description,
       });
     } catch (error) {
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
+      handleErrorOfRequest({ error, notify });
     } finally {
       setLoading(false);
     }
@@ -586,6 +552,7 @@ const departmentColumns = [
     width: 75,
     render: (_, rec, index) => index,
     align: "right",
+    fixed: "left",
   },
   {
     title: "Mã",
@@ -603,6 +570,7 @@ const employeeColumns = [
     width: 75,
     render: (_, rec, index) => index,
     align: "right",
+    fixed: "left",
   },
   {
     title: "Mã nhân viên",
@@ -803,8 +771,6 @@ const OnlyViewPage = ({
   type,
   ...rest
 }) => {
-  const [assignmentType, setAssignmentType] = useState(type);
-  const [form] = Form.useForm();
   const {
     token: { colorBgLayout },
   } = theme.useToken();
@@ -816,7 +782,6 @@ const OnlyViewPage = ({
       wrapperCol={{ sm: { span: 18 }, md: { span: 20 } }}
       labelWrap
       labelAlign="left"
-      form={form}
     >
       {/* region Thông tin chung */}
 
@@ -1016,10 +981,8 @@ const OnlyViewPage = ({
       </Typography.Title>
       <Form.Item label="Kiểu phân ca" required>
         <Radio.Group
-          disabled
-          value={assignmentType}
+          value={type}
           buttonStyle="solid"
-          onChange={(e) => setAssignmentType(e.target.value)}
           options={assignmentTypeList.map((assignmentType) => ({
             label: assignmentType.Name,
             value: assignmentType.Id,
@@ -1031,12 +994,12 @@ const OnlyViewPage = ({
           <Table
             bordered
             columns={
-              assignmentType == _TargeType.ByEmployee
+              type == _TargeType.ByEmployee
                 ? employeeColumns
                 : departmentColumns
             }
             dataSource={
-              assignmentType == _TargeType.ByEmployee
+              type == _TargeType.ByEmployee
                 ? appliedEmployeeList
                 : appliedDepartmentList
             }
@@ -1050,7 +1013,7 @@ const OnlyViewPage = ({
             }}
             pagination={{
               total:
-                assignmentType == _TargeType.ByEmployee
+                type == _TargeType.ByEmployee
                   ? appliedEmployeeList.length
                   : appliedDepartmentList.length,
               showSizeChanger: true,

@@ -30,10 +30,11 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Config from "../../constant";
-// import { handleErrorOfRequest } from "../../utils/Helpers";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetDepartmentList } from "../department/api";
 import { GetManyEmployee } from "../employee/api";
 import {
+  AssignShift,
   GetAssignmentDetail,
   GetAssignmentType,
   GetShiftList,
@@ -52,6 +53,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
   const [appliedDepartmentList, setAppliedDepartmentList] = useState([]);
   const [appliedEmployeeList, setAppliedEmployeeList] = useState([]);
   const [assignmentType, setAssignmentType] = useState(_TargeType.ByEmployee);
+  const [processing, setProcessing] = useState(false);
   const [form] = Form.useForm();
 
   const {
@@ -74,30 +76,33 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
       }
       return;
     } catch (error) {
-      // handleErrorOfRequest({ error, notify });
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
+      handleErrorOfRequest({ error, notify });
     } finally {
       setLoading(false);
     }
   }
 
-  const onUpdatingAssigningShift = async (values) => {
+  const onAssigningShift = async (values) => {
     try {
+      setProcessing(true);
+      if (assignmentType == _TargeType.ByEmployee) {
+        values.EmployeeList = (appliedEmployeeList || []).map((rec) => rec.Id);
+      } else {
+        values.DepartmentList = (appliedDepartmentList || []).map(
+          (rec) => rec.Id
+        );
+      }
+      let res =  await AssignShift(values);
+      let { ResponseData, Status, Description } = res;
+      if (Status === 1)
+      {
+        navigate(`/shift/assignment/detail/${ResponseData.Id}`)
+        return;
+      }
+      notify.error({
+        message: "",
+        description: Description
+      });
     } catch (error) {
       if (error.response) {
         notify.error({
@@ -116,15 +121,12 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
         });
       }
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   };
   useEffect(() => {
     loadData();
   }, []);
-  useEffect(() => {
-    setAssignmentType(assignment.TargetType);
-  }, [assignment]);
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
@@ -168,7 +170,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
             <Button onClick={() => navigate("/shift/assignment/list")}>
               Hủy
             </Button>
-            <Button type="primary" onClick={() => form.submit()}>
+            <Button type="primary" onClick={() => form.submit()} loading={processing}>
               Lưu
             </Button>
           </Space>
@@ -182,7 +184,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
               labelCol={{ sm: { span: 6 }, md: { span: 4 } }}
               wrapperCol={{ sm: { span: 18 }, md: { span: 20 } }}
               labelWrap
-              onFinish={onUpdatingAssigningShift}
+              onFinish={onAssigningShift}
               labelAlign="left"
               form={form}
             >
@@ -338,7 +340,6 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
                   <Form.Item>
                     <Form.Item
                       label="Giờ bắt đầu nghỉ giữa ca"
-                      // name="BreakAt"
                       labelCol={{ span: 8 }}
                       wrapperCol={{ span: 16 }}
                       style={{ display: "inline-block", width: "50%" }}
@@ -358,7 +359,6 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
                     </Form.Item>
                     <Form.Item
                       label="Giờ kết thúc nghỉ giữa ca"
-                      // name="BreakEnd"
                       labelCol={{ span: 8 }}
                       wrapperCol={{ span: 16 }}
                       style={{ display: "inline-block", width: "50%" }}
@@ -445,8 +445,8 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
                   buttonStyle="solid"
                   onChange={(e) => setAssignmentType(e.target.value)}
                   options={assignmentTypeList.map((assignmentType) => ({
-                    label: assignmentType.Name,
                     value: assignmentType.Id,
+                    label: assignmentType.Name,
                   }))}
                 />
               </Form.Item>
@@ -509,6 +509,7 @@ const departmentColumns = [
     width: 75,
     render: (_, rec, index) => index,
     align: "right",
+    fixed: "left",
   },
   {
     title: "Mã",
@@ -525,6 +526,7 @@ const employeeColumns = [
     title: "#",
     width: 75,
     render: (_, rec, index) => index,
+    fixed: "left",
     align: "right",
   },
   {

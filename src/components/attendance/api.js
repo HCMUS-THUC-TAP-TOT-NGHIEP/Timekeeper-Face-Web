@@ -96,7 +96,6 @@ export const GetTimesheetDetail = async (req) => {
 };
 
 export const CreatTimesheetBE = async (req) => {
-  alert((req.DepartmentList || []).filter((x) => x !== 0));
   var requestData = {
     Name: req.Name,
     DateFrom: req.DateRange[0] ? req.DateRange[0].format("YYYY-MM-DD") : "",
@@ -104,6 +103,17 @@ export const CreatTimesheetBE = async (req) => {
     DepartmentList: (req.DepartmentList || []).filter((x) => x !== 0),
   };
   var response = await AxiosInstance.post("checkin/timesheet", requestData, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
+  return response.data;
+};
+
+export const UpdateTimesheetBE = async (Id) => {
+  let req = { Id: Id };
+  let response = await AxiosInstance.post("checkin/timesheet/update", req, {
     headers: {
       "Access-Control-Allow-Origin": "*",
       Authorization: "Bearer " + localStorage.getItem("access_token"),

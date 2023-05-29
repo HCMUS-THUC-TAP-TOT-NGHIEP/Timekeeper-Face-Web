@@ -1,8 +1,7 @@
-import { faCalendarDays } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Card, Modal, Space, Statistic, Table } from "antd";
+import { Button, Card, Modal, Space, Statistic, Table } from "antd";
 import { useState } from "react";
-import CountUp from "react-countup"; 
+import CountUp from "react-countup";
+import { defaultColumns } from "../employee";
 const formatter = (value) => <CountUp end={value} separator="," />;
 
 const CustomStatisticsComponent = ({
@@ -13,8 +12,7 @@ const CustomStatisticsComponent = ({
   modalTitle,
   icon,
   ...rest
-}) => 
-{
+}) => {
   const [open, setOpen] = useState(false);
   const showModal = () => {
     setOpen(true);
@@ -35,7 +33,6 @@ const CustomStatisticsComponent = ({
           value={total}
           prefix={
             <Space>
-              {/* <FontAwesomeIcon icon={faCalendarDays} /> */}
               {icon}
               {title}
             </Space>
@@ -47,12 +44,33 @@ const CustomStatisticsComponent = ({
         title={modalTitle}
         onOk={hideModal}
         onCancel={hideModal}
+        footer={[
+          <Button type="primary" onClick={hideModal}>
+            Đóng
+          </Button>,
+        ]}
         open={open}
+        width={900}
       >
-        <Table columns={cols} dataSource={dataSrc} rowKey="Id"></Table>
+        <Table
+          columns={cols}
+          dataSource={dataSrc | []}
+          rowKey="Id"
+          scroll={{
+            x: 1500,
+            y: 1200,
+          }}
+          pagination={{
+            total: (dataSrc || []).length,
+            defaultCurrent: 1,
+            pageSize: 15,
+            pageSizeOptions: [15, 25, 50],
+            showSizeChanger: true,
+          }}
+        ></Table>
       </Modal>
     </>
   );
-}
+};
 
 export { CustomStatisticsComponent };

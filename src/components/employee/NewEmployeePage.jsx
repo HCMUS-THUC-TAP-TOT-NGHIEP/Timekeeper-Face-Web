@@ -279,12 +279,6 @@ export const NewEmployeePage = (props) => {
                   labelCol={24}
                   label="Phòng ban"
                   name="DepartmentId"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Phòng ban là trường bắt buộc.",
-                    },
-                  ]}
                 >
                   <Select
                     loading={loading}

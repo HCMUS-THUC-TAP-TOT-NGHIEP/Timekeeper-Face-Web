@@ -22,5 +22,6 @@ export * from "./AddShift";
 export * from "./ShiftAssignmentListPage";
 export * from "./ShiftAssignmentPage";
 export * from "./ShiftDetailPage";
+export * from "./AddShiftAssignment";
 export { ShiftManagementIndex };
 

@@ -1,9 +1,7 @@
 import {
   DeleteFilled,
   DeleteOutlined,
-  FilterFilled,
-  PlusOutlined,
-  SearchOutlined,
+  PlusOutlined
 } from "@ant-design/icons";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,7 +9,6 @@ import {
   Breadcrumb,
   Button,
   Col,
-  Input,
   Popconfirm,
   Row,
   Space,
@@ -19,18 +16,15 @@ import {
   Tag,
   Tooltip,
   Typography,
-  notification,
-  theme,
+  notification
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
 import React, { useEffect, useRef, useState } from "react";
-import Highlighter from "react-highlight-words";
 import { NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
-import { AddShift } from "./AddShift";
 import { EditShift } from "./EditShift";
 import { DeleteShift, GetShiftList } from "./api";
 
@@ -178,11 +172,7 @@ const ShiftList = function ({ notify, ...rest }) {
     });
     setCurrentShiftList(newCurrentShiftList);
   };
-  const insertOneShift = (value) => {
-    value.Status = 1;
-    if (currentShiftList.length < perPage)
-      setCurrentShiftList([...currentShiftList, value]);
-  };
+
   const deleteOneShift = (value) => {
     setCurrentShiftList(
       currentShiftList.filter((shift) => shift.Id !== value.Id)
@@ -380,9 +370,13 @@ const ShiftList = function ({ notify, ...rest }) {
             render={(_, record) => {
               var content = "";
               if (record.Status) {
-                content = "In use";
+                content = "Available";
+                return <Tag color="geekblue">{content}</Tag>;
               }
-              return <Tag color="geekblue">{content}</Tag>;
+              else{
+                content = "Unavailable";
+                return <Tag color="orange">{content}</Tag>;
+              }
             }}
           />
           <Column
@@ -408,3 +402,4 @@ const ShiftList = function ({ notify, ...rest }) {
 };
 
 export { ShiftList };
+

@@ -1,4 +1,6 @@
-import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
@@ -24,8 +26,6 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { CreateNewShift, GetShiftTypeList } from "./api";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const AddShift = (props) => {
   const { insertOneShiftFE, notify, currentShiftList } = props;
@@ -405,7 +405,6 @@ const DayIndexEnum = {
 const AddShiftPage = (props) => {
   const { insertOneShiftFE, notify } = props;
   const [form] = Form.useForm();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [finishTime, setFinishTime] = useState(null);
   const [startBreakTime, setStartBreakTime] = useState(null);
@@ -439,7 +438,6 @@ const AddShiftPage = (props) => {
   }, []);
 
   const handleCancel = () => {
-    setIsModalOpen(false);
     setEndBreakTime(null);
     setFinishTime(null);
     setStartBreakTime(null);
@@ -455,18 +453,18 @@ const AddShiftPage = (props) => {
     if (values.BreakEnd) {
       values.BreakEnd = dayjs(values.BreakEnd).format(Config.TimeFormat);
     }
-    var success = false;
     CreateNewShift(values)
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          success = true;
           values.Id = ResponseData.Id;
           var shiftType = shiftTypeList.find((s) => s.Id == values.ShiftType);
           values.ShiftTypeText = shiftType.Description;
           notify.success({
             description: "Ca làm việc mới đã được tạo",
           });
+          handleCancel();
+          navigate("/shift")
           return;
         }
         notify.error({
@@ -494,10 +492,6 @@ const AddShiftPage = (props) => {
       })
       .finally(() => {
         setLoading(false);
-        if (success) {
-          insertOneShiftFE(values);
-          handleCancel();
-        }
       });
   };
 
@@ -720,3 +714,4 @@ const AddShiftPage = (props) => {
 };
 
 export { AddShift, AddShiftPage };
+

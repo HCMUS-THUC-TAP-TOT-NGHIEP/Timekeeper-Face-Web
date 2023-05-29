@@ -117,7 +117,7 @@ const ShiftAssignmentListPage = (props) => {
             </Button>
             <Button
               type="primary"
-              onClick={() => navigate("/shift/assignment")}
+              onClick={() => navigate("/shift/assignment/new")}
               icon={<PlusOutlined />}
             >
               Phân ca

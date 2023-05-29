@@ -1,5 +1,5 @@
 import { Layout, notification, theme } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./Contexts/AuthContext";
 import { AccountIndexPage, AccountListPage } from "./components/account";
@@ -32,16 +32,44 @@ import MyHeader from "./components/layout/Header";
 import NoMatch from "./components/layout/NoMatch";
 import MySidebar from "./components/layout/Sidebar";
 import {
+  AddShiftAssignmentPage,
   AddShiftPage,
   EditShiftAssignmentPage,
   ShiftAssignmentListPage,
   ShiftDetailPage,
-  ShiftManagementIndex
+  ShiftManagementIndex,
 } from "./components/shift";
 import { ShiftList } from "./components/shift/ShiftList";
 
+const useBeforeRender = (callback, deps) => {
+  const [isRun, setIsRun] = useState(false);
+
+  if (!isRun) {
+    callback();
+    setIsRun(true);
+  }
+
+  useEffect(() => () => setIsRun(false), deps);
+};
+
 function App() {
   const [notify, contextHolder] = notification.useNotification();
+  useBeforeRender(() => {
+    window.addEventListener("error", (e) => {
+      if (e) {
+        const resizeObserverErrDiv = document.getElementById(
+          "webpack-dev-server-client-overlay-div"
+        );
+        const resizeObserverErr = document.getElementById(
+          "webpack-dev-server-client-overlay"
+        );
+        if (resizeObserverErr)
+          resizeObserverErr.className = "hide-resize-observer";
+        if (resizeObserverErrDiv)
+          resizeObserverErrDiv.className = "hide-resize-observer";
+      }
+    });
+  }, []);
   return (
     <AuthProvider>
       {contextHolder}
@@ -91,19 +119,20 @@ function App() {
           </Route>
           <Route
             path="/department"
-            element={<DepartmentPageIndex notify={notify} loginRequired={true} />}
+            element={
+              <DepartmentPageIndex notify={notify} loginRequired={true} />
+            }
           >
             <Route
-            exact
+              exact
               path=""
               element={<DepartmentList notify={notify} loginRequired={true} />}
             />
             <Route
-            exact
+              exact
               path="all"
               element={<DepartmentList notify={notify} loginRequired={true} />}
             />
-
           </Route>
 
           <Route
@@ -130,17 +159,20 @@ function App() {
             <Route
               exact
               path="edit/:shiftId"
-              element={<ShiftDetailPage editable={true} notify={notify} loginRequired={true} />}
-            />
-
-{/* 
-            <Route
-              path="assignment"
               element={
-                <ShiftAssignmentPage notify={notify} loginRequired={true} />
+                <ShiftDetailPage
+                  editable={true}
+                  notify={notify}
+                  loginRequired={true}
+                />
               }
-            /> */}
-
+            />
+            <Route
+              path="assignment/new"
+              element={
+                <AddShiftAssignmentPage notify={notify} loginRequired={true} />
+              }
+            />
             <Route
               path="assignment/edit/:id"
               element={
@@ -152,7 +184,15 @@ function App() {
               }
             />
             <Route
+              exact
               path="assignment/list"
+              element={
+                <ShiftAssignmentListPage notify={notify} loginRequired={true} />
+              }
+            />{" "}
+            <Route
+              exact
+              path="assignment"
               element={
                 <ShiftAssignmentListPage notify={notify} loginRequired={true} />
               }

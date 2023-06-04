@@ -1,7 +1,6 @@
 import {
   Breadcrumb,
   Button,
-  Card,
   Col,
   DatePicker,
   Form,
@@ -15,15 +14,17 @@ import {
   theme,
   Typography,
 } from "antd";
+import { Content } from "antd/es/layout/layout";
 import Title from "antd/es/typography/Title";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { GetOneEmployeeInfo, ModifyEmployeeInfo } from "./api";
-import "./style.css";
-import { GetDepartmentList } from "../department/api";
 import { useAuthState } from "../../Contexts/AuthContext";
-import { Content } from "antd/es/layout/layout";
+import { handleErrorOfRequest } from "../../utils/Helpers";
+import { GetDepartmentList } from "../department/api";
+import { GetOneEmployeeInfo, ModifyEmployeeInfo } from "./api";
+import locale from "antd/es/date-picker/locale/vi_VN";
+import "./style.css";
 
 export const EditEmployeePage = ({ loginRequired, ...rest }) => {
   const navigate = useNavigate();
@@ -73,22 +74,7 @@ export const EditEmployeePage = ({ loginRequired, ...rest }) => {
           return;
         }
       } catch (error) {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       } finally {
         setLoading(false);
       }
@@ -113,22 +99,7 @@ export const EditEmployeePage = ({ loginRequired, ...rest }) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       });
   };
 
@@ -288,6 +259,7 @@ export const EditEmployeePage = ({ loginRequired, ...rest }) => {
                       allowClear
                       format="DD/MM/YYYY"
                       style={{ width: "100%" }}
+                      locale={locale}
                     />
                   </Form.Item>
                 </Col>
@@ -308,6 +280,7 @@ export const EditEmployeePage = ({ loginRequired, ...rest }) => {
                       allowClear
                       format="DD/MM/YYYY"
                       style={{ width: "100%" }}
+                      locale={locale}
                     />
                   </Form.Item>
                 </Col>

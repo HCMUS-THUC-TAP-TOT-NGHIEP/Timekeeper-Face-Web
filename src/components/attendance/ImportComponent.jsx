@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Modal, Typography, Upload } from "antd";
 import React, { useState } from "react";
 import { useAuthState } from "../../Contexts/AuthContext";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetTemplateFile, ImportDataBE } from "./api";
 
 const ImportTimekeeperData = ({ notify, ...rest }) => {
@@ -32,31 +33,7 @@ const ImportTimekeeperData = ({ notify, ...rest }) => {
       link.parentNode.removeChild(link);
       // fileDownload(response, "Employee.xlsx")
     } catch (error) {
-      console.error(error);
-      if (error.response) {
-        var status = error.response.status;
-        if (status === 400) {
-          notify.error({
-            message: "Không thành công",
-            description: error.response,
-          });
-          return;
-        }
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
+        handleErrorOfRequest({ notify, error });
     } finally {
     }
   };
@@ -72,7 +49,7 @@ const ImportTimekeeperData = ({ notify, ...rest }) => {
       var response = await ImportDataBE({ fileList });
       console.log("response", response);
     } catch (error) {
-      console.log("error", error);
+      handleErrorOfRequest({ notify, error });
     } finally {
     }
   };
@@ -93,7 +70,7 @@ const ImportTimekeeperData = ({ notify, ...rest }) => {
           console.log("arrayBuffer", response);
         })
         .catch((error) => {
-          console.log("arrayBuffer", error);
+          handleErrorOfRequest({ notify, error });
         });
       setFileList([file]);
       return false;
@@ -226,3 +203,4 @@ const handleIconRender = (file) => {
 };
 
 export { ImportTimekeeperData };
+

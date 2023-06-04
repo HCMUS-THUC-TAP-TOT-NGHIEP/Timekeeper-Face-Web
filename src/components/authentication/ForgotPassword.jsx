@@ -14,6 +14,7 @@ import React, { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import { RequestResetLink, ResetPassword } from "./api";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
@@ -49,22 +50,7 @@ export const ForgotPasswordPage = function ({ notify, ...rest }) {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       });
   };
   return (
@@ -189,22 +175,7 @@ export const ResetPasswordPage = function (props) {
         navigate("/login");
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       });
   };
   return (

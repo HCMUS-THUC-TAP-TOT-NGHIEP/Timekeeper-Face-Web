@@ -26,6 +26,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { CreateNewShift, GetShiftTypeList } from "./api";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 const AddShift = (props) => {
   const { insertOneShiftFE, notify, currentShiftList } = props;
@@ -52,6 +53,7 @@ const AddShift = (props) => {
           return;
         }
       } catch (error) {
+        handleErrorOfRequest({ notify, error });
       } finally {
       }
     }
@@ -113,22 +115,7 @@ const AddShift = (props) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       })
       .finally(() => {
         setLoading(false);
@@ -473,22 +460,8 @@ const AddShiftPage = (props) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
+
       })
       .finally(() => {
         setLoading(false);

@@ -1,8 +1,13 @@
-import { UndoOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+  ExportOutlined,
+  UndoOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import {
   faArrowLeft,
+  faArrowsRotate,
   faCalendarDays,
-  faCheckToSlot,
+  faFileExport,
   faLock,
   faLockOpen,
 } from "@fortawesome/free-solid-svg-icons";
@@ -29,10 +34,15 @@ import CountUp from "react-countup";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { defaultColumns } from "../employee";
 import { CustomStatisticsComponent } from "./CustomStatisticsComponent";
-import { GetTimesheetDetail, UpdateTimesheetBE } from "./api";
-import { handleErrorOfRequest } from "../../utils/Helpers";
+import {
+  ExportTimesheetBE,
+  GetTimesheetDetail,
+  UpdateTimesheetBE,
+} from "./api";
+import fileDownload from 'js-file-download'
 const formatter = (value) => <CountUp end={value} separator="," />;
 dayjs.extend(isSameOrBefore);
 
@@ -63,6 +73,40 @@ let defaultCols = [
   },
 ];
 
+const lateEarlyColumns = [
+  {
+    key: "late",
+    title: "Số phút đi trễ",
+    dataIndex: "LateMinutes",
+    width: 100,
+    align: "right",
+  },
+  {
+    key: "early",
+    title: "Số phút về sớm",
+    dataIndex: "EarlyMinutes",
+    width: 100,
+    align: "right",
+  },
+  {
+    key: "count",
+    title: "Số lần đi trễ về sớm",
+    dataIndex: "Count",
+    width: 100,
+    align: "right",
+  },
+];
+
+const noTimekeepingColumns = [
+  {
+    key: "count",
+    title: "Số lần không chấm công",
+    dataIndex: "noTimekeeping",
+    width: 100,
+    align: "right",
+  },
+];
+
 const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
@@ -76,10 +120,12 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   const [dateRange, setDateRange] = useState([]);
   const [clockedIn, setClockedIn] = useState(0);
   const [offNumber, setOffNumber] = useState(0);
-  const [lateEarly, setLatEarly] = useState(0);
+  const [lateEarly, setLatEarly] = useState([]);
+  const [lateEarlyList, setLateEarlyList] = useState([]);
   const [noTimekeeping, setToTimekeeping] = useState(0);
   const [columns, setColumns] = useState([]);
   const [reloading, setReloading] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const search = async (value) => {
     setSearching(true);
@@ -102,7 +148,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           return;
         }
       } catch (error) {
-        console.error(error);
+        handleErrorOfRequest({ notify, error });
       } finally {
         setLoading(false);
       }
@@ -131,7 +177,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
               <div>{start.format(Config.DateFormat)}</div>
             </Space>
           ),
-          width: 150,
+          width: 250,
           dataIndex: [start.format("YYYY-MM-DD"), "Checkin"],
           align: "center",
         };
@@ -143,6 +189,40 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
     }
     LoadData();
   }, [TimesheetId, reloading]);
+
+  useEffect(() => {
+    try {
+      let employeeId = [];
+      let LateEarlyList = [];
+      let noTimekeeping = [];
+      detailRecord.forEach((rec) => {
+        if ((rec.LateMinutes || 0) > 0 || (rec.EarlyMinutes || 0) > 0) {
+          let index = employeeId.indexOf(rec.EmployeeId);
+          if (index == -1) {
+            employeeId.push(rec.EmployeeId);
+            LateEarlyList.push({
+              Id: rec.EmployeeId,
+              EmployeeName: rec.EmployeeName,
+              Department: rec.Department,
+              Count: 1,
+              LateMinutes: rec.LateMinutes > 0 ? rec.LateMinutes : 0,
+              EarlyMinutes: rec.EarlyMinutes > 0 ? rec.EarlyMinutes : 0,
+            });
+          } else {
+            LateEarlyList[index].Count++;
+            LateEarlyList[index].LateMinutes +=
+              rec.LateMinutes > 0 ? rec.LateMinutes : 0;
+            LateEarlyList[index].EarlyMinutes +=
+              rec.EarlyMinutes > 0 ? rec.EarlyMinutes : 0;
+          }
+        }
+      });
+      setLateEarlyList(LateEarlyList);
+    } catch (error) {
+      handleErrorOfRequest({ error, notify });
+    } finally {
+    }
+  }, [detailRecord]);
 
   const dataSrc = [];
   const employeeId = [];
@@ -173,23 +253,28 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
         dataSrc.push(temp);
       } else {
         dataSrc[index][`${record.Date}`] = {
-          Checkin: `${
-            record.CheckinTime
-              ? dayjs(record.CheckinTime, Config.TimeFormat).format(
-                  Config.NonSecondFormat
-                )
-              : "-:-"
-          } - ${
-            record.CheckoutTime
-              ? dayjs(record.CheckoutTime, Config.TimeFormat).format(
-                  Config.NonSecondFormat
-                )
-              : "-:-"
-          }`,
+          Checkin: (
+            <>
+              <p style={{ margin: "unset" }}>{record.ShiftName}</p>
+              <p style={{ margin: "unset" }}>{`${
+                record.CheckinTime
+                  ? dayjs(record.CheckinTime, Config.TimeFormat).format(
+                      Config.NonSecondFormat
+                    )
+                  : "-:-"
+              } - ${
+                record.CheckoutTime
+                  ? dayjs(record.CheckoutTime, Config.TimeFormat).format(
+                      Config.NonSecondFormat
+                    )
+                  : "-:-"
+              }`}</p>
+            </>
+          ),
         };
       }
     } catch (error) {
-      console.error(error);
+      handleErrorOfRequest({ notify, error });
     } finally {
       // console.log(dataSrc);
       // console.log(columns);
@@ -215,30 +300,54 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
       return;
     } catch (error) {
       handleErrorOfRequest({ error: error, notify: notify });
-    }
-    finally{
+    } finally {
       setLoading(false);
     }
   };
 
+  const exportTimesheetReport = async () => {
+    var url;
+    try {
+      setProcessing(true);
+      var fileData = await ExportTimesheetBE({ Id: timeSheet.Id });
+      // url = URL.createObjectURL(fileData
+      //   // new Blob(fileData, {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+      // );
+      // var link = document.createElement("a");
+      // link.href = url;
+      // link.setAttribute("download", timeSheet.Name);
+      // document.body.appendChild(link);
+      // link.click();
+      // link.parentNode.removeChild(link);
+      fileDownload(new Blob([fileData]), timeSheet.Name,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" )
+    } catch (error) {
+      handleErrorOfRequest({ error, notify });
+      console.error(error);
+    } finally {
+      setProcessing(false);
+      if ((url || "").length > 0) URL.revokeObjectURL(url);
+    }
+  };
+
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space direction="vertical" style={{ width: "100%" }}>
       <Row wrap={false} align="middle">
         <Col flex="none">
           <Space direction="vertical" wrap>
             <Space direction="horizontal" align="center" wrap>
-            <Tooltip title="Quay lại">
+              <Tooltip title="Quay lại">
                 <Button
                   onClick={() => navigate(-1)}
-                  icon={<FontAwesomeIcon icon={faArrowLeft} size="2x" />}
+                  icon={<FontAwesomeIcon icon={faArrowLeft} fontSize={28} />}
                   type="text"
                   shape="circle"
+                  // style={{padding: 0}}
+                  size="large"
                 />
               </Tooltip>
-
               <Typography.Title
                 level={2}
-                style={{ marginTop: 0, maxWidth: "100%" }}
+                style={{ marginTop: 0, marginBottom: 0, maxWidth: "100%" }}
               >
                 {timeSheet.Name}
               </Typography.Title>
@@ -266,15 +375,19 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
                 </Tag>
               )}
             </Space>
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                <NavLink to="/">Dashboard</NavLink>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <NavLink to="">Bảng chấm công chi tiết</NavLink>
-              </Breadcrumb.Item>
-            </Breadcrumb>
           </Space>
+        </Col>
+      </Row>
+      <Row wrap gutter={[16, 16]}>
+        <Col flex="none">
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <NavLink to="/">Dashboard</NavLink>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <NavLink to="">Bảng chấm công chi tiết</NavLink>
+            </Breadcrumb.Item>
+          </Breadcrumb>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
           <Space wrap>
@@ -288,7 +401,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
             </Button>
 
             <Button type="default" icon={<UploadOutlined />}>
-              Nhập khẩu
+              Import
             </Button>
           </Space>
         </Col>
@@ -296,40 +409,14 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
       <Row wrap gutter={[16, 16]}>
         <Col span={6}>
           <CustomStatisticsComponent
-            key="off-employee"
-            cols={defaultColumns}
-            dataSrc={[]}
-            title="Đi làm"
-            total={10}
-            modalTitle={
-              <span style={{ fontSize: 20 }}>Danh sách nhân viên </span>
-            }
-            icon={<FontAwesomeIcon icon={faCheckToSlot} />}
-          />
-        </Col>
-        <Col span={6}>
-          <CustomStatisticsComponent
-            key="off-employee"
-            cols={defaultColumns}
-            dataSrc={[]}
-            title="Nghỉ"
-            total={offNumber}
-            modalTitle={
-              <span style={{ fontSize: 20 }}>Danh sách nhân viên nghỉ </span>
-            }
-            icon={<FontAwesomeIcon icon={faCalendarDays} />}
-          />
-        </Col>
-        <Col span={6}>
-          <CustomStatisticsComponent
-            key="off-employee"
-            cols={defaultColumns}
-            dataSrc={[]}
+            key="late-early-employee"
+            cols={lateEarlyColumns}
+            dataSrc={lateEarlyList || []}
             title="Đi trễ về sớm"
-            total={lateEarly}
+            total={(lateEarlyList || []).length}
             modalTitle={
               <span style={{ fontSize: 20 }}>
-                Danh sách nhân viên Đi trễ về sớm{" "}
+                Danh sách nhân viên Đi trễ về sớm
               </span>
             }
             icon={<FontAwesomeIcon icon={faCalendarDays} />}
@@ -337,7 +424,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
         </Col>
         <Col span={6}>
           <CustomStatisticsComponent
-            key="off-employee"
+            key="invalid-record"
             cols={defaultColumns}
             dataSrc={[]}
             title="Chưa chấm công"
@@ -351,15 +438,34 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           />
         </Col>
       </Row>
-      <Row wrap>
-        <Col flex="none">
+      <Row wrap gutter={[16, 16]}>
+        {/* <Col flex="none">
           <Search
             placeholder="Tìm kiếm"
             allowClear={true}
             loading={searching}
             enterButton
           />
-          <Col flex="auto" style={{ textAlign: "right" }}></Col>
+        </Col> */}
+        <Col flex="auto" style={{ textAlign: "right" }}>
+          <Space>
+            <Tooltip title="Tải lại">
+              <Button
+                type="primary"
+                icon={<FontAwesomeIcon icon={faArrowsRotate} />}
+                loading={loading}
+                onClick={() => setReloading(!reloading)}
+              />
+            </Tooltip>
+            <Tooltip title="Xuất bảng chấm công" placement="rightTop">
+              <Button
+                type="default"
+                icon={<FontAwesomeIcon icon={faFileExport} />}
+                onClick={exportTimesheetReport}
+                loading={processing}
+              />
+            </Tooltip>
+          </Space>
         </Col>
       </Row>
       <Content>

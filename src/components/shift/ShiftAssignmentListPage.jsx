@@ -24,6 +24,7 @@ import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { GetAssignmentList } from "./api";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 const ShiftAssignmentListPage = (props) => {
   const { notify } = props;
@@ -52,22 +53,7 @@ const ShiftAssignmentListPage = (props) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       })
       .finally((done) => {
         setLoading(false);

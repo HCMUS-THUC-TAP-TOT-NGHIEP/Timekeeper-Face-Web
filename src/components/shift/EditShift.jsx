@@ -14,7 +14,7 @@ import {
   Tooltip,
   Typography,
   notification,
-  theme
+  theme,
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import dayjs from "dayjs";
@@ -23,6 +23,7 @@ import { default as React, useEffect, useState } from "react";
 import Config from "../../constant";
 import { GetShiftTypeList, UpdateShift } from "./api";
 import { useNavigate } from "react-router-dom";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 const EditShift = (props) => {
   const { notify, updateOneShift, shiftList, shift } = props;
@@ -48,6 +49,7 @@ const EditShift = (props) => {
           return;
         }
       } catch (error) {
+        handleErrorOfRequest({ notify, error });
       } finally {
       }
     }
@@ -82,8 +84,8 @@ const EditShift = (props) => {
 
   const onSubmit = (values) => {
     setLoading(true);
-    values.StartDate = dayjs(values.StartDate).format("YYYY-MM-DD")
-    values.FinishDate = dayjs(values.FinishDate).format("YYYY-MM-DD")
+    values.StartDate = dayjs(values.StartDate).format("YYYY-MM-DD");
+    values.FinishDate = dayjs(values.FinishDate).format("YYYY-MM-DD");
     values.StartTime = dayjs(values.StartTime).format(Config.TimeFormat);
     values.FinishTime = dayjs(values.FinishTime).format(Config.TimeFormat);
     if (values.BreakAt) {
@@ -112,22 +114,7 @@ const EditShift = (props) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       })
       .finally(() => {
         setLoading(false);
@@ -144,7 +131,8 @@ const EditShift = (props) => {
           type="text"
           shape="circle"
           icon={<EditTwoTone />}
-size="small"          onClick={() => navigate(`/shift/edit/${shift.Id}`)}
+          size="small"
+          onClick={() => navigate(`/shift/edit/${shift.Id}`)}
         />
       </Tooltip>
       <Modal
@@ -169,10 +157,14 @@ size="small"          onClick={() => navigate(`/shift/edit/${shift.Id}`)}
           initialValues={{
             Id: shift.Id,
             Description: shift.Description,
-            StartDate: dayjs(shift.StartDate).locale('vi'),
-            EndDate: dayjs(shift.EndDate).locale('vi'),
-            StartTime: dayjs(shift.StartTime, Config.NonSecondFormat).locale('vi'),
-            FinishTime: dayjs(shift.FinishTime, Config.NonSecondFormat).locale('vi'),
+            StartDate: dayjs(shift.StartDate).locale("vi"),
+            EndDate: dayjs(shift.EndDate).locale("vi"),
+            StartTime: dayjs(shift.StartTime, Config.NonSecondFormat).locale(
+              "vi"
+            ),
+            FinishTime: dayjs(shift.FinishTime, Config.NonSecondFormat).locale(
+              "vi"
+            ),
             BreakAt: shift.BreakAt
               ? dayjs(shift.BreakAt, Config.NonSecondFormat)
               : undefined,
@@ -412,4 +404,3 @@ size="small"          onClick={() => navigate(`/shift/edit/${shift.Id}`)}
   );
 };
 export { EditShift };
-

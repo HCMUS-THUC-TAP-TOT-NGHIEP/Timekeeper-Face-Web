@@ -16,6 +16,7 @@ import { Content } from "antd/es/layout/layout";
 import Title from "antd/es/typography/Title";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetOneEmployeeInfo } from "./api";
 import "./style.css";
 
@@ -48,22 +49,7 @@ export const EmployeeProfile = (props) => {
         }
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       });
   }, [employeeId]);
   const title = (

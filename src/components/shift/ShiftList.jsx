@@ -1,8 +1,4 @@
-import {
-  DeleteFilled,
-  DeleteOutlined,
-  PlusOutlined
-} from "@ant-design/icons";
+import { DeleteFilled, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -16,7 +12,7 @@ import {
   Tag,
   Tooltip,
   Typography,
-  notification
+  notification,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";
@@ -25,6 +21,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { EditShift } from "./EditShift";
 import { DeleteShift, GetShiftList } from "./api";
 
@@ -70,22 +67,7 @@ const DeleteShiftComponent = (props) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       });
   };
   return (
@@ -139,22 +121,7 @@ const ShiftList = function ({ notify, ...rest }) {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       })
       .finally(() => {
         setLoading(false);
@@ -372,8 +339,7 @@ const ShiftList = function ({ notify, ...rest }) {
               if (record.Status) {
                 content = "Available";
                 return <Tag color="geekblue">{content}</Tag>;
-              }
-              else{
+              } else {
                 content = "Unavailable";
                 return <Tag color="orange">{content}</Tag>;
               }

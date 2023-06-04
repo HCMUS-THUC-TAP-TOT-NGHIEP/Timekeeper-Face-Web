@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { changePasswordBE } from "./api";
 import { useAuthState } from "../../Contexts/AuthContext";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 const ChangePasswordPage = ({ notify, loginRequired, ...rest }) => {
   const [loadingButton, setLoadingButton] = useState(false);
@@ -47,22 +48,7 @@ const ChangePasswordPage = ({ notify, loginRequired, ...rest }) => {
         description: Description,
       });
     } catch (error) {
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
+      handleErrorOfRequest({ notify, error });
     } finally {
       setLoadingButton(false);
     }

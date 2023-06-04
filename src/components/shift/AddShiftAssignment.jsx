@@ -1,4 +1,4 @@
-import { EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -28,17 +28,15 @@ import TextArea from "antd/es/input/TextArea";
 import { Content } from "antd/es/layout/layout";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetDepartmentList } from "../department/api";
 import { GetManyEmployee } from "../employee/api";
 import {
   AssignShift,
-  GetAssignmentDetail,
   GetAssignmentType,
   GetShiftList,
-  UpdateShiftAssignment,
   _TargeType,
 } from "./api";
 
@@ -92,34 +90,18 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
           (rec) => rec.Id
         );
       }
-      let res =  await AssignShift(values);
+      let res = await AssignShift(values);
       let { ResponseData, Status, Description } = res;
-      if (Status === 1)
-      {
-        navigate(`/shift/assignment/detail/${ResponseData.Id}`)
+      if (Status === 1) {
+        navigate(`/shift/assignment/detail/${ResponseData.Id}`);
         return;
       }
       notify.error({
         message: "",
-        description: Description
+        description: Description,
       });
     } catch (error) {
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
+      handleErrorOfRequest({ notify, error });
     } finally {
       setProcessing(false);
     }
@@ -170,7 +152,11 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
             <Button onClick={() => navigate("/shift/assignment/list")}>
               Hủy
             </Button>
-            <Button type="primary" onClick={() => form.submit()} loading={processing}>
+            <Button
+              type="primary"
+              onClick={() => form.submit()}
+              loading={processing}
+            >
               Lưu
             </Button>
           </Space>
@@ -621,22 +607,7 @@ const AppliedTargetTable = (props) => {
           setTotalEmployee(Total);
         }
       } catch (error) {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       } finally {
         setLoading(false);
       }
@@ -719,3 +690,4 @@ const AppliedTargetTable = (props) => {
 };
 
 export { AddShiftAssignmentPage };
+

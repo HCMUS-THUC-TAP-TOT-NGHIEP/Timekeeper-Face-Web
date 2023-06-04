@@ -1,27 +1,17 @@
 import {
-    FilePdfTwoTone,
-    FileWordTwoTone,
-    PictureTwoTone,
-    UploadOutlined
+  FilePdfTwoTone,
+  FileWordTwoTone,
+  PictureTwoTone,
+  UploadOutlined,
 } from "@ant-design/icons";
-import {
-    faFileExcel,
-    faInbox
-} from "@fortawesome/free-solid-svg-icons";
+import { faFileExcel, faInbox } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    Button,
-    Modal,
-    Typography,
-    Upload
-} from "antd";
+import { Button, Modal, Typography, Upload } from "antd";
 import React, { useState } from "react";
 import { useAuthState } from "../../Contexts/AuthContext";
-import {
-    GetTemplateFile,
-    ImportDataBE
-} from "./api";
+import { GetTemplateFile, ImportDataBE } from "./api";
 import "./style.css";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 const ImportDataComponent = ({ notify, ...rest }) => {
   const [open, setOpen] = useState(false);
@@ -30,9 +20,10 @@ const ImportDataComponent = ({ notify, ...rest }) => {
   const userDetails = useAuthState();
 
   const loadTemplate = async () => {
+    var url;
     try {
       var fileData = await GetTemplateFile();
-      var url = window.URL.createObjectURL(fileData);
+      url = window.URL.createObjectURL(fileData);
       console.log(url);
       var link = document.createElement("a");
       link.href = url;
@@ -42,8 +33,9 @@ const ImportDataComponent = ({ notify, ...rest }) => {
       link.parentNode.removeChild(link);
       // fileDownload(response, "Employee.xlsx")
     } catch (error) {
-      console.error(error);
+      handleErrorOfRequest({ notify, error });
     } finally {
+      if ((url || "").length > 0) URL.revokeObjectURL(url);
     }
   };
 
@@ -58,7 +50,7 @@ const ImportDataComponent = ({ notify, ...rest }) => {
       var response = await ImportDataBE({ fileList });
       console.log("response", response);
     } catch (error) {
-      console.log("error", error);
+      handleErrorOfRequest({ notify, error });
     } finally {
     }
   };
@@ -79,7 +71,7 @@ const ImportDataComponent = ({ notify, ...rest }) => {
           console.log("arrayBuffer", response);
         })
         .catch((error) => {
-          console.log("arrayBuffer", error);
+          handleErrorOfRequest({ notify, error });
         });
       setFileList([file]);
       return false;
@@ -216,4 +208,3 @@ const handleIconRender = (file) => {
 };
 
 export { ImportDataComponent };
-

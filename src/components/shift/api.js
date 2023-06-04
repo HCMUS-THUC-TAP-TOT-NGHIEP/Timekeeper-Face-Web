@@ -145,6 +145,7 @@ export const GetShiftDetail = async ({ Id, ...rest }) => {
       Authorization: "Bearer " + localStorage.getItem("access_token"),
     },
   });
+  console.log(response);
   return response.data;
 };
 

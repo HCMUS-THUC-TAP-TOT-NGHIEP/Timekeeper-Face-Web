@@ -19,6 +19,7 @@ import { AddDepartmentFrom } from "./AddComponent";
 import { EditDepartmentForm } from "./EditComponent";
 import { DeleteOneDepartment, GetDepartmentList } from "./api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 const DepartmentList = (props) => {
   const { notify } = props;
@@ -46,22 +47,7 @@ const DepartmentList = (props) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       })
       .finally(() => {
         setLoading(false);
@@ -218,22 +204,7 @@ function ActionMenu(props) {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       });
   };
 

@@ -65,7 +65,8 @@ const EditShiftAssignmentPage = (props) => {
       if (response.Status != 1) {
         return;
       }
-      let { Assignment, ShiftDetail, DepartmentList, EmployeeList } =  response.ResponseData;
+      let { Assignment, ShiftDetail, DepartmentList, EmployeeList } =
+        response.ResponseData;
       setAssignment(Assignment);
       setShiftDetail(ShiftDetail);
       setAppliedDepartmentList(DepartmentList);
@@ -664,22 +665,7 @@ const AppliedTargetTable = (props) => {
           setTotalEmployee(Total);
         }
       } catch (error) {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       } finally {
         setLoading(false);
       }

@@ -23,6 +23,7 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import Config from "../../constant";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetShiftDetail, UpdateShift } from "./api";
 
 const ShiftDetailPage = function ({ notify, ...rest }) {
@@ -69,6 +70,7 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
         setShift(Shift);
       }
     } catch (error) {
+      handleErrorOfRequest({ notify, error });
     } finally {
       setLoading(false);
     }
@@ -118,22 +120,7 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
         description: response.Description,
       });
     } catch (error) {
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
+      handleErrorOfRequest({ notify, error });
     } finally {
       setUpdateLoading(false);
     }
@@ -148,7 +135,12 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
               <Tooltip title="Quay lại">
                 <Button
                   type="text"
-                  icon={<FontAwesomeIcon icon={faArrowLeftLong} style={{fontSize: 20, margin: "auto"}} />}
+                  icon={
+                    <FontAwesomeIcon
+                      icon={faArrowLeftLong}
+                      style={{ fontSize: 20, margin: "auto" }}
+                    />
+                  }
                   onClick={() => navigate(-1)}
                   shape="circle"
                   size="large"

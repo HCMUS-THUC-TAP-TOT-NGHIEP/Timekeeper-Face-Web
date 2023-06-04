@@ -1,8 +1,36 @@
 import { Button, Card, Modal, Space, Statistic, Table } from "antd";
 import { useState } from "react";
 import CountUp from "react-countup";
-import { defaultColumns } from "../employee";
 const formatter = (value) => <CountUp end={value} separator="," />;
+let defaultCols = [
+  {
+    key: "index",
+    title: "Stt",
+    width: 60,
+    align: "right",
+    render: (_, __, index) => index + 1,
+  },
+  {
+    key: "code",
+    dataIndex: "Id",
+    title: "Mã NV",
+    width: 80,
+    sorter: (a, b) => a.Id > b.Id,
+  },
+  {
+    key: "name",
+    title: "Nhân viên",
+    dataIndex: "EmployeeName",
+    width: 200,
+  },
+  {
+    key: "department",
+    title: "Phòng ban",
+    dataIndex: "Department",
+    width: 200,
+  },
+
+];
 
 const CustomStatisticsComponent = ({
   cols,
@@ -53,12 +81,13 @@ const CustomStatisticsComponent = ({
         width={900}
       >
         <Table
-          columns={cols}
-          dataSource={dataSrc | []}
+          bordered
+          rootClassName="boxShadow89"
+          columns={[...defaultCols, ...cols]}
+          dataSource={dataSrc || []}
           rowKey="Id"
           scroll={{
-            x: 1500,
-            y: 1200,
+            y: 800,
           }}
           pagination={{
             total: (dataSrc || []).length,
@@ -66,6 +95,7 @@ const CustomStatisticsComponent = ({
             pageSize: 15,
             pageSizeOptions: [15, 25, 50],
             showSizeChanger: true,
+            showTotal: (total) => `Tổng ${total} bản ghi.`,
           }}
         ></Table>
       </Modal>

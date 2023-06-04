@@ -13,6 +13,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { GetManyEmployee } from "../employee/api";
 import { CreateOneDepartment } from "./api";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 export const AddDepartmentFrom = function (props) {
   // const form = props.form;
@@ -60,22 +61,7 @@ export const AddDepartmentFrom = function (props) {
         return;
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
         setProcessing(true);
       })
       .finally(() => {
@@ -99,22 +85,7 @@ export const AddDepartmentFrom = function (props) {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notification.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notification.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notification.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       });
   }, []);
 
@@ -266,22 +237,8 @@ export const EmployeeSelectionComponent = ({
           description: Description,
         });
       } catch (error) {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
+
       } finally {
         setLoading(false);
       }

@@ -113,11 +113,41 @@ export const CreatTimesheetBE = async (req) => {
 
 export const UpdateTimesheetBE = async (Id) => {
   let req = { Id: Id };
-  let response = await AxiosInstance.post("checkin/timesheet/update", req, {
+  let response = await AxiosInstance.put("checkin/timesheet", req, {
     headers: {
       "Access-Control-Allow-Origin": "*",
       Authorization: "Bearer " + localStorage.getItem("access_token"),
     },
   });
+  return response.data;
+};
+
+export const DeleteTimesheetBE = async ({ Id }) => {
+  let req = { Id: Id };
+  console.log(localStorage.getItem("access_token"));
+  let response = await AxiosInstance.delete("checkin/timesheet", {
+    data: req,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
+  return response.data;
+};
+
+export const ExportTimesheetBE = async ({ Id }) => {
+  var requestData = {
+    Id: Id,
+  };
+  var response = await AxiosInstance.post(
+    "checkin/timesheet/report/export",
+    requestData,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: "Bearer " + localStorage.getItem("access_token"),
+      },
+    }
+  );
   return response.data;
 };

@@ -24,6 +24,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { ImportTimekeeperData } from "./ImportComponent";
 import { GetStatisticV2 } from "./api";
 dayjs.extend(isSameOrBefore);
@@ -93,22 +94,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
         description: response.Description,
       });
     } catch (error) {
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
+      handleErrorOfRequest({ notify, error });
     } finally {
       setLoading(false);
     }
@@ -235,3 +221,4 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
 };
 
 export { StatisticPageV2 };
+

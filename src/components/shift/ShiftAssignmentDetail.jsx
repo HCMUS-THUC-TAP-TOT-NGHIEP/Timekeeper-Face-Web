@@ -19,6 +19,7 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Config from "../../constant";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetAssignmentDetail, _TargeType } from "./api";
 const { Title } = Typography;
 
@@ -54,22 +55,7 @@ const ShiftAssignmentDetail = (props) => {
         setDepartmentList(DepartmentList);
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       })
       .finally(() => {
         setLoading(false);
@@ -281,4 +267,3 @@ const ShiftAssignmentDetail = (props) => {
 };
 
 export { ShiftAssignmentDetail };
-

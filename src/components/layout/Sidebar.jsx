@@ -104,22 +104,22 @@ function MySidebar(props) {
                   </NavLink>
                 ),
               },
-              {
-                key: "sub2-summary",
-                label: (
-                  <NavLink to="/timesheet/timekeeping/timesheet-summary">
-                    Bảng chấm công tổng hợp
-                  </NavLink>
-                ),
-              },
-              {
-                key: "sub2-opt1",
-                label: (
-                  <NavLink to="/timesheet/timekeeper">
-                    Thống kê điểm danh
-                  </NavLink>
-                ),
-              },
+              // {
+              //   key: "sub2-summary",
+              //   label: (
+              //     <NavLink to="/timesheet/timekeeping/timesheet-summary">
+              //       Bảng chấm công tổng hợp
+              //     </NavLink>
+              //   ),
+              // },
+              // {
+              //   key: "sub2-opt1",
+              //   label: (
+              //     <NavLink to="/timesheet/timekeeper">
+              //       Thống kê điểm danh
+              //     </NavLink>
+              //   ),
+              // },
             ],
           },
           {

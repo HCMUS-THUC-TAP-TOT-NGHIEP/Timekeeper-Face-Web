@@ -23,6 +23,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import { getUserInfo } from "../../api";
 import { Logout } from "../authentication/api";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 const items = [
   {
@@ -78,22 +79,7 @@ function MyHeader(props) {
       })
       .catch((error) => {
         localStorage.removeItem("access_token");
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
         navigate("/login");
       });
   }, []);

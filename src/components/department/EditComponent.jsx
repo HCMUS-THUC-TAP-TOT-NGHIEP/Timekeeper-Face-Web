@@ -11,6 +11,7 @@ import {
   notification,
 } from "antd";
 import React, { useEffect, useState } from "react";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetManyEmployee } from "../employee/api";
 import { EmployeeSelectionComponent } from "./AddComponent";
 import { UpdateOneDepartment } from "./api";
@@ -46,22 +47,7 @@ export const EditDepartmentForm = function (props) {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       })
       .finally(() => {
         setProcessing(false);
@@ -91,22 +77,7 @@ export const EditDepartmentForm = function (props) {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       });
   };
 

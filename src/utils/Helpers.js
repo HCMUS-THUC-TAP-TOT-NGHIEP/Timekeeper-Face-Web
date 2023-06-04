@@ -1,26 +1,27 @@
 export const handleErrorOfRequest = ({ error, notify, ...rest }) => {
   try {
-    console.log(error)
     if (error.code === "ECONNABORTED") {
       notify.error({
-        message:
+        message: <b>Thông báo</b>,
+        description:
           "Không nhận được phản hồi của máy chủ. Hãy kiểm tra lại kết nối Internet.",
       });
+      return;
     }
     if (error.response) {
       notify.error({
-        message: "Có lỗi ở response.",
+        message: <b>Thông báo</b>,
         description: `[${error.response.statusText}]`,
       });
     } else if (error.request) {
       notify.error({
-        message: "Có lỗi ở request.",
+        message: <b>Thông báo</b>,
         description: error,
       });
     } else {
       notify.error({
-        message: "Có lỗi ở máy khách",
-        description: error.message,
+        message: <b>Thông báo</b>,
+        description: `${error.message}`,
       });
     }
   } catch (error) {

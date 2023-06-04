@@ -34,7 +34,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { handleErrorOfRequest } from "../../utils/Helpers";
-import { CreatTimesheetBE, GetTimesheetList } from "./api";
+import { CreatTimesheetBE, DeleteTimesheetBE, GetTimesheetList } from "./api";
 dayjs.extend(isSameOrBefore);
 
 const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
@@ -86,11 +86,8 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
     }
   };
 
-  const deleteReportFE = (value) => {
-    var reportList = reportList.filter((a) => a.Id !== value.Id);
-    if (reportList.length < pageSize) {
-      //todo get total report
-    }
+  const deleteReportFE = async (value) => {
+    await loadData();
   };
 
   return (
@@ -167,7 +164,12 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
             showTotal: (total) => `Tổng ${total} mục`,
           }}
         >
-          <Column title="Stt" render={(_, __, index) => index} align="right"  width={40} />
+          <Column
+            title="Stt"
+            render={(_, __, index) => index + 1}
+            align="right"
+            width={40}
+          />
           <Column
             key="DateRange"
             title="Thời gian"
@@ -265,7 +267,22 @@ const DeleteReportComponent = ({ notify, report, deleteReportFE, ...rest }) => {
   const deleteReport = async () => {
     try {
       setLoading(true);
+      var response = await DeleteTimesheetBE({ Id: report.Id });
+      if (response.Status === 1) {
+        await deleteReportFE(report);
+        notify.success({
+          message: <b>Thông báo</b>,
+          description: `Đã xóa ${report.Name}`,
+        });
+        hideModal();
+        return;
+      }
+      notify.error({
+        message: <b>Thông báo</b>,
+        description: response.Description,
+      });
     } catch (error) {
+      handleErrorOfRequest({ notify, error });
     } finally {
       setLoading(false);
     }
@@ -291,7 +308,7 @@ const DeleteReportComponent = ({ notify, report, deleteReportFE, ...rest }) => {
         onOk={deleteReport}
       >
         Bạn có chắc chắn muốn xóa
-        <Typography.Text strong>{report.Name}</Typography.Text>
+        <Typography.Text strong> {report.Name} </Typography.Text>
         không?
       </Modal>
     </>
@@ -340,7 +357,7 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
         description: response.Description,
       });
     } catch (error) {
-      console.error(error);
+      handleErrorOfRequest({ notify, error });
     } finally {
       setLoading(false);
       Modal.destroyAll();
@@ -450,3 +467,4 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
 };
 
 export { TimesheetTablePage };
+

@@ -310,16 +310,16 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
     try {
       setProcessing(true);
       var fileData = await ExportTimesheetBE({ Id: timeSheet.Id });
-      // url = URL.createObjectURL(fileData
-      //   // new Blob(fileData, {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
-      // );
-      // var link = document.createElement("a");
-      // link.href = url;
-      // link.setAttribute("download", timeSheet.Name);
-      // document.body.appendChild(link);
-      // link.click();
-      // link.parentNode.removeChild(link);
-      fileDownload(new Blob([fileData]), timeSheet.Name,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" )
+      url = URL.createObjectURL(fileData
+        // new Blob(fileData, {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+      );
+      var link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", timeSheet.Name);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      // fileDownload(fileData, timeSheet.Name,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" )
     } catch (error) {
       handleErrorOfRequest({ error, notify });
       console.error(error);

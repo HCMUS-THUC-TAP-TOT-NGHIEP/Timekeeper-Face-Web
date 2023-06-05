@@ -1,5 +1,8 @@
 import { SearchOutlined } from "@ant-design/icons";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import {
+  faFileExport,
+  faMagnifyingGlass,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
@@ -11,6 +14,7 @@ import {
   Row,
   Space,
   Table,
+  Tooltip,
   Typography,
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
@@ -26,7 +30,7 @@ import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
 import { handleErrorOfRequest } from "../../utils/Helpers";
 import { ImportTimekeeperData } from "./ImportComponent";
-import { GetStatisticV2 } from "./api";
+import { ExportAttendanceStatisticBE, GetStatisticV2 } from "./api";
 dayjs.extend(isSameOrBefore);
 
 const col1 = {
@@ -45,6 +49,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
   const [pageSize, setPageSize] = useState(50);
   const [total, setTotal] = useState(0);
   const [form] = Form.useForm();
+  const [processing, setProcessing] = useState(false);
   useEffect(() => {
     if (loginRequired && !userDetails.token) {
       notify.warning({
@@ -99,6 +104,39 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
       setLoading(false);
     }
   };
+  const exportTimesheetReport = async () => {
+    var url;
+    try {
+      setProcessing(true);
+      var dateRange = form.getFieldValue("DateRange"),
+        keyword = form.getFieldValue("Keyword");
+      console.log(dateRange);
+      console.log(keyword);
+      var fileData = await ExportAttendanceStatisticBE({
+        DateFrom: dateRange[0],
+        DateTo: dateRange[1],
+        Keyword: keyword,
+      });
+      url = URL.createObjectURL(fileData);
+      var link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Dữ liệu chấm công từ ngày ${dateRange[0].format(
+          Config.DateFormat
+        )} dến ngày ${dateRange[1].format(Config.DateFormat)}`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      handleErrorOfRequest({ error, notify });
+      console.error(error);
+    } finally {
+      setProcessing(false);
+      if ((url || "").length > 0) URL.revokeObjectURL(url);
+    }
+  };
 
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
@@ -122,31 +160,58 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           <ImportTimekeeperData notify={notify} />
         </Col>
       </Row>
-      <Row wrap>
-        <Form layout="inline" onFinish={loadStatistic} form={form}>
-          <Form.Item name="Keyword" wrapperCol={3}>
-            <Input
-              placeholder="Tìm kiếm"
-              suffix={<FontAwesomeIcon icon={faMagnifyingGlass} />}
-            />
-          </Form.Item>
-          <Form.Item
-            name="DateRange"
-            wrapperCol={3}
-            initialValue={[dayjs(), dayjs()]}
-          >
-            <DatePicker.RangePicker
-              locale={locale}
-              format={Config.DateFormat}
-              allowClear={true}
-            />
-          </Form.Item>
-          <Form.Item wrapperCol={3}>
-            <Button htmlType="submit" icon={<SearchOutlined />} type="primary">
-              Tìm kiếm
-            </Button>
-          </Form.Item>
-        </Form>
+      <Row wrap align="middle">
+        <Col flex="none">
+          <Form layout="inline" onFinish={loadStatistic} form={form}>
+            <Space wrap>
+              <Form.Item name="Keyword" wrapperCol={3}>
+                <Input
+                  placeholder="Tìm kiếm"
+                  suffix={<FontAwesomeIcon icon={faMagnifyingGlass} />}
+                />
+              </Form.Item>
+              <Form.Item
+                name="DateRange"
+                wrapperCol={3}
+                initialValue={[dayjs(), dayjs()]}
+              >
+                <DatePicker.RangePicker
+                  locale={locale}
+                  format={Config.DateFormat}
+                  allowClear={true}
+                />
+              </Form.Item>
+              <Form.Item wrapperCol={3}>
+                <Button
+                  htmlType="submit"
+                  icon={<SearchOutlined />}
+                  type="primary"
+                >
+                  Tìm kiếm
+                </Button>
+              </Form.Item>
+            </Space>
+          </Form>
+        </Col>
+        <Col flex="auto" style={{ textAlign: "right" }}>
+          <Space>
+            <Tooltip title="Xuất dữ liệu chấm công" placement="rightTop">
+              <Button
+                type="default"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faFileExport}
+                    style={{ paddingRight: 4 }}
+                  />
+                }
+                onClick={exportTimesheetReport}
+                loading={processing}
+              >
+                Xuất báo cáo
+              </Button>
+            </Tooltip>
+          </Space>
+        </Col>
       </Row>
       <Content>
         <Table
@@ -221,4 +286,3 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
 };
 
 export { StatisticPageV2 };
-

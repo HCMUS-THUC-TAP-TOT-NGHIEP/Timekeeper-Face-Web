@@ -140,13 +140,36 @@ export const ExportTimesheetBE = async ({ Id }) => {
     Id: Id,
   };
   var response = await AxiosInstance.post(
-    "checkin/timesheet/report/export",
+    "checkin/timesheet/report",
     requestData,
     {
       headers: {
         "Access-Control-Allow-Origin": "*",
         Authorization: "Bearer " + localStorage.getItem("access_token"),
       },
+      timeout: 60*1000,
+      responseType: "blob",
+    }
+  );
+  return response.data;
+};
+
+export const ExportAttendanceStatisticBE = async (req) => {
+  var requestData = {
+    DateFrom: req.DateFrom,
+    DateTo: req.DateTo,
+    Keyword: req.Keyword,
+  };
+  var response = await AxiosInstance.post(
+    "checkin/report",
+    requestData,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: "Bearer " + localStorage.getItem("access_token"),
+      },
+      timeout: 60*1000,
+      responseType: "blob",
     }
   );
   return response.data;

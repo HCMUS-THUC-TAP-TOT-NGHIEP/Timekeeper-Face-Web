@@ -82,7 +82,7 @@ const CustomStatisticsComponent = ({
       >
         <Table
           bordered
-          rootClassName="boxShadow89"
+          rootClassName=""
           columns={[...defaultCols, ...cols]}
           dataSource={dataSrc || []}
           rowKey="Id"

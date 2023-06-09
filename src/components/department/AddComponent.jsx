@@ -1,14 +1,14 @@
 import { InfoCircleTwoTone, PlusOutlined } from "@ant-design/icons";
 import {
-    Button,
-    Form,
-    Input,
-    InputNumber,
-    Modal,
-    Select,
-    Space,
-    Table,
-    notification,
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Space,
+  Table,
+  notification,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { GetManyEmployee } from "../employee/api";
@@ -16,7 +16,6 @@ import { CreateOneDepartment } from "./api";
 import { handleErrorOfRequest } from "../../utils/Helpers";
 
 export const AddDepartmentFrom = function (props) {
-  // const form = props.form;
   const [form] = Form.useForm();
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
   const [insertOneDepartment, departmentList] = props.listState;
@@ -157,7 +156,7 @@ export const AddDepartmentFrom = function (props) {
           >
             <Input />
           </Form.Item>
-          <Form.Item labelCol={24} label="Trưởng phòng"  required>
+          <Form.Item labelCol={24} label="Trưởng phòng" required>
             <Form.Item
               key={1}
               name="ManagerId"
@@ -210,6 +209,7 @@ export const EmployeeSelectionComponent = ({
   selectedOption,
   setEmployee,
   form,
+  department,
   ...rest
 }) => {
   const [chosenOption, setChosenOption] = useState(selectedOption || {});
@@ -224,7 +224,11 @@ export const EmployeeSelectionComponent = ({
     const loadData = async () => {
       setLoading(true);
       try {
-        var response = await GetManyEmployee({ page, perPage });
+        var response = await GetManyEmployee("POST", {
+          page,
+          perPage,
+          Department: department ? [department, null] : [null],
+        });
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
           const { EmployeeList, Total } = ResponseData;
@@ -238,13 +242,12 @@ export const EmployeeSelectionComponent = ({
         });
       } catch (error) {
         handleErrorOfRequest({ notify, error });
-
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, [page, perPage]);
+  }, [page, perPage, department]);
 
   const showModal = () => {
     setOpen(true);

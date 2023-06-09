@@ -29,7 +29,6 @@ const DepartmentList = (props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [total, setTotal] = useState(0);
-  const [form] = Form.useForm();
   useEffect(() => {
     setLoading(true);
     GetDepartmentList({ Page: page, PerPage: perPage })
@@ -147,7 +146,6 @@ const DepartmentList = (props) => {
               Lấy lại dữ liệu
             </Button>
             <AddDepartmentFrom
-              form={form}
               listState={[insertOneDepartment, currentDepartmentList]}
             />
           </Space>
@@ -180,7 +178,6 @@ const DepartmentList = (props) => {
 };
 
 function ActionMenu(props) {
-  const [form] = Form.useForm();
   const { department, setDepartmentList, departmentList, updateOneDepartment } =
     props;
   const [notify, contextHolder] = notification.useNotification();
@@ -211,7 +208,6 @@ function ActionMenu(props) {
   return (
     <Space wrap size="small">
       <EditDepartmentForm
-        form={form}
         content={department}
         listState={[updateOneDepartment, departmentList]}
       />

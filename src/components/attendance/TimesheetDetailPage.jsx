@@ -1,12 +1,9 @@
-import {
-  ExportOutlined,
-  UndoOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
+import { UndoOutlined, UploadOutlined } from "@ant-design/icons";
 import {
   faArrowLeft,
   faArrowsRotate,
   faCalendarDays,
+  faCircle,
   faFileExport,
   faLock,
   faLockOpen,
@@ -16,21 +13,26 @@ import {
   Breadcrumb,
   Button,
   Col,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
   Row,
   Space,
   Table,
   Tag,
+  TimePicker,
   Tooltip,
   Typography,
+  notification,
+  theme,
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
-import Search from "antd/es/input/Search";
 import { Content } from "antd/es/layout/layout";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import React, { useEffect, useState } from "react";
-import CountUp from "react-countup";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
@@ -41,16 +43,16 @@ import {
   ExportTimesheetBE,
   GetTimesheetDetail,
   UpdateTimesheetBE,
+  UpdateTimesheetDetail,
 } from "./api";
-import fileDownload from 'js-file-download'
-const formatter = (value) => <CountUp end={value} separator="," />;
+
 dayjs.extend(isSameOrBefore);
 
 let defaultCols = [
   {
     key: "code",
-    title: "Stt",
-    width: 60,
+    title: "#",
+    width: 50,
     align: "right",
     fixed: "left",
     render: (_, __, index) => index + 1,
@@ -58,8 +60,8 @@ let defaultCols = [
   {
     key: "code",
     dataIndex: "EmployeeId",
-    title: "Mã NV",
-    width: 100,
+    title: "Id",
+    width: 80,
     align: "right",
     fixed: "left",
     sorter: (a, b) => a.EmployeeId > b.EmployeeId,
@@ -68,7 +70,7 @@ let defaultCols = [
     key: "name",
     title: "Nhân viên",
     dataIndex: "EmployeeName",
-    width: 250,
+    width: 200,
     fixed: "left",
   },
 ];
@@ -126,6 +128,14 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   const [columns, setColumns] = useState([]);
   const [reloading, setReloading] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const {
+    token: {
+      colorBgTextActive,
+      colorWarningActive,
+      colorSuccessActive,
+      colorErrorText,
+    },
+  } = theme.useToken();
 
   const search = async (value) => {
     setSearching(true);
@@ -137,7 +147,6 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
       try {
         setLoading(true);
         var response = await GetTimesheetDetail({ Id: TimesheetId });
-        console.log(response);
         if (response.Status === 1) {
           var { Timesheet, Detail, Total } = response.ResponseData;
           setTimeSheet(Timesheet);
@@ -177,7 +186,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
               <div>{start.format(Config.DateFormat)}</div>
             </Space>
           ),
-          width: 250,
+          width: 200,
           dataIndex: [start.format("YYYY-MM-DD"), "Checkin"],
           align: "center",
         };
@@ -235,41 +244,24 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           EmployeeName: record.EmployeeName,
         };
         temp[`${record.Date}`] = {
-          Checkin: `${
-            record.CheckinTime
-              ? dayjs(record.CheckinTime, Config.TimeFormat).format(
-                  Config.NonSecondFormat
-                )
-              : "-:-"
-          } - ${
-            record.CheckoutTime
-              ? dayjs(record.CheckoutTime, Config.TimeFormat).format(
-                  Config.NonSecondFormat
-                )
-              : "-:-"
-          }`,
+          Checkin: (
+            <RecordView
+              record={record}
+              reloading={reloading}
+              setReloading={setReloading}
+            />
+          ),
         };
         employeeId.push(record.EmployeeId);
         dataSrc.push(temp);
       } else {
         dataSrc[index][`${record.Date}`] = {
           Checkin: (
-            <>
-              <p style={{ margin: "unset" }}>{record.ShiftName}</p>
-              <p style={{ margin: "unset" }}>{`${
-                record.CheckinTime
-                  ? dayjs(record.CheckinTime, Config.TimeFormat).format(
-                      Config.NonSecondFormat
-                    )
-                  : "-:-"
-              } - ${
-                record.CheckoutTime
-                  ? dayjs(record.CheckoutTime, Config.TimeFormat).format(
-                      Config.NonSecondFormat
-                    )
-                  : "-:-"
-              }`}</p>
-            </>
+            <RecordView
+              record={record}
+              reloading={reloading}
+              setReloading={setReloading}
+            />
           ),
         };
       }
@@ -310,7 +302,8 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
     try {
       setProcessing(true);
       var fileData = await ExportTimesheetBE({ Id: timeSheet.Id });
-      url = URL.createObjectURL(fileData
+      url = URL.createObjectURL(
+        fileData
         // new Blob(fileData, {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
       );
       var link = document.createElement("a");
@@ -406,7 +399,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           </Space>
         </Col>
       </Row>
-      <Row wrap gutter={[16, 16]}>
+      <Row wrap gutter={[16, 16]} align="middle">
         <Col span={6}>
           <CustomStatisticsComponent
             key="late-early-employee"
@@ -437,16 +430,36 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
             icon={<FontAwesomeIcon icon={faCalendarDays} />}
           />
         </Col>
+        <Col span={12} style={{ textAlign: "end" }}>
+          <Space direction="horizontal">
+            <Space>
+              <FontAwesomeIcon
+                icon={faCircle}
+                size="sm"
+                color={colorSuccessActive}
+              />
+              Đủ công
+            </Space>
+            <Space>
+              <FontAwesomeIcon
+                icon={faCircle}
+                size="sm"
+                color={colorWarningActive}
+              />
+              Nửa công
+            </Space>
+            <Space>
+              <FontAwesomeIcon
+                icon={faCircle}
+                size="sm"
+                color={colorBgTextActive}
+              />
+              Nghỉ
+            </Space>
+          </Space>
+        </Col>
       </Row>
       <Row wrap gutter={[16, 16]}>
-        {/* <Col flex="none">
-          <Search
-            placeholder="Tìm kiếm"
-            allowClear={true}
-            loading={searching}
-            enterButton
-          />
-        </Col> */}
         <Col flex="auto" style={{ textAlign: "right" }}>
           <Space>
             <Tooltip title="Tải lại">
@@ -471,7 +484,6 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
       <Content>
         <Table
           loading={loading}
-          className="boxShadow89"
           bordered
           scroll={{
             x: "calc(700px + 50%)",
@@ -494,4 +506,240 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   );
 };
 
+const RecordView = ({ record, reloading, setReloading, ...rest }) => {
+  const {
+    token: {
+      colorBgTextActive,
+      colorWarningActive,
+      colorSuccessActive,
+      colorErrorText,
+      colorText,
+    },
+  } = theme.useToken();
+  const [processing, setProcessing] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [form] = Form.useForm();
+  const [notify, contextHolder] = notification.useNotification();
+  const [totalHour, setTotalHour] = useState(record.TotalHour);
+  const showModal = () => {
+    setOpen(true);
+  };
+  const handleOk = () => {
+    form.submit();
+  };
+  const handleCancel = () => {
+    setOpen(false);
+  };
+  const handleSubmit = async (values) => {
+    try {
+      setProcessing(true);
+      if (!values.Id) values.Id = record.Id;
+      if (values.CheckinTime) {
+        values.CheckinTime = values.CheckinTime.format(Config.TimeFormat);
+      }
+      if (values.CheckoutTime) {
+        values.CheckoutTime = values.CheckoutTime.format(Config.TimeFormat);
+      }
+      console.log(values);
+      const res = await UpdateTimesheetDetail(values);
+      if (res.Status !== 1) {
+        throw new Error(res.Description);
+      }
+      notify.success({
+        message: <b>Thông báo</b>,
+        description: "Đã cập nhật",
+      });
+      setReloading(!reloading);
+      handleCancel();
+      return;
+    } catch (error) {
+      handleErrorOfRequest({ notify, error });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const timeView = () => {
+    let checkinTime = null,
+      checkoutTime = null;
+    if (record.CheckinTime) {
+      checkinTime = dayjs(record.CheckinTime, Config.TimeFormat).format(
+        Config.NonSecondFormat
+      );
+    }
+
+    if (record.CheckoutTime) {
+      checkoutTime = dayjs(record.CheckoutTime, Config.TimeFormat).format(
+        Config.NonSecondFormat
+      );
+    }
+    let timeString = [];
+    if (checkinTime || checkoutTime) {
+      timeString.push(
+        <span
+          style={{ color: record.LateMinutes > 0 ? colorErrorText : colorText }}
+        >
+          {checkinTime || "--:--"}
+        </span>
+      );
+      timeString.push(" - ");
+      timeString.push(
+        <span
+          style={{
+            color: record.EarlyMinutes > 0 ? colorErrorText : colorText,
+          }}
+        >
+          {checkoutTime || "--:--"}
+        </span>
+      );
+      timeString.push(
+        <span style={{ marginLeft: 2 }}>
+          {record.TotalHour ? `(${record.TotalHour.toFixed(2)}h)` : ""}
+        </span>
+      );
+    }
+    return timeString;
+  };
+
+  const statusIcon = () => {
+    if (!record.ShiftName) {
+      return "";
+    }
+    if (record.CheckinTime || record.CheckoutTime) {
+      return (
+        <FontAwesomeIcon icon={faCircle} size="sm" color={colorSuccessActive} />
+      );
+    }
+    if (!record.CheckoutTime && !record.CheckoutTime) {
+      return (
+        <FontAwesomeIcon icon={faCircle} size="sm" color={colorBgTextActive} />
+      );
+    }
+    return (
+      <FontAwesomeIcon icon={faCircle} size="sm" color={colorWarningActive} />
+    );
+  };
+
+  useEffect(() => {
+    if (open) {
+      form.setFieldsValue({});
+    }
+  }, [open]);
+
+  const calculateHour = () => {
+    try {
+      let checkinTime = form.getFieldValue("CheckinTime");
+      let checkoutTime = form.getFieldValue("CheckoutTime");
+      let startTime = dayjs(record.StartTime, Config.TimeFormat),
+        finishTime = dayjs(record.FinishTime, Config.TimeFormat);
+      let breakAt = null,
+        breakEnd = null;
+      if (record.BreakAt) breakAt = dayjs(record.BreakAt, Config.TimeFormat);
+      if (record.BreakEnd) breakEnd = dayjs(record.BreakEnd, Config.TimeFormat);
+      if (!breakAt || !breakEnd) {
+        return checkoutTime.diff(checkoutTime, "hour", true);
+      }
+      var hour = 0;
+      if (breakEnd) {
+        if (breakEnd.isSameOrBefore(checkinTime)) {
+          hour = checkoutTime.diff(checkinTime, "hour", true);
+        } else if (breakAt.isSameOrBefore(checkinTime)) {
+          hour = checkoutTime.diff(breakEnd, "hour", true);
+          console.log(checkoutTime);
+        } else {
+          hour =
+            checkoutTime.diff(checkinTime, "hour", true) -
+            breakEnd.diff(breakAt, "hour", true);
+        }
+      }
+      setTotalHour(hour);
+      return hour;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <>
+      {contextHolder}
+      <Row onClick={showModal}>
+        <Col flex="none">{statusIcon()}</Col>
+        <Col flex="auto">
+          <p style={{ margin: "unset" }}>{record.ShiftName}</p>
+          <p style={{ margin: "unset" }}>{timeView()} </p>
+        </Col>
+      </Row>
+      <Modal
+        open={open}
+        closable={true}
+        title={
+          <p style={{ fontSize: 18 }}>{`Chấm công ngày ${dayjs(
+            record.Date
+          ).format(Config.DateFormat)}`}</p>
+        }
+        onOk={handleOk}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Hủy
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={processing}
+            onClick={handleOk}
+          >
+            Lưu
+          </Button>,
+        ]}
+      >
+        <p>
+          {record.ShiftName} ({record.StartTime} - {record.FinishTime})
+        </p>
+        <Form
+          form={form}
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 16 }}
+          labelAlign="left"
+          labelWrap={true}
+          onFinish={handleSubmit}
+        >
+          <Form.Item name="Id" hidden>
+            <Input value={record.Id} readOnly />
+          </Form.Item>
+          <Form.Item label="Số công hưởng lương">
+            <InputNumber value={record.WorkingHour} readOnly precision={2} />
+          </Form.Item>
+          <Form.Item label="Số công đi làm thực tế">
+            <InputNumber value={totalHour} readOnly precision={2} />
+          </Form.Item>
+          <Form.Item
+            label="Giờ vào"
+            name="CheckinTime"
+            initialValue={dayjs(record.CheckinTime, Config.TimeFormat)}
+          >
+            <TimePicker
+              format={Config.NonSecondFormat}
+              locale={locale}
+              onChange={calculateHour}
+            />
+          </Form.Item>
+          <Form.Item
+            label="Giờ ra"
+            name="CheckoutTime"
+            initialValue={dayjs(record.CheckoutTime, Config.TimeFormat)}
+          >
+            <TimePicker
+              format={Config.NonSecondFormat}
+              locale={locale}
+              onChange={calculateHour}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
+  );
+};
+
 export { TimesheetDetailPage };
+

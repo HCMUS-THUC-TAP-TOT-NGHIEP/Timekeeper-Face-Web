@@ -62,13 +62,14 @@ export const ForgotPasswordPage = function ({ notify, ...rest }) {
           justifyContent: "center",
         }}
       >
-        <Col xs={2} sm={4} md={6} lg={8} />
-        <Col xs={20} sm={16} md={12} lg={8}>
+        <Col xs={2} sm={4} md={6} />
+        <Col xs={20} sm={16} md={12}>
           <Content
             style={{
               background: colorBgContainer,
               margin: "auto",
               padding: 40,
+              maxWidth: 600,
             }}
           >
             <Title level={1} style={{ textAlign: "center" }}>
@@ -79,7 +80,6 @@ export const ForgotPasswordPage = function ({ notify, ...rest }) {
               type="secondary"
               style={{ textAlign: "center", marginBottom: 30 }}
             >
-              {/* Enter your email to get a password reset link */}
               Nhập email của bạn để nhận link đặt lại mật khẩu
             </Title>
             <Form
@@ -105,7 +105,7 @@ export const ForgotPasswordPage = function ({ notify, ...rest }) {
                       "Vui lòng nhập email liên kết với tài khoản của bạn!",
                   },
                   {
-                    pattern: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+                    type: "email",
                     message: "Email không hợp lệ.",
                   },
                 ]}
@@ -119,7 +119,6 @@ export const ForgotPasswordPage = function ({ notify, ...rest }) {
                   style={{ width: "100%" }}
                   size="large"
                 >
-                  {/* Reset password */}
                   Gửi yêu cầu
                 </Button>
               </Form.Item>
@@ -129,30 +128,28 @@ export const ForgotPasswordPage = function ({ notify, ...rest }) {
               style={{ width: "100%" }}
               align="center"
             >
-              <Text level={5}>
-                {/* Remember your password? */}
+              <Space direction="horizontal">
                 Bạn nhớ được mật khẩu của mình?
-                <Link to="/login">Login</Link>
-              </Text>
+                <Link to="/login">Đăng nhập</Link>
+              </Space>
             </Space>
           </Content>
         </Col>
-        <Col xs={2} sm={4} md={6} lg={8} />
+        <Col xs={2} sm={4} md={6} />
       </Row>
     </Layout>
   );
 };
 
-export const ResetPasswordPage = function (props) {
+export const ResetPasswordPage = function ({ notify, ...rest }) {
   const { access_token } = useParams();
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const [notify, contextHolder] = notification.useNotification();
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Reset Password";
+    document.title = "Đặt lại mật khẩu";
   }, []);
   const onSubmit = (values) => {
     var requestData = {
@@ -180,16 +177,16 @@ export const ResetPasswordPage = function (props) {
   };
   return (
     <Layout style={{ height: "100vh" }}>
-      {contextHolder}
       <Row
         style={{
           height: "inherit",
           alignItems: "center",
           justifyContent: "center",
         }}
+        gutter={[16, 16]}
       >
-        <Col xs={2} sm={4} md={6} lg={8} />
-        <Col xs={20} sm={16} md={12} lg={8}>
+        <Col xs={2} sm={4} md={4} lg={4} xl={4} />
+        <Col xs={20} sm={16} md={16} lg={16} xl={16}>
           <Content
             style={{
               background: colorBgContainer,
@@ -283,15 +280,15 @@ export const ResetPasswordPage = function (props) {
               align="center"
             >
               <Text level={5}>
-                Remember your password?{" "}
+                Remember your password?
                 <Text underline>
-                  <Link to="/login">Login</Link>
+                  <Link to="/login">Đăng nhập</Link>
                 </Text>
               </Text>
             </Space>
           </Content>
         </Col>
-        <Col xs={2} sm={4} md={6} lg={8} />
+        <Col xs={2} sm={4} md={4} lg={4} xl={4} />
       </Row>
     </Layout>
   );

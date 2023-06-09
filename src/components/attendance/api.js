@@ -174,3 +174,15 @@ export const ExportAttendanceStatisticBE = async (req) => {
   );
   return response.data;
 };
+
+export const UpdateTimesheetDetail = async (request) =>
+{
+  let response = await AxiosInstance.put("checkin/timesheet/detail", request, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
+  return response.data;
+
+}

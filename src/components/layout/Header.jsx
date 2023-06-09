@@ -109,7 +109,7 @@ function MyHeader(props) {
 
   return (
     <Header
-      className="boxShadow89"
+      className=""
       style={{
         padding: 0,
         background: colorBgContainer,

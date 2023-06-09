@@ -15,9 +15,10 @@ import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetManyEmployee } from "../employee/api";
 import { EmployeeSelectionComponent } from "./AddComponent";
 import { UpdateOneDepartment } from "./api";
+import { useForm } from "antd/es/form/Form";
 
 export const EditDepartmentForm = function (props) {
-  const form = props.form;
+  const [form] = useForm();
   const department = props.content;
   const [updateOneDepartment, departmentList] = props.listState;
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
@@ -26,6 +27,7 @@ export const EditDepartmentForm = function (props) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    if (!open) return;
     setProcessing(true);
     form.setFieldsValue({
       Id: department.Id,
@@ -52,7 +54,7 @@ export const EditDepartmentForm = function (props) {
       .finally(() => {
         setProcessing(false);
       });
-  }, [department]);
+  }, [department, open]);
 
   const onSubmit = (values) => {
     UpdateOneDepartment(values)
@@ -187,6 +189,7 @@ export const EditDepartmentForm = function (props) {
                   FullName: department.ManagerName,
                 }}
                 form={form}
+                department={form.getFieldValue("Id")}
               />
             </Space>
           </Form.Item>

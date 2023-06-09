@@ -110,25 +110,33 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
       setProcessing(true);
       var dateRange = form.getFieldValue("DateRange"),
         keyword = form.getFieldValue("Keyword");
-      console.log(dateRange);
-      console.log(keyword);
-      var fileData = await ExportAttendanceStatisticBE({
+      var response = await ExportAttendanceStatisticBE({
         DateFrom: dateRange[0],
         DateTo: dateRange[1],
         Keyword: keyword,
       });
-      url = URL.createObjectURL(fileData);
-      var link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `Dữ liệu chấm công từ ngày ${dateRange[0].format(
-          Config.DateFormat
-        )} dến ngày ${dateRange[1].format(Config.DateFormat)}`
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
+      try {
+        var data = JSON.parse(response);
+        if (data.Status !== 1) {
+          notify.error({
+            message: <b>Thông báo</b>,
+            description: data.Description,
+          });
+        }
+      } catch (error) {
+        url = URL.createObjectURL(response);
+        var link = document.createElement("a");
+        link.href = url;
+        link.setAttribute(
+          "download",
+          `Dữ liệu chấm công từ ngày ${dateRange[0].format(
+            Config.DateFormat
+          )} dến ngày ${dateRange[1].format(Config.DateFormat)}`
+        );
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      }
     } catch (error) {
       handleErrorOfRequest({ error, notify });
       console.error(error);
@@ -258,11 +266,10 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           />
           <Column
             title="Ngày chấm công"
-            dataIndex="Date"
             width={150}
             sorter={(a, b) => compareDatetime(a, b, "Date")}
-            // defaultSortOrder={["descending"]}
-            // render={(record) => dayjs(record.Date).format(Config.DateFormat)}
+            defaultSortOrder={["descending"]}
+            render={(record) => dayjs(record.Date).format(Config.DateFormat)}
           />
           <Column
             title="Giờ công vào"

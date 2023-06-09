@@ -113,7 +113,7 @@ const TimesheetSummaryTablePage = ({ notify, loginRequired, ...rest }) => {
       <Content>
         <Table
           loading={loading}
-          className="boxShadow89"
+          className=""
           bordered
           scroll={{
             x: "calc(700px + 50%)",

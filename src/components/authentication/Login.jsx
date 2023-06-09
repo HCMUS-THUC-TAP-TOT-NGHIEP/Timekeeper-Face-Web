@@ -3,8 +3,8 @@ import { Content } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthDispatch } from "../../Contexts/AuthContext";
-import { LoginAccount2 } from "./api";
 import { handleErrorOfRequest } from "../../utils/Helpers";
+import { LoginAccount2 } from "./api";
 
 const LoginPage = (props) => {
   const { notify } = props;
@@ -55,8 +55,8 @@ const LoginPage = (props) => {
           justifyContent: "center",
         }}
       >
-        <Col xs={2} sm={6} xl={8} />
-        <Col xs={20} sm={12} xl={8}>
+        <Col xs={2} sm={4} md={6} />
+        <Col xs={20} sm={16} md={12}>
           <Typography.Title level={1} style={{ textAlign: "center" }}>
             Đăng nhập
           </Typography.Title>
@@ -65,6 +65,7 @@ const LoginPage = (props) => {
               background: colorBgContainer,
               margin: "auto",
               padding: 40,
+              maxWidth: 600,
             }}
           >
             <Form
@@ -109,17 +110,12 @@ const LoginPage = (props) => {
                 >
                   Đăng nhập
                 </Button>
-                <Typography.Link>
-                  <Link to="/forgotpwd">Quên mật khẩu?</Link>
-                </Typography.Link>
+                <Link to="/forgotpwd">Quên mật khẩu?</Link>
               </Form.Item>
-              {/* <Typography.Text>
-                Chưa có tài khoản?<Link href="/register">Register</Link>
-              </Typography.Text> */}
             </Form>
           </Content>
         </Col>
-        <Col xs={2} sm={6} xl={8} />
+        <Col xs={2} sm={4} md={6} />
       </Row>
     </Layout>
   );

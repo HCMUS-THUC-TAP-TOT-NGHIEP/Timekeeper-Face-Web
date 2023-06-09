@@ -709,7 +709,7 @@ const AppliedTargetTable = (props) => {
       <Modal
         title={title}
         open={open}
-        className="boxShadow89"
+        className=""
         okText="Chọn"
         cancelText="Hủy"
         onOk={handleOk}

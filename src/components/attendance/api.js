@@ -186,3 +186,24 @@ export const UpdateTimesheetDetail = async (request) =>
   return response.data;
 
 }
+export const ImportDataTimesheetDataBE = async ({ fileList, timesheetId,...rest }) => {
+  var formData = new FormData();
+  formData.append("ImportData", fileList[0], fileList[0].name);
+  formData.append("Type", fileList[0].type);
+  formData.append("Target", "TimesheetData");
+  formData.append("TimesheetId", timesheetId);
+
+  var response = await AxiosInstance.post(
+    "checkin/timesheet/import",
+    formData,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: "Bearer " + localStorage.getItem("access_token"),
+        "Content-Type": "multipart/form-data",
+      },
+      timeout: 60*1000,
+    }
+  );
+  return response.data;
+};

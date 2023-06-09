@@ -45,6 +45,7 @@ import {
   UpdateTimesheetBE,
   UpdateTimesheetDetail,
 } from "./api";
+import { ImportTimesheetData } from "./ImportComponent";
 
 dayjs.extend(isSameOrBefore);
 
@@ -334,7 +335,6 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
                   icon={<FontAwesomeIcon icon={faArrowLeft} fontSize={28} />}
                   type="text"
                   shape="circle"
-                  // style={{padding: 0}}
                   size="large"
                 />
               </Tooltip>
@@ -392,10 +392,12 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
             >
               Cập nhật
             </Button>
-
-            <Button type="default" icon={<UploadOutlined />}>
-              Import
-            </Button>
+            <ImportTimesheetData
+              notify={notify}
+              timesheetId={TimesheetId}
+              setReloading={setReloading}
+              reloading={reloading}
+            />
           </Space>
         </Col>
       </Row>
@@ -742,4 +744,3 @@ const RecordView = ({ record, reloading, setReloading, ...rest }) => {
 };
 
 export { TimesheetDetailPage };
-

@@ -17,7 +17,7 @@ export const GetManyEmployee = async (method = "GET", requestData) => {
   };
   var access_token = localStorage.getItem("access_token");
   var response = {};
-  if (method.toUpperCase() === "POST") {
+  if ( method === "POST") {
     var req = {
       Department: requestData.Department,
     };

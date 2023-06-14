@@ -10,6 +10,7 @@ import {
   Col,
   DatePicker,
   Form,
+  Image,
   Input,
   Row,
   Space,
@@ -285,7 +286,15 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
             dataIndex="MethodText"
             width={150}
           />
-          <Column title="Ảnh đính kèm" dataIndex="AttachedImage" width={200} />
+          <Column
+            title="Ảnh đính kèm"
+            width={200}
+            dataIndex="DownloadUrl"
+            render={(value, record) => {
+              return <Image src={value} height={50} />;
+            }}
+            align="center"
+          />
         </Table>
       </Content>
     </Space>

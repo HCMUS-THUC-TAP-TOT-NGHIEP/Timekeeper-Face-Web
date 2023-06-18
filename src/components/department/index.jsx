@@ -2,8 +2,7 @@ import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 
-const DepartmentPageIndex = ({ notify, loginRequired, ...rest }) =>
-{
+const DepartmentPageIndex = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
 
@@ -18,10 +17,9 @@ const DepartmentPageIndex = ({ notify, loginRequired, ...rest }) =>
     }
   }, []);
   return <Outlet />;
-}
+};
 
-export * from "./AddComponent";
-export * from "./EditComponent";
+export * from "./AddPage";
+export * from "./EditPage";
 export * from "./ListPage";
 export { DepartmentPageIndex };
-

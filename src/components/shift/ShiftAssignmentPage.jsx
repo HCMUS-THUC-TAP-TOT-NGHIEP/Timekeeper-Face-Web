@@ -1,5 +1,12 @@
-import { EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
+import {
+  EditOutlined,
+  InfoCircleTwoTone,
+  PlusOutlined,
+} from "@ant-design/icons";
+import {
+  faArrowLeftLong,
+  faArrowsRotate,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
@@ -566,17 +573,17 @@ const employeeColumns = [
     title: "Họ tên",
     render: (_, record) => `${record.LastName} ${record.FirstName}`,
     fixed: "left",
-    width: 300,
-  },
-  {
-    title: "Vị trí công việc",
-    dataIndex: "Position",
-    width: 300,
+    width: 250,
   },
   {
     title: "Phòng ban",
     dataIndex: "DepartmentName",
-    width: 300,
+    width: 200,
+  },
+  {
+    title: "Vị trí công việc",
+    dataIndex: "Position",
+    width: 200,
   },
 ];
 
@@ -599,6 +606,7 @@ const AppliedTargetTable = (props) => {
   const [totaldeparment, setTotalDeparment] = useState(0);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [reloading, setReloading] = useState(false);
   const showModal = () => {
     setOpen(true);
   };
@@ -654,7 +662,7 @@ const AppliedTargetTable = (props) => {
       }
     };
     loadData();
-  }, [type]);
+  }, [type, reloading]);
 
   function createModel() {
     var title = "";
@@ -663,7 +671,12 @@ const AppliedTargetTable = (props) => {
     var total = 0;
     var selectionObject = {};
     if (type == _TargeType.ByEmployee) {
-      title = "Chọn nhân viên";
+      title = (
+        <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
+          <InfoCircleTwoTone />
+          Chọn nhân viên
+        </Space>
+      );
       columns = employeeColumns;
       dataSource = employeeList;
       total = totalEmployee;
@@ -675,7 +688,12 @@ const AppliedTargetTable = (props) => {
         defaultSelectedRowKeys: appliedEmployeeList.map((x) => x.Id),
       };
     } else if (type == _TargeType.ByDepartment) {
-      title = "Chọn phòng ban";
+      title = (
+        <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
+          <InfoCircleTwoTone />
+          Chọn phòng ban
+        </Space>
+      );
       columns = departmentColumns;
       dataSource = deparmentList;
       total = totaldeparment;
@@ -692,30 +710,53 @@ const AppliedTargetTable = (props) => {
       <Modal
         title={title}
         open={open}
-        className=""
         okText="Chọn"
         cancelText="Hủy"
         onOk={handleOk}
         onCancel={handleCancel}
-        width={1000}
+        width={900}
       >
-        <Table
-          loading={loading}
-          columns={columns}
-          dataSource={dataSource}
-          rowSelection={selectionObject}
-          rowKey="Id"
-          scroll={{
-            x: 800,
-            y: 800,
-          }}
-          pagination={{
-            total: total,
-            showSizeChanger: true,
-            showTotal: (total) => `Tổng ${total} bản ghi.`,
-            pageSizeOptions: [10, 25, 50],
-          }}
-        ></Table>
+        <Space size="large" direction="vertical" style={{ width: "100%" }}>
+          <Row justify={"end"}>
+            <Col>
+              <Button
+                loading={loading}
+                onClick={() => setReloading(!reloading)}
+                style={{
+                  backgroundColor: "#ec5504",
+                  border: "1px solid #ec5504",
+                }}
+                type="primary"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faArrowsRotate}
+                    style={{ paddingRight: "8px" }}
+                  />
+                }
+              >
+                Lấy lại dữ liệu
+              </Button>
+            </Col>
+          </Row>
+          <Table
+            size="small"
+            loading={loading}
+            columns={columns}
+            dataSource={dataSource}
+            rowSelection={selectionObject}
+            rowKey="Id"
+            scroll={{
+              x: 700,
+              y: 700,
+            }}
+            pagination={{
+              total: total,
+              showSizeChanger: true,
+              showTotal: (total) => `Tổng ${total} bản ghi.`,
+              pageSizeOptions: [10, 25, 50],
+            }}
+          ></Table>
+        </Space>
       </Modal>
     );
   }

@@ -13,7 +13,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetManyEmployee } from "../employee/api";
-import { EmployeeSelectionComponent } from "./AddComponent";
+import { EmployeeSelectionComponent } from "./AddPage";
 import { UpdateOneDepartment } from "./api";
 import { useForm } from "antd/es/form/Form";
 

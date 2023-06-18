@@ -1,5 +1,6 @@
 import { SearchOutlined } from "@ant-design/icons";
 import {
+  faArrowsRotate,
   faFileExport,
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
@@ -46,6 +47,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [reloading, setReloading] = useState(true);
   const [currentData, setCurrentData] = useState([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
@@ -72,7 +74,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
 
   useEffect(() => {
     form.submit();
-  }, [page, pageSize]);
+  }, [page, pageSize, reloading]);
 
   let loadStatistic = async (values) => {
     try {
@@ -109,6 +111,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
       setLoading(false);
     }
   };
+
   const exportTimesheetReport = async () => {
     var url;
     try {
@@ -170,7 +173,27 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <ImportTimekeeperData notify={notify} />
+          <Space wrap>
+            <Button
+              loading={loading}
+              onClick={() => setReloading(!reloading)}
+              style={{
+                backgroundColor: "#ec5504",
+                border: "1px solid #ec5504",
+              }}
+              type="primary"
+              icon={
+                <FontAwesomeIcon
+                  icon={faArrowsRotate}
+                  style={{ paddingRight: "8px" }}
+                />
+              }
+            >
+              Lấy lại dữ liệu
+            </Button>
+
+            <ImportTimekeeperData notify={notify} />
+          </Space>
         </Col>
       </Row>
       <Row wrap align="middle">
@@ -261,8 +284,8 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
             align="right"
           />
           <Column
-            title="Ngày chấm công"
-            width={150}
+            title="Ngày"
+            width={100}
             sorter={(a, b) => compareDatetime(a, b, "Date")}
             defaultSortOrder={["descending"]}
             render={(record) => dayjs(record.Date).format(Config.DateFormat)}

@@ -1,10 +1,12 @@
 import { InfoCircleTwoTone, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
+  Col,
   Form,
   Input,
   InputNumber,
   Modal,
+  Row,
   Select,
   Space,
   Table,
@@ -14,6 +16,8 @@ import React, { useEffect, useState } from "react";
 import { GetManyEmployee } from "../employee/api";
 import { CreateOneDepartment } from "./api";
 import { handleErrorOfRequest } from "../../utils/Helpers";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 
 export const AddDepartmentFrom = function (props) {
   const [form] = Form.useForm();
@@ -219,8 +223,10 @@ export const EmployeeSelectionComponent = ({
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(40);
+  const [reloading, setReloading] = useState(false);
 
   useEffect(() => {
+    if (!open) return;
     const loadData = async () => {
       setLoading(true);
       try {
@@ -247,7 +253,10 @@ export const EmployeeSelectionComponent = ({
       }
     };
     loadData();
-  }, [page, perPage, department]);
+    return () => {
+      setCurrentEmployeeList([]);
+    };
+  }, [page, perPage, department, open, reloading]);
 
   const showModal = () => {
     setOpen(true);
@@ -261,10 +270,11 @@ export const EmployeeSelectionComponent = ({
       title: "Mã nhân viên",
       dataIndex: "Id",
       with: 50,
+      sorter: (a, b) => a.Id - b.Id,
     },
     {
       title: "Tên nhân viên",
-      render: (_, record) => `${record.LastName} ${record.FirstName}`,
+      dataIndex: "FullName",
       with: 300,
     },
     {
@@ -273,6 +283,14 @@ export const EmployeeSelectionComponent = ({
       with: 300,
     },
   ];
+
+  const title = (
+    <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
+      <InfoCircleTwoTone />
+      Danh sách nhân viên
+    </Space>
+  );
+
   return (
     <>
       <Space>
@@ -292,7 +310,7 @@ export const EmployeeSelectionComponent = ({
         </Button>
       </Space>
       <Modal
-        title="Danh sách nhân viên"
+        title={title}
         open={open}
         onOk={hideModal}
         onCancel={hideModal}
@@ -300,37 +318,59 @@ export const EmployeeSelectionComponent = ({
         cancelText="Hủy"
         width={900}
       >
-        <Table
-          loading={loading}
-          scroll={{
-            x: 700,
-            y: 700,
-          }}
-          columns={Columns}
-          rowKey="Id"
-          rowSelection={{
-            type: "radio",
-            onChange: (selectedRowKeys, selectedRows) => {
-              try {
-                setChosenOption(selectedRows[0]);
-              } catch (error) {
-                setChosenOption({});
-              }
-            },
-            defaultSelectedRowKeys: [chosenOption.Id],
-          }}
-          dataSource={currentEmployeeList}
-          pagination={{
-            onChange: (page, pageSize) => {
-              setPage(page);
-              setPerPage(pageSize);
-            },
-            total: total,
-            pageSizeOptions: [10, 15, 25, 50],
-            showSizeChanger: true,
-            showTotal: (total, range) => `Tổng số bản ghi: ${total}`,
-          }}
-        ></Table>
+        <Space direction="vertical" size="large">
+          <Row justify={"end"}>
+            <Col>
+              <Button
+                loading={loading}
+                onClick={() => setReloading(!reloading)}
+                style={{
+                  backgroundColor: "#ec5504",
+                  border: "1px solid #ec5504",
+                }}
+                type="primary"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faArrowsRotate}
+                    style={{ paddingRight: "8px" }}
+                  />
+                }
+              >
+                Lấy lại dữ liệu
+              </Button>
+            </Col>
+          </Row>
+          <Table
+            loading={loading}
+            scroll={{
+              x: 700,
+              y: 700,
+            }}
+            columns={Columns}
+            rowKey="Id"
+            rowSelection={{
+              type: "radio",
+              onChange: (selectedRowKeys, selectedRows) => {
+                try {
+                  setChosenOption(selectedRows[0]);
+                } catch (error) {
+                  setChosenOption({});
+                }
+              },
+              defaultSelectedRowKeys: [chosenOption.Id],
+            }}
+            dataSource={currentEmployeeList}
+            pagination={{
+              onChange: (page, pageSize) => {
+                setPage(page);
+                setPerPage(pageSize);
+              },
+              pageSizeOptions: [10, 15, 25, 50],
+              showSizeChanger: true,
+              showTotal: (total, range) => `Tổng số bản ghi: ${total}`,
+            }}
+          ></Table>
+        </Space>
       </Modal>
     </>
   );

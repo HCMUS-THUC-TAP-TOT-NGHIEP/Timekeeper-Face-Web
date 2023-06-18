@@ -15,8 +15,8 @@ import {
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { AddDepartmentFrom } from "./AddComponent";
-import { EditDepartmentForm } from "./EditComponent";
+import { AddDepartmentFrom } from "./AddPage";
+import { EditDepartmentForm } from "./EditPage";
 import { DeleteOneDepartment, GetDepartmentList } from "./api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { handleErrorOfRequest } from "../../utils/Helpers";

@@ -214,7 +214,7 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
             render={(_, record) => {
               return record.DepartmentList.length == 0
                 ? "Tất cả"
-                : record.DepartmentList.join(";");
+                : record.DepartmentList.join("; ");
             }}
           />
           <Column

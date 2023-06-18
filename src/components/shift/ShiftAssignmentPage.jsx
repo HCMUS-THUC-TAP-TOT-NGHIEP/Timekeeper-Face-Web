@@ -165,7 +165,7 @@ const EditShiftAssignmentPage = (props) => {
                 />
               </Tooltip>
               <Typography.Title level={2} style={{ margin: 0 }}>
-                Phân ca làm việc
+                {assignment.Description || "Phân ca làm việc"}
               </Typography.Title>
             </Space>
             <Breadcrumb>
@@ -176,7 +176,7 @@ const EditShiftAssignmentPage = (props) => {
                 <Link to="/shift">Quản lý ca làm việc</Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <Link to="">Phân ca</Link>
+                <Link to="">{assignment.Description || "Phân ca"}</Link>
               </Breadcrumb.Item>
             </Breadcrumb>
           </Space>
@@ -369,7 +369,6 @@ const EditShiftAssignmentPage = (props) => {
                     <Form.Item>
                       <Form.Item
                         label="Giờ bắt đầu nghỉ giữa ca"
-                        // name="BreakAt"
                         labelCol={{ span: 8 }}
                         wrapperCol={{ span: 16 }}
                         style={{ display: "inline-block", width: "50%" }}
@@ -389,7 +388,6 @@ const EditShiftAssignmentPage = (props) => {
                       </Form.Item>
                       <Form.Item
                         label="Giờ kết thúc nghỉ giữa ca"
-                        // name="BreakEnd"
                         labelCol={{ span: 8 }}
                         wrapperCol={{ span: 16 }}
                         style={{ display: "inline-block", width: "50%" }}
@@ -411,10 +409,9 @@ const EditShiftAssignmentPage = (props) => {
                     <Form.Item
                       name="DaysInWeek"
                       label="Ngày trong tuần"
-                      valuePropName="checked"
                       required
                     >
-                      <Checkbox.Group value={assignment.DaysInWeek || []}>
+                      <Checkbox.Group>
                         <Row>
                           <Col span={8}>
                             <Checkbox value={1}>Thứ 2</Checkbox>
@@ -549,13 +546,6 @@ const EditShiftAssignmentPage = (props) => {
 
 const departmentColumns = [
   {
-    title: "#",
-    width: 75,
-    render: (_, rec, index) => index,
-    align: "right",
-    fixed: "left",
-  },
-  {
     title: "Mã",
     dataIndex: "Id",
     width: 100,
@@ -566,13 +556,6 @@ const departmentColumns = [
   },
 ];
 const employeeColumns = [
-  {
-    title: "#",
-    width: 75,
-    render: (_, rec, index) => index,
-    align: "right",
-    fixed: "left",
-  },
   {
     title: "Mã nhân viên",
     dataIndex: "Id",
@@ -993,9 +976,6 @@ const OnlyViewPage = ({
             scroll={{
               x: 800,
               y: 800,
-            }}
-            rowSelection={{
-              type: "checkbox",
             }}
             pagination={{
               total:

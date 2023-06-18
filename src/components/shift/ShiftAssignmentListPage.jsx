@@ -15,7 +15,7 @@ import {
   Space,
   Table,
   Tooltip,
-  Typography
+  Typography,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";
@@ -23,8 +23,9 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
-import { GetAssignmentList } from "./api";
+import { DeleteShiftAssignment, GetAssignmentList } from "./api";
 import { handleErrorOfRequest } from "../../utils/Helpers";
+import useNotification from "antd/es/notification/useNotification";
 
 const ShiftAssignmentListPage = (props) => {
   const { notify } = props;
@@ -37,6 +38,7 @@ const ShiftAssignmentListPage = (props) => {
   const [shiftAssignmentList, setShiftAssignmentList] = useState([]);
 
   useEffect(() => {
+    setLoading(true);
     GetAssignmentList({ Page: page, PageSize: pageSize })
       .then((response) => {
         const { Status, ResponseData, Description } = response;
@@ -59,6 +61,13 @@ const ShiftAssignmentListPage = (props) => {
         setLoading(false);
       });
   }, [page, pageSize, reload]);
+
+  const deleteOnFE = function (value) {
+    var newList = shiftAssignmentList.filter(
+      (element) => element.Id !== value.Id
+    );
+    setShiftAssignmentList(newList);
+  };
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
@@ -163,23 +172,37 @@ const ShiftAssignmentListPage = (props) => {
           <Column
             title="Phòng ban áp dụng"
             render={(_, record) =>
-              (record.DepartmentList || []).length > 0
-                ? record.DepartmentList.join(";")
-                : ""
+              // (record.DepartmentList || []).length > 0
+              //   ? record.DepartmentList.map((element) => element.Name).join(
+              //       "; "
+              //     )
+              //   : ""
+              (record.DepartmentList || []).join("; ")
             }
             width={300}
           />
           <Column
             title="Nhân viên áp dụng"
             render={(_, record) =>
-              (record.EmployeeList || []).length > 0
-                ? record.EmployeeList.join(";")
-                : ""
+              // (record.EmployeeList || []).length > 0
+              //   ? record.EmployeeList.map((element) => element.FullName).join(
+              //       "; "
+              //     )
+              //   : ""
+
+              (record.EmployeeList || []).join("; ")
             }
             width={300}
           />
           <Column
-            render={(_, record) => <ActionMenu shiftAssignment={record} />}
+            render={(_, record) => (
+              <ActionMenu
+                shiftAssignment={record}
+                deleteOnFE={deleteOnFE}
+                notify={notify}
+              />
+            )}
+            fixed="right"
           />
         </Table>
       </Content>
@@ -188,8 +211,31 @@ const ShiftAssignmentListPage = (props) => {
 };
 
 const ActionMenu = (props) => {
-  const { shiftAssignment } = props;
+  const { shiftAssignment, deleteOnFE, notify } = props;
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
+  const onDeletingShiftAssignment = async function () {
+    try {
+      setDeleting(true);
+      var response = await DeleteShiftAssignment({ Id: shiftAssignment.Id });
+      if (response.Status != 1) {
+        throw new Error(response.Description);
+      }
+      deleteOnFE(shiftAssignment);
+      notify.success({
+        message: <b>Thành công</b>,
+        description: (
+          <p>
+            Đã xóa bảng phân ca <b>{shiftAssignment.Description}</b>
+          </p>
+        ),
+      });
+    } catch (error) {
+      handleErrorOfRequest({ notify, error });
+    } finally {
+      setDeleting(false);
+    }
+  };
   return (
     <Space size="small">
       <Tooltip title="Xem nhanh">
@@ -220,6 +266,8 @@ const ActionMenu = (props) => {
         cancelText="Hủy"
         okType="danger"
         placement="top"
+        okButtonProps={{ loading: deleting }}
+        onConfirm={onDeletingShiftAssignment}
       >
         <Tooltip title="Xoá">
           <Button
@@ -236,4 +284,3 @@ const ActionMenu = (props) => {
 };
 
 export { ShiftAssignmentListPage };
-

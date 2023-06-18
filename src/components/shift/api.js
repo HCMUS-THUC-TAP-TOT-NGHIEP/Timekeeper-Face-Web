@@ -145,7 +145,17 @@ export const GetShiftDetail = async ({ Id, ...rest }) => {
       Authorization: "Bearer " + localStorage.getItem("access_token"),
     },
   });
-  console.log(response);
+  return response.data;
+};
+
+export const DeleteShiftAssignment = async ({ Id, ...rest }) => {
+  var response = await AxiosInstance.delete("shift/assignment", {
+    params: { Id: Id },
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
   return response.data;
 };
 

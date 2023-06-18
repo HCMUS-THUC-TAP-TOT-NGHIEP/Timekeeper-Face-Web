@@ -17,6 +17,7 @@ import {
   Table,
   Tooltip,
   Typography,
+  theme,
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import { Content } from "antd/es/layout/layout";
@@ -51,6 +52,9 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
   const [total, setTotal] = useState(0);
   const [form] = Form.useForm();
   const [processing, setProcessing] = useState(false);
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
   useEffect(() => {
     if (loginRequired && !userDetails.token) {
       notify.warning({
@@ -222,7 +226,10 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           </Space>
         </Col>
       </Row>
-      <Content>
+      <Content
+        style={{ background: colorBgContainer, padding: 20 }}
+        className="boxShadow0 rounded"
+      >
         <Table
           loading={loading}
           bordered
@@ -248,10 +255,25 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           caption={<b>Chỉ lấy giờ chấm công vào sớm nhất và ra trễ nhất</b>}
         >
           <Column
-            title="Mã nhân viên"
-            dataIndex="Id"
+            title="#"
+            width={80}
+            render={(_, __, index) => index + 1}
+            align="right"
+          />
+          <Column
+            title="Ngày chấm công"
             width={150}
+            sorter={(a, b) => compareDatetime(a, b, "Date")}
+            defaultSortOrder={["descending"]}
+            render={(record) => dayjs(record.Date).format(Config.DateFormat)}
+            align="center"
+          />
+          <Column
+            title="Mã NV"
+            dataIndex="Id"
+            width={100}
             sorter={(a, b) => a.Id > b.Id}
+            align="right"
           />
           <Column
             title="Họ và tên"
@@ -266,13 +288,6 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
             sorter={(a, b) => compareString(a, b, "EmployeeName")}
           />
           <Column
-            title="Ngày chấm công"
-            width={150}
-            sorter={(a, b) => compareDatetime(a, b, "Date")}
-            defaultSortOrder={["descending"]}
-            render={(record) => dayjs(record.Date).format(Config.DateFormat)}
-          />
-          <Column
             title="Giờ công vào"
             dataIndex="Time"
             width={150}
@@ -280,6 +295,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
               dayjs(record.Time).format(Config.NonSecondFormat)
             }
             defaultSortOrder={["ascending"]}
+            align="center"
           />
           <Column
             title="Phương thức chấm công"

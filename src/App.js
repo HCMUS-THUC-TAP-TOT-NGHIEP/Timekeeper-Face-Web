@@ -287,26 +287,28 @@ function CustomLayout(props) {
         minHeight: "100vh",
       }}
     >
-      <MySidebar collapsed={collapsed} />
-      <Layout
-        className="site-layout"
-        style={{
-          marginLeft: collapsed ? 80 : 250,
-        }}
-      >
-        <MyHeader collapsed={collapsed} setCollapsed={setCollapsed} />
-        <Layout.Content
+      <MyHeader collapsed={collapsed} setCollapsed={setCollapsed} />
+      <Layout>
+        <MySidebar collapsed={collapsed} />
+        <Layout
+          className="site-layout"
           style={{
-            // margin: "24px 16px",
-            margin: "24px 16px 0",
-            overflow: "initial",
-            padding: 24,
-            minHeight: 280,
+            marginLeft: collapsed ? 80 : 250,
           }}
         >
-          <Outlet />
-        </Layout.Content>
-        <MyFooter />
+          <Layout.Content
+            style={{
+              // margin: "24px 16px",
+              margin: "24px 16px 0",
+              overflow: "initial",
+              padding: 24,
+              minHeight: 280,
+            }}
+          >
+            <Outlet />
+          </Layout.Content>
+          <MyFooter />
+        </Layout>
       </Layout>
     </Layout>
   );

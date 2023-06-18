@@ -51,7 +51,7 @@ dayjs.extend(isSameOrBefore);
 
 let defaultCols = [
   {
-    key: "code",
+    key: "index",
     title: "#",
     width: 50,
     align: "right",
@@ -59,13 +59,13 @@ let defaultCols = [
     render: (_, __, index) => index + 1,
   },
   {
-    key: "code",
+    key: "id",
     dataIndex: "EmployeeId",
     title: "Id",
     width: 80,
     align: "right",
     fixed: "left",
-    sorter: (a, b) => a.EmployeeId > b.EmployeeId,
+    sorter: (a, b) => a.EmployeeId - b.EmployeeId,
   },
   {
     key: "name",
@@ -81,6 +81,7 @@ const lateEarlyColumns = [
     key: "late",
     title: "Số phút đi trễ",
     dataIndex: "LateMinutes",
+    render: (value) => value.toFixed(0) || value,
     width: 100,
     align: "right",
   },
@@ -88,6 +89,7 @@ const lateEarlyColumns = [
     key: "early",
     title: "Số phút về sớm",
     dataIndex: "EarlyMinutes",
+    render: (value) => value.toFixed(0) || value,
     width: 100,
     align: "right",
   },
@@ -130,12 +132,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   const [reloading, setReloading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const {
-    token: {
-      colorBgTextActive,
-      colorWarningActive,
-      colorSuccessActive,
-      colorErrorText,
-    },
+    token: { colorBgTextActive, colorWarningActive, colorSuccessActive },
   } = theme.useToken();
 
   const search = async (value) => {
@@ -154,7 +151,9 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           setTotal(Total);
           settDetailRecord(Detail);
           setDateRange([Timesheet.DateFrom, Timesheet.DateTo]);
-          createColumns(Timesheet.DateFrom, Timesheet.DateTo);
+          let cols = createColumns(Timesheet.DateFrom, Timesheet.DateTo);
+          console.log(cols);
+          setColumns(cols);
           return;
         }
       } catch (error) {
@@ -164,41 +163,46 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
       }
     }
 
-    function createColumns(DateFrom, DateTo) {
-      let start = dayjs(DateFrom);
-      let end = dayjs(DateTo);
-      var cols = defaultCols;
-      while (!start.isAfter(end, "day")) {
-        var col = {
-          key: start.format("YYYY-MM-DD"),
-          title: (
-            <Space
-              direction="vertical"
-              align="middle"
-              size={"small"}
-              style={{
-                textAlign: "center",
-                color: [0, 6].includes(start.get("day")) ? "red" : "black",
-              }}
-            >
-              <div style={{ textTransform: "capitalize" }}>
-                {start.locale("vi").format("dddd")}
-              </div>
-              <div>{start.format(Config.DateFormat)}</div>
-            </Space>
-          ),
-          width: 200,
-          dataIndex: [start.format("YYYY-MM-DD"), "Checkin"],
-          align: "center",
-        };
-        cols.push(col);
-        start = start.add(1, "day");
-      }
-      setColumns(cols);
-      return cols;
-    }
     LoadData();
+    return () => setColumns([]);
   }, [TimesheetId, reloading]);
+
+  function createColumns(DateFrom, DateTo) {
+    let start = dayjs(DateFrom);
+    let end = dayjs(DateTo);
+    let cols = defaultCols.map((element) => element);
+    console.log(cols);
+
+    while (!start.isAfter(end, "day")) {
+      let col = {
+        key: start.format("YYYY-MM-DD"),
+        title: (
+          <Space
+            direction="vertical"
+            align="middle"
+            size={"small"}
+            style={{
+              textAlign: "center",
+              color: [0, 6].includes(start.get("day")) ? "red" : "black",
+            }}
+          >
+            <div style={{ textTransform: "capitalize" }}>
+              {start.locale("vi").format("dddd")}
+            </div>
+            <div>{start.format(Config.DateFormat)}</div>
+          </Space>
+        ),
+        width: 200,
+        dataIndex: [start.format("YYYY-MM-DD"), "Checkin"],
+        align: "center",
+      };
+      cols.push(col);
+      start = start.add(1, "day");
+    }
+    // setColumns(cols);
+    console.log(cols);
+    return cols;
+  }
 
   useEffect(() => {
     try {
@@ -302,18 +306,22 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
     var url;
     try {
       setProcessing(true);
-      var fileData = await ExportTimesheetBE({ Id: timeSheet.Id });
-      url = URL.createObjectURL(
-        fileData
-        // new Blob(fileData, {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
-      );
-      var link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", timeSheet.Name);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      // fileDownload(fileData, timeSheet.Name,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" )
+      var response = await ExportTimesheetBE({ Id: timeSheet.Id });
+      try {
+        let jResponse = JSON.parse(response);
+        notify.error({
+          message: <b>Thông báo</b>,
+          description: jResponse.Description,
+        });
+      } catch (error) {
+        url = URL.createObjectURL(response);
+        var link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", timeSheet.Name);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      }
     } catch (error) {
       handleErrorOfRequest({ error, notify });
       console.error(error);

@@ -1,19 +1,10 @@
-import {
-  Breadcrumb,
-  Button,
-  Col,
-  Form,
-  Input,
-  Row,
-  Space,
-  notification,
-} from "antd";
+import { Breadcrumb, Button, Col, Form, Input, Row, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Config from "../../constant";
-import { changePasswordBE } from "./api";
 import { useAuthState } from "../../Contexts/AuthContext";
+import Config from "../../constant";
 import { handleErrorOfRequest } from "../../utils/Helpers";
+import { changePasswordBE } from "./api";
 
 const ChangePasswordPage = ({ notify, loginRequired, ...rest }) => {
   const [loadingButton, setLoadingButton] = useState(false);

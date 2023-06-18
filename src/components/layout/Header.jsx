@@ -19,11 +19,12 @@ import {
 } from "antd";
 import { Header } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import { getUserInfo } from "../../api";
 import { Logout } from "../authentication/api";
 import { handleErrorOfRequest } from "../../utils/Helpers";
+import { ReactComponent as Logo } from "../../logo.svg";
 
 const items = [
   {
@@ -109,7 +110,7 @@ function MyHeader(props) {
 
   return (
     <Header
-      className=""
+      className="boxShadow0"
       style={{
         padding: 0,
         background: colorBgContainer,
@@ -121,7 +122,7 @@ function MyHeader(props) {
       {contextHolder}
       <Row wrap={false}>
         <Col flex="auto">
-          <Space>
+          <Space size="small">
             {React.createElement(
               collapsed ? MenuUnfoldOutlined : MenuFoldOutlined,
               {
@@ -129,14 +130,19 @@ function MyHeader(props) {
                 onClick: () => setCollapsed(!collapsed),
               }
             )}
-            <Typography.Title
-              level={3}
-              style={{
-                margin: 0,
-              }}
-            >
-              Chấm công
-            </Typography.Title>
+            <NavLink to={"/"}>
+              <Row align="middle">
+                <Logo style={{ width: 31, height: 31, marginRight: 10 }} />
+                <Typography.Title
+                  level={4}
+                  style={{
+                    margin: 0,
+                  }}
+                >
+                  Chấm công
+                </Typography.Title>
+              </Row>
+            </NavLink>
           </Space>
         </Col>
         <Col flex="none" style={{ paddingRight: "24px" }}>

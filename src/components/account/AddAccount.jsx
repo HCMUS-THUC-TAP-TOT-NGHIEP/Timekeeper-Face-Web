@@ -12,6 +12,7 @@ import {
 } from "antd";
 import React, { useState } from "react";
 import Config from "../../constant";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { AddNewUser } from "./api";
 
 const AddAccount = (props) => {
@@ -44,23 +45,8 @@ const AddAccount = (props) => {
         description: Description,
       });
     } catch (error) {
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
-  } finally {
+      handleErrorOfRequest({ notify, error });
+    } finally {
       setLoading(false);
       if (success) {
         insertFE(values);
@@ -241,3 +227,4 @@ const AddAccount = (props) => {
 };
 
 export { AddAccount };
+

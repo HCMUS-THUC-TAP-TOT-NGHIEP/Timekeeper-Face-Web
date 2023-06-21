@@ -96,7 +96,6 @@ export const GetTimesheetDetail = async (req) => {
 };
 
 export const CreatTimesheetBE = async (req) => {
-  alert((req.DepartmentList || []).filter((x) => x !== 0));
   var requestData = {
     Name: req.Name,
     DateFrom: req.DateRange[0] ? req.DateRange[0].format("YYYY-MM-DD") : "",
@@ -109,5 +108,102 @@ export const CreatTimesheetBE = async (req) => {
       Authorization: "Bearer " + localStorage.getItem("access_token"),
     },
   });
+  return response.data;
+};
+
+export const UpdateTimesheetBE = async (Id) => {
+  let req = { Id: Id };
+  let response = await AxiosInstance.put("checkin/timesheet", req, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
+  return response.data;
+};
+
+export const DeleteTimesheetBE = async ({ Id }) => {
+  let req = { Id: Id };
+  console.log(localStorage.getItem("access_token"));
+  let response = await AxiosInstance.delete("checkin/timesheet", {
+    data: req,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
+  return response.data;
+};
+
+export const ExportTimesheetBE = async ({ Id }) => {
+  var requestData = {
+    Id: Id,
+  };
+  var response = await AxiosInstance.post(
+    "checkin/timesheet/report",
+    requestData,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: "Bearer " + localStorage.getItem("access_token"),
+      },
+      timeout: 60*1000,
+      responseType: "blob",
+    }
+  );
+  return response.data;
+};
+
+export const ExportAttendanceStatisticBE = async (req) => {
+  var requestData = {
+    DateFrom: req.DateFrom,
+    DateTo: req.DateTo,
+    Keyword: req.Keyword,
+  };
+  var response = await AxiosInstance.post(
+    "checkin/report",
+    requestData,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: "Bearer " + localStorage.getItem("access_token"),
+      },
+      timeout: 60*1000,
+      responseType: "blob",
+    }
+  );
+  return response.data;
+};
+
+export const UpdateTimesheetDetail = async (request) =>
+{
+  let response = await AxiosInstance.put("checkin/timesheet/detail", request, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
+  return response.data;
+
+}
+export const ImportDataTimesheetDataBE = async ({ fileList, timesheetId,...rest }) => {
+  var formData = new FormData();
+  formData.append("ImportData", fileList[0], fileList[0].name);
+  formData.append("Type", fileList[0].type);
+  formData.append("Target", "TimesheetData");
+  formData.append("TimesheetId", timesheetId);
+
+  var response = await AxiosInstance.post(
+    "checkin/timesheet/import",
+    formData,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: "Bearer " + localStorage.getItem("access_token"),
+        "Content-Type": "multipart/form-data",
+      },
+      timeout: 60*1000,
+    }
+  );
   return response.data;
 };

@@ -1,9 +1,21 @@
-import { Button, Col, Form, Input, Layout, Row, Typography, theme } from "antd";
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  Layout,
+  Row,
+  Space,
+  Typography,
+  theme,
+} from "antd";
 import { Content } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthDispatch } from "../../Contexts/AuthContext";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { LoginAccount2 } from "./api";
+import { ReactComponent as Logo } from "../../logo.svg";
 
 const LoginPage = (props) => {
   const { notify } = props;
@@ -31,22 +43,7 @@ const LoginPage = (props) => {
         navigate("/"); // redirect to home page
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       })
       .finally((done) => {
         setLoading(false);
@@ -69,71 +66,74 @@ const LoginPage = (props) => {
           justifyContent: "center",
         }}
       >
-        <Col xs={2} sm={6} xl={8} />
-        <Col xs={20} sm={12} xl={8}>
-          <Typography.Title level={1} style={{ textAlign: "center" }}>
-            Đăng nhập
-          </Typography.Title>
-          <Content
-            style={{
-              background: colorBgContainer,
-              margin: "auto",
-              padding: 40,
-            }}
-          >
-            <Form
-              onFinish={onSubmit}
-              autoComplete="off"
-              layout="vertical"
-              style={{ background: colorBgContainer }}
+        <Col xs={2} sm={4} md={6} />
+        <Col xs={20} sm={16} md={12}>
+          <Space direction="vertical" style={{ width: "100%" }} size="large">
+            <div style={{ textAlign: "center" }}>
+              <Logo className="rounded boxShadow0" width={100} height={100} />
+            </div>
+            <Content
+              className="rounded boxShadow0"
+              style={{
+                background: colorBgContainer,
+                margin: "auto",
+                padding: 40,
+                width: "100%",
+                maxWidth: 600,
+              }}
             >
-              <Form.Item
-                label="Username hoặc email"
-                name="email"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập username hoặc email của bạn!",
-                  },
-                ]}
-                hasFeedback
-              >
-                <Input size="large" />
-              </Form.Item>
-              <Form.Item
-                label="Mật khẩu"
-                name="password"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập mật khẩu của bạn!",
-                  },
-                ]}
-                hasFeedback
-              >
-                <Input.Password size="large" />
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  style={{ width: "100%" }}
-                  size="large"
-                  loading={loading}
+              <Space direction="vertical" style={{ width: "100%" }}>
+                <Typography.Title
+                  level={1}
+                  style={{ textAlign: "center", marginTop: 0 }}
                 >
                   Đăng nhập
-                </Button>
-                <Typography.Link>
-                  <Link to="/forgotpwd">Quên mật khẩu?</Link>
-                </Typography.Link>
-              </Form.Item>
-              {/* <Typography.Text>
-                Chưa có tài khoản?<Link href="/register">Register</Link>
-              </Typography.Text> */}
-            </Form>
-          </Content>
+                </Typography.Title>
+                <Form onFinish={onSubmit} autoComplete="off" layout="vertical">
+                  <Form.Item
+                    label="Username hoặc email"
+                    name="email"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng nhập username hoặc email của bạn!",
+                      },
+                    ]}
+                    hasFeedback
+                  >
+                    <Input size="large" />
+                  </Form.Item>
+                  <Form.Item
+                    label="Mật khẩu"
+                    name="password"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng nhập mật khẩu của bạn!",
+                      },
+                    ]}
+                    hasFeedback
+                  >
+                    <Input.Password size="large" />
+                  </Form.Item>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      style={{ width: "100%" }}
+                      size="large"
+                      loading={loading}
+                    >
+                      Đăng nhập
+                    </Button>
+                    <Link to="/forgotpwd">Quên mật khẩu?</Link>
+                  </Form.Item>
+                </Form>
+              </Space>
+            </Content>
+          </Space>
         </Col>
-        <Col xs={2} sm={6} xl={8} />
+        <Col xs={2} sm={4} md={6} />
       </Row>
     </Layout>
   );

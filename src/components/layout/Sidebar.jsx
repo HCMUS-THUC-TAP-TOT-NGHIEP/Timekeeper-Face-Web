@@ -6,7 +6,7 @@ import {
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Menu } from "antd";
+import { Menu, theme } from "antd";
 import Sider from "antd/es/layout/Sider";
 import React from "react";
 import { NavLink } from "react-router-dom";
@@ -17,7 +17,7 @@ function MySidebar(props) {
   const { collapsed } = props;
   return (
     <Sider
-      // trigger={null}
+      trigger={null}
       collapsible
       collapsed={collapsed}
       breakpoint="lg"
@@ -28,7 +28,7 @@ function MySidebar(props) {
         height: "100vh",
         position: "fixed",
         left: 0,
-        top: 0,
+        top: 10,
         bottom: 0,
       }}
     >
@@ -46,7 +46,7 @@ function MySidebar(props) {
           {
             key: "group2",
             icon: <FontAwesomeIcon icon={faUsers} />,
-            label: <div>Nhân viên</div>,
+            label: "Nhân viên",
             children: [
               {
                 key: "group2-opt1",
@@ -61,18 +61,12 @@ function MySidebar(props) {
           {
             key: "group3",
             icon: <FontAwesomeIcon icon={faList} />,
-            label: <div>Ca làm việc</div>,
+            label: "Ca làm việc",
             children: [
               {
                 key: "group3-opt1",
                 label: <NavLink to="/shift">Ca làm việc</NavLink>,
               },
-              // {
-              //   key: "group3-opt2",
-              //   label: (
-              //     <NavLink to="/shift/assignment">Phân ca chi tiết</NavLink>
-              //   ),
-              // },
               {
                 key: "group3-opt3",
                 label: (
@@ -86,7 +80,7 @@ function MySidebar(props) {
           {
             key: "sub2",
             icon: <FontAwesomeIcon icon={faClock} />,
-            label: <div>Chấm công</div>,
+            label: "Chấm công",
             children: [
               {
                 key: "sub2-timekeeper_v2",
@@ -104,22 +98,6 @@ function MySidebar(props) {
                   </NavLink>
                 ),
               },
-              {
-                key: "sub2-summary",
-                label: (
-                  <NavLink to="/timesheet/timekeeping/timesheet-summary">
-                    Bảng chấm công tổng hợp
-                  </NavLink>
-                ),
-              },
-              {
-                key: "sub2-opt1",
-                label: (
-                  <NavLink to="/timesheet/timekeeper">
-                    Thống kê điểm danh
-                  </NavLink>
-                ),
-              },
             ],
           },
           {
@@ -127,18 +105,6 @@ function MySidebar(props) {
             icon: <FontAwesomeIcon icon={faUniversalAccess} />,
             label: <NavLink to="/manage/account">Người dùng</NavLink>,
           },
-          // {
-          //   key: "6",
-          //   icon: <FontAwesomeIcon icon={faBell} />,
-          //   label: (
-          //     <NavLink to="/notification">
-          //       <Space>
-          //         Thông báo
-          //         <Badge count={0} />
-          //       </Space>
-          //     </NavLink>
-          //   ),
-          // },
         ]}
       />
     </Sider>

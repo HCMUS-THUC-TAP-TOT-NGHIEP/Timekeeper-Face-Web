@@ -6,7 +6,7 @@ import "./style.css";
 export const Dashboard = function (props) {
   const navigate = useNavigate();
   useEffect(() => {
-    document.title = "Dashboard";
+    document.title = "Tổng quan";
     const access_token = localStorage.getItem("access_token");
     if (!access_token) {
       navigate("/login");

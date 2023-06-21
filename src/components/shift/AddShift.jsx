@@ -1,4 +1,6 @@
-import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
@@ -24,8 +26,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { CreateNewShift, GetShiftTypeList } from "./api";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 const AddShift = (props) => {
   const { insertOneShiftFE, notify, currentShiftList } = props;
@@ -52,6 +53,7 @@ const AddShift = (props) => {
           return;
         }
       } catch (error) {
+        handleErrorOfRequest({ notify, error });
       } finally {
       }
     }
@@ -113,22 +115,7 @@ const AddShift = (props) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       })
       .finally(() => {
         setLoading(false);
@@ -405,7 +392,6 @@ const DayIndexEnum = {
 const AddShiftPage = (props) => {
   const { insertOneShiftFE, notify } = props;
   const [form] = Form.useForm();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [finishTime, setFinishTime] = useState(null);
   const [startBreakTime, setStartBreakTime] = useState(null);
@@ -439,7 +425,6 @@ const AddShiftPage = (props) => {
   }, []);
 
   const handleCancel = () => {
-    setIsModalOpen(false);
     setEndBreakTime(null);
     setFinishTime(null);
     setStartBreakTime(null);
@@ -455,18 +440,18 @@ const AddShiftPage = (props) => {
     if (values.BreakEnd) {
       values.BreakEnd = dayjs(values.BreakEnd).format(Config.TimeFormat);
     }
-    var success = false;
     CreateNewShift(values)
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          success = true;
           values.Id = ResponseData.Id;
           var shiftType = shiftTypeList.find((s) => s.Id == values.ShiftType);
           values.ShiftTypeText = shiftType.Description;
           notify.success({
             description: "Ca làm việc mới đã được tạo",
           });
+          handleCancel();
+          navigate("/shift")
           return;
         }
         notify.error({
@@ -475,29 +460,11 @@ const AddShiftPage = (props) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
+
       })
       .finally(() => {
         setLoading(false);
-        if (success) {
-          insertOneShiftFE(values);
-          handleCancel();
-        }
       });
   };
 
@@ -720,3 +687,4 @@ const AddShiftPage = (props) => {
 };
 
 export { AddShift, AddShiftPage };
+

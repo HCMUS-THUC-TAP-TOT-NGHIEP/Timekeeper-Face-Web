@@ -30,6 +30,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 dayjs.extend(isSameOrBefore);
 
 const TimesheetSummaryTablePage = ({ notify, loginRequired, ...rest }) => {
@@ -112,7 +113,7 @@ const TimesheetSummaryTablePage = ({ notify, loginRequired, ...rest }) => {
       <Content>
         <Table
           loading={loading}
-          className="boxShadow89"
+          className=""
           bordered
           scroll={{
             x: "calc(700px + 50%)",
@@ -173,6 +174,8 @@ const DeleteReportComponent = ({ notify, report, deleteReportFE, ...rest }) => {
     try {
       setLoading(true);
     } catch (error) {
+      handleErrorOfRequest({ notify, error });
+
     } finally {
       setLoading(false);
     }
@@ -235,6 +238,8 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
     try {
       setLoading(true);
     } catch (error) {
+      handleErrorOfRequest({ notify, error });
+
     } finally {
       setLoading(false);
     }
@@ -329,3 +334,4 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
 };
 
 export { TimesheetSummaryTablePage };
+

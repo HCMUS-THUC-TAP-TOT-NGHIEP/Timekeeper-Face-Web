@@ -1,5 +1,5 @@
 import { Layout, notification, theme } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./Contexts/AuthContext";
 import { AccountIndexPage, AccountListPage } from "./components/account";
@@ -8,8 +8,8 @@ import {
   StatisticPage,
   StatisticPageV2,
   TimesheetDetailPage,
-  TimesheetTablePage,
   TimesheetSummaryTablePage,
+  TimesheetTablePage,
 } from "./components/attendance";
 import { ChangePasswordPage } from "./components/authentication/ChangePassword";
 import {
@@ -19,7 +19,7 @@ import {
 import LoginPage from "./components/authentication/Login";
 import RegisterPage from "./components/authentication/Register";
 import { Dashboard } from "./components/dashboard";
-import { DepartmentList } from "./components/department";
+import { DepartmentList, DepartmentPageIndex } from "./components/department";
 import {
   AllEmployeesPage,
   EditEmployeePage,
@@ -32,18 +32,44 @@ import MyHeader from "./components/layout/Header";
 import NoMatch from "./components/layout/NoMatch";
 import MySidebar from "./components/layout/Sidebar";
 import {
+  AddShiftAssignmentPage,
   AddShiftPage,
   EditShiftAssignmentPage,
-  ShiftAssignmentDetail,
   ShiftAssignmentListPage,
-  ShiftAssignmentPage,
   ShiftDetailPage,
   ShiftManagementIndex,
 } from "./components/shift";
 import { ShiftList } from "./components/shift/ShiftList";
 
+const useBeforeRender = (callback, deps) => {
+  const [isRun, setIsRun] = useState(false);
+
+  if (!isRun) {
+    callback();
+    setIsRun(true);
+  }
+
+  useEffect(() => () => setIsRun(false), deps);
+};
+
 function App() {
   const [notify, contextHolder] = notification.useNotification();
+  useBeforeRender(() => {
+    window.addEventListener("error", (e) => {
+      if (e) {
+        const resizeObserverErrDiv = document.getElementById(
+          "webpack-dev-server-client-overlay-div"
+        );
+        const resizeObserverErr = document.getElementById(
+          "webpack-dev-server-client-overlay"
+        );
+        if (resizeObserverErr)
+          resizeObserverErr.className = "hide-resize-observer";
+        if (resizeObserverErrDiv)
+          resizeObserverErrDiv.className = "hide-resize-observer";
+      }
+    });
+  }, []);
   return (
     <AuthProvider>
       {contextHolder}
@@ -93,12 +119,21 @@ function App() {
           </Route>
           <Route
             path="/department"
-            element={<DepartmentList notify={notify} loginRequired={true} />}
-          />
-          <Route
-            path="/department/all"
-            element={<DepartmentList notify={notify} loginRequired={true} />}
-          />
+            element={
+              <DepartmentPageIndex notify={notify} loginRequired={true} />
+            }
+          >
+            <Route
+              exact
+              path=""
+              element={<DepartmentList notify={notify} loginRequired={true} />}
+            />
+            <Route
+              exact
+              path="all"
+              element={<DepartmentList notify={notify} loginRequired={true} />}
+            />
+          </Route>
 
           <Route
             path="shift"
@@ -124,17 +159,20 @@ function App() {
             <Route
               exact
               path="edit/:shiftId"
-              element={<ShiftDetailPage editable={true} notify={notify} loginRequired={true} />}
-            />
-
-
-            <Route
-              path="assignment"
               element={
-                <ShiftAssignmentPage notify={notify} loginRequired={true} />
+                <ShiftDetailPage
+                  editable={true}
+                  notify={notify}
+                  loginRequired={true}
+                />
               }
             />
-
+            <Route
+              path="assignment/new"
+              element={
+                <AddShiftAssignmentPage notify={notify} loginRequired={true} />
+              }
+            />
             <Route
               path="assignment/edit/:id"
               element={
@@ -146,7 +184,15 @@ function App() {
               }
             />
             <Route
+              exact
               path="assignment/list"
+              element={
+                <ShiftAssignmentListPage notify={notify} loginRequired={true} />
+              }
+            />{" "}
+            <Route
+              exact
+              path="assignment"
               element={
                 <ShiftAssignmentListPage notify={notify} loginRequired={true} />
               }
@@ -154,7 +200,6 @@ function App() {
             <Route
               path="assignment/detail/:id"
               element={
-                // <ShiftAssignmentDetail notify={notify} loginRequired={true} />
                 <EditShiftAssignmentPage
                   editable={false}
                   notify={notify}
@@ -200,10 +245,6 @@ function App() {
                 />
               }
             />
-            {/* <Route
-              exact path="timekeeping/timesheet-summary/:SummaryId"
-              element={< TimesheetSummaryDetailPage notify={notify} loginRequired={true} />}
-            /> */}
           </Route>
           <Route
             path="/profile/changepwd"
@@ -246,26 +287,28 @@ function CustomLayout(props) {
         minHeight: "100vh",
       }}
     >
-      <MySidebar collapsed={collapsed} />
-      <Layout
-        className="site-layout"
-        style={{
-          marginLeft: collapsed ? 80 : 250,
-        }}
-      >
-        <MyHeader collapsed={collapsed} setCollapsed={setCollapsed} />
-        <Layout.Content
+      <MyHeader collapsed={collapsed} setCollapsed={setCollapsed} />
+      <Layout>
+        <MySidebar collapsed={collapsed} />
+        <Layout
+          className="site-layout"
           style={{
-            // margin: "24px 16px",
-            margin: "24px 16px 0",
-            overflow: "initial",
-            padding: 24,
-            minHeight: 280,
+            marginLeft: collapsed ? 80 : 250,
           }}
         >
-          <Outlet />
-        </Layout.Content>
-        <MyFooter />
+          <Layout.Content
+            style={{
+              // margin: "24px 16px",
+              margin: "24px 16px 0",
+              overflow: "initial",
+              padding: 24,
+              minHeight: 280,
+            }}
+          >
+            <Outlet />
+          </Layout.Content>
+          <MyFooter />
+        </Layout>
       </Layout>
     </Layout>
   );

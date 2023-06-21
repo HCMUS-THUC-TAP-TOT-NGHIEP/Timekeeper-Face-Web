@@ -1,4 +1,6 @@
 import { EditOutlined } from "@ant-design/icons";
+import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
@@ -11,8 +13,9 @@ import {
   Space,
   Spin,
   TimePicker,
+  Tooltip,
   Typography,
-  theme
+  theme,
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import { Content } from "antd/es/layout/layout";
@@ -20,6 +23,7 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import Config from "../../constant";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetShiftDetail, UpdateShift } from "./api";
 
 const ShiftDetailPage = function ({ notify, ...rest }) {
@@ -28,7 +32,7 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
   const [shift, setShift] = useState({});
   const [detail, setDetail] = useState({});
   const [hasBreak, setHasBreak] = useState(false);
-  const [editable, setEditable] = useState((rest.editable || false));
+  const [editable, setEditable] = useState(rest.editable || false);
   const [updatingLoading, setUpdateLoading] = useState(false);
   const navigate = useNavigate();
   const {
@@ -66,6 +70,7 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
         setShift(Shift);
       }
     } catch (error) {
+      handleErrorOfRequest({ notify, error });
     } finally {
       setLoading(false);
     }
@@ -115,22 +120,7 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
         description: response.Description,
       });
     } catch (error) {
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
+      handleErrorOfRequest({ notify, error });
     } finally {
       setUpdateLoading(false);
     }
@@ -141,9 +131,25 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
       <Row wrap={false} align="middle">
         <Col flex="none">
           <Space direction="vertical">
-            <Typography.Title level={3} style={{ marginTop: 0 }}>
-              Ca làm việc
-            </Typography.Title>
+            <Space direction="horizontal" align="center">
+              <Tooltip title="Quay lại">
+                <Button
+                  type="text"
+                  icon={
+                    <FontAwesomeIcon
+                      icon={faArrowLeftLong}
+                      style={{ fontSize: 20, margin: "auto" }}
+                    />
+                  }
+                  onClick={() => navigate(-1)}
+                  shape="circle"
+                  size="large"
+                />
+              </Tooltip>
+              <Typography.Title level={2} style={{ margin: 0 }}>
+                Ca làm việc
+              </Typography.Title>
+            </Space>
             <Breadcrumb>
               <Breadcrumb.Item>
                 <NavLink to="">Dashboard</NavLink>
@@ -550,4 +556,3 @@ const OnlyViewDetailComponent = ({ shift, detail, ...rest }) => {
 };
 
 export { ShiftDetailPage };
-

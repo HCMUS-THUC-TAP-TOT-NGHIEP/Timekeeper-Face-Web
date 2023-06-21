@@ -20,7 +20,9 @@ import { Link, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { GetDepartmentList } from "../department/api";
 import { AddNewEmployee } from "./api";
+import locale from "antd/es/date-picker/locale/vi_VN";
 import "./style.css";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 export const NewEmployeePage = (props) => {
   const navigate = useNavigate();
@@ -51,6 +53,7 @@ export const NewEmployeePage = (props) => {
         setDepartmentList(DepartmentList);
       }
     } catch (error) {
+      handleErrorOfRequest({ notify, error });
     } finally {
       setLoading(false);
     }
@@ -73,22 +76,7 @@ export const NewEmployeePage = (props) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       });
   };
 
@@ -215,6 +203,7 @@ export const NewEmployeePage = (props) => {
                     allowClear
                     format={Config.DateFormat}
                     style={{ width: "100%" }}
+                    locale={locale}
                   />
                 </Form.Item>
               </Col>
@@ -235,6 +224,7 @@ export const NewEmployeePage = (props) => {
                     allowClear
                     format={Config.DateFormat}
                     style={{ width: "100%" }}
+                    locale={locale}
                   />
                 </Form.Item>
               </Col>
@@ -279,12 +269,6 @@ export const NewEmployeePage = (props) => {
                   labelCol={24}
                   label="Phòng ban"
                   name="DepartmentId"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Phòng ban là trường bắt buộc.",
-                    },
-                  ]}
                 >
                   <Select
                     loading={loading}

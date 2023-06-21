@@ -15,14 +15,234 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
+import { ImportDataComponent } from "./ImportEmployeeList";
 import { DeleteOneEmployee, GetManyEmployee } from "./api";
 import "./style.css";
-import { ImportDataComponent } from "./ImportEmployeeList";
+import { defaultColumns } from ".";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 export const AllEmployeesPage = (props) => {
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [notify, contextHolder] = notification.useNotification();
+  const [total, setTotal] = useState(40);
+  const [reload, setReload] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        var response = await GetManyEmployee({ page, perPage });
+        const { Status, Description, ResponseData } = response;
+        if (Status === 1) {
+          const { EmployeeList, Total } = ResponseData;
+          setTotal(Total);
+          setCurrentEmployeeList(EmployeeList);
+          return;
+        }
+        notify.error({
+          message: "Không thành công",
+          description: Description,
+        });
+      } catch (error) {
+        handleErrorOfRequest({ notify, error });
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [page, perPage, reload]);
+
+  const deleteOneEmployee = (values) => {
+    setCurrentEmployeeList(
+      currentEmployeeList.filter((a) => a.Id !== values.Id)
+    );
+  };
+  
+  let columns = [...defaultColumns,   {
+    title: "",
+    dataIndex: "Action",
+    key: "Action",
+    render: (_, employee) => (
+      <ActionMenu Employee={employee} deleteOneEmployee={deleteOneEmployee} />
+    ),
+    width: 120,
+    align: "center",
+  },
+  ]
+  
+  return (
+    <Space direction="vertical" style={{ width: "100%" }}>
+      {contextHolder}
+      <Row gutter={[16, 16]} wrap={false} align="middle">
+        <Col flex="none">
+          <Space direction="vertical">
+            <Typography.Title level={2} style={{ marginTop: 0 }}>
+              Danh sách nhân viên
+            </Typography.Title>
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                <Link to="/">Dashboard</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <Link to="/employee/all">Nhân viên</Link>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Space>
+        </Col>
+        <Col flex="auto" style={{ textAlign: "right" }}>
+          <Space wrap>
+            <Button
+              type="primary"
+              onClick={() => setReload(!reload)}
+              icon={
+                <FontAwesomeIcon
+                  icon={faArrowsRotate}
+                  style={{ paddingRight: "8px" }}
+                  spin={loading}
+                />
+              }
+              loading={loading}
+              style={{
+                backgroundColor: "#ec5504",
+                border: "1px solid #ec5504",
+              }}
+            >
+              Lấy lại dữ liệu
+            </Button>
+            <Button
+              type="primary"
+              icon={
+                <FontAwesomeIcon
+                  icon={faPlus}
+                  style={{ paddingRight: "8px" }}
+                />
+              }
+              onClick={() => navigate("/employee/add")}
+            >
+              Thêm nhân viên mới
+            </Button>
+            <ImportDataComponent notify={notify} />
+          </Space>
+        </Col>
+      </Row>
+      <Table
+        bordered
+        loading={loading}
+        scroll={{
+          x: 1500,
+          y: 1200,
+        }}
+        dataSource={currentEmployeeList}
+        columns={columns}
+        rowKey="Id"
+        pagination={{
+          onChange: (page, pageSize) => {
+            setPage(page);
+            setPerPage(pageSize);
+          },
+          total: total,
+          pageSizeOptions: [10, 15, 25, 50],
+          showSizeChanger: true,
+          showTotal: (total, range) => `Tổng số bản ghi: ${total}`,
+          position: "",
+        }}
+      />
+    </Space>
+  );
+};
+
+function ActionMenu(props) {
+  const { Employee, deleteOneEmployee } = props;
+  const [notify, contextHolder] = notification.useNotification();
+  const navigate = useNavigate();
+  return (
+    <Space size="small">
+      <Tooltip title="Xem">
+        <Button
+          size="small"
+          type="text"
+          icon={<EyeTwoTone />}
+          onClick={() => navigate(`/employee/${Employee.Id}`)}
+        />
+      </Tooltip>
+      <Tooltip title="Sửa">
+        <Button
+          size="small"
+          type="text"
+          icon={<EditTwoTone />}
+          onClick={() => navigate(`/employee/edit/${Employee.Id}`)}
+        />
+      </Tooltip>
+      <DeleteEmployee
+        notify={notify}
+        employee={Employee}
+        deleteOneEmployee={deleteOneEmployee}
+      />
+      {contextHolder}
+    </Space>
+  );
+}
+
+const DeleteEmployee = (props) => {
+  const { notify, employee, deleteOneEmployee } = props;
+  const [loading, setLoading] = useState(false);
+  const deleteEmployee = () => {
+    setLoading(true);
+    DeleteOneEmployee({ EmployeeId: employee.Id })
+      .then((response) => {
+        const { Status, Description } = response;
+        if (Status === 1) {
+          notification.success({
+            description: `Đã xóa nhân viên ${employee.LastName} ${employee.FirstName} - ${employee.Id}`,
+          });
+          deleteOneEmployee(employee);
+          return;
+        }
+        notification.error({
+          title: "Xóa nhân viên Không thành công",
+          description: Description,
+        });
+      })
+      .catch((error) => {
+        handleErrorOfRequest({ notify, error });
+      })
+      .finally(function () {
+        setLoading(false);
+      });
+  };
+
+  return (
+    <>
+      <Popconfirm
+        title={`Xóa nhân viên ID ${employee.Id}`}
+        description={`Bạn có chắc muốn xóa nhân viên ID ${employee.Id} - ${employee.LastName} ${employee.FirstName} ?`}
+        onConfirm={deleteEmployee}
+        okText="Xóa"
+        okButtonProps={{ danger: true, loading: loading }}
+        cancelText="Hủy"
+        placement="topRight"
+      >
+        <Tooltip title="Xóa">
+          <Button
+            type="text"
+            size="small"
+            icon={<DeleteOutlined />}
+            danger
+          ></Button>
+        </Tooltip>
+      </Popconfirm>
+    </>
+  );
+};
+
+export const SimpleEmployeeLListPage = (props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentEmployeeList, setCurrentEmployeeList] = useState([]);
@@ -48,22 +268,7 @@ export const AllEmployeesPage = (props) => {
           description: Description,
         });
       } catch (error) {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       } finally {
         setLoading(false);
       }
@@ -79,72 +284,44 @@ export const AllEmployeesPage = (props) => {
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "Id",
-      key: "Id",
+      title: "Stt",
       width: 60,
-      fixed: "left",
-      sorter: (a, b) => a.Id - b.Id,
+      align: "right",
+      render: (_, record, index) => index + 1,
     },
     {
-      title: "Họ tên",
-      dataIndex: "FullName",
+      title: "Mã NV",
+      dataIndex: "Id",
+      key: "Id",
+      width: 50,
+      fixed: "left",
+      sorter: (a, b) => a.Id > b.Id,
+    },
+    {
       key: "FullName",
-      width: 200,
+      title: "Họ tên",
       fixed: "left",
       render: (_, employee) => `${employee.LastName} ${employee.FirstName}`,
       sorter: (a, b) =>
         compareString(a.FirstName + a.LastName, b.FirstName + b.LastName),
-      // (a.FirstName + a.LastName).localeCompare(b.FirstName + b.LastName),
-    },
-    {
-      title: "Ngày sinh",
-      dataIndex: "DateOfBirth",
-      key: "DateOfBirth",
-      render: (_, { DateOfBirth }) =>
-        DateOfBirth ? dayjs(DateOfBirth).format(Config.DateFormat) : "",
-      width: 150,
-    },
-    {
-      title: "Giới tính",
-      dataIndex: "Gender",
-      key: "Gender",
-      render: (_, employee) => (employee.Gender ? "Nam" : "Nữ"),
-      width: 80,
+      width: 400,
     },
     {
       title: "Vị trí công việc",
       dataIndex: "Position",
       key: "Position",
-      width: "200px",
       sorter: (a, b) => String(a.Position).localeCompare(String(b.Position)),
       filters: [],
       onFilter: (value, record) => record.address.startsWith(value),
       filterSearch: true,
+      width: 400,
     },
     {
       title: "Phòng ban",
       dataIndex: "DepartmentName",
       key: "DepartmentName",
-      width: 100,
       sorter: (a, b) => compareString(a.DepartmentName, b.DepartmentName),
-      // String(a.DepartmentId).localeCompare(String(b.DepartmentId)),
-      filters: [
-        {
-          text: "HR - Nhân sự",
-          value: "HR - Nhân sự",
-        },
-        {
-          text: "FTS - Phòng Lập trình",
-          value: "FTS - Phòng Lập trình",
-        },
-        {
-          text: "Marketing",
-          value: "Marketing",
-        },
-      ],
-      onFilter: (value, record) => record.DepartmentId.startsWith(value),
-      filterSearch: true,
+      width: 400,
     },
     {
       title: "Ngày vào",
@@ -152,8 +329,8 @@ export const AllEmployeesPage = (props) => {
       key: "JoinDate",
       render: (_, { JoinDate }) =>
         JoinDate ? dayjs(JoinDate).format(Config.DateFormat) : "",
-      width: 150,
       sorter: (a, b) => compareDatetime(a, b),
+      width: 400,
     },
     {
       title: "Ngày nghỉ",
@@ -167,17 +344,16 @@ export const AllEmployeesPage = (props) => {
       title: "Địa chỉ",
       dataIndex: "Address",
       key: "Address",
-      width: 200,
+      width: 400,
     },
     {
       title: "",
-      dataIndex: "Action",
       key: "Action",
       render: (_, employee) => (
         <ActionMenu Employee={employee} deleteOneEmployee={deleteOneEmployee} />
       ),
       width: 150,
-      // fixed: "right",
+      fixed: "right",
     },
   ];
 
@@ -240,8 +416,9 @@ export const AllEmployeesPage = (props) => {
         bordered
         loading={loading}
         scroll={{
-          x: 1500,
-          // y: 1200
+          x: 1000,
+          y: 1200,
+          scrollToFirstRowOnChange: true,
         }}
         dataSource={currentEmployeeList}
         columns={columns}
@@ -255,103 +432,8 @@ export const AllEmployeesPage = (props) => {
           pageSizeOptions: [10, 15, 25, 50],
           showSizeChanger: true,
           showTotal: (total, range) => `Tổng số bản ghi: ${total}`,
-          position: "",
         }}
       />
     </Space>
-  );
-};
-
-// rowSelection object indicates the need for row selection
-
-function ActionMenu(props) {
-  const { Employee, deleteOneEmployee } = props;
-  const [notify, contextHolder] = notification.useNotification();
-  const navigate = useNavigate();
-  return (
-    <Space size="small">
-      <Tooltip title="Xem">
-        <Button
-          type="text"
-          icon={<EyeTwoTone />}
-          onClick={() => navigate(`/employee/${Employee.Id}`)}
-        />
-      </Tooltip>
-      <Tooltip title="Sửa">
-        <Button
-          type="text"
-          icon={<EditTwoTone />}
-          onClick={() => navigate(`/employee/edit/${Employee.Id}`)}
-        />
-      </Tooltip>
-      <DeleteEmployee
-        notify={notify}
-        employee={Employee}
-        deleteOneEmployee={deleteOneEmployee}
-      />
-      {contextHolder}
-    </Space>
-  );
-}
-
-const DeleteEmployee = (props) => {
-  const { notify, employee, deleteOneEmployee } = props;
-  const [loading, setLoading] = useState(false);
-  const deleteEmployee = () => {
-    setLoading(true);
-    DeleteOneEmployee({ EmployeeId: employee.Id })
-      .then((response) => {
-        const { Status, Description } = response;
-        if (Status === 1) {
-          notification.success({
-            description: `Đã xóa nhân viên ${employee.LastName} ${employee.FirstName} - ${employee.Id}`,
-          });
-          deleteOneEmployee(employee);
-          return;
-        }
-        notification.error({
-          title: "Xóa nhân viên Không thành công",
-          description: Description,
-        });
-      })
-      .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
-      })
-      .finally(function () {
-        setLoading(false);
-      });
-  };
-
-  return (
-    <>
-      <Popconfirm
-        title={`Xóa nhân viên ID ${employee.Id}`}
-        description={`Bạn có chắc muốn xóa nhân viên ID ${employee.Id} - ${employee.LastName} ${employee.FirstName} ?`}
-        onConfirm={deleteEmployee}
-        okText="Xóa"
-        okButtonProps={{ danger: true, loading: loading }}
-        cancelText="Hủy"
-        placement="topRight"
-      >
-        <Tooltip title="Xóa">
-          <Button type="text" icon={<DeleteOutlined />} danger></Button>
-        </Tooltip>
-      </Popconfirm>
-    </>
   );
 };

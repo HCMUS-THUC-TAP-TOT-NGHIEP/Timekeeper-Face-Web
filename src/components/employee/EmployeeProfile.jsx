@@ -1,18 +1,22 @@
+import { EditFilled } from "@ant-design/icons";
 import {
   Avatar,
   Breadcrumb,
   Button,
-  Card,
   Col,
   Descriptions,
-  notification,
   Row,
   Skeleton,
   Space,
+  Spin,
+  notification,
+  theme,
 } from "antd";
-import Meta from "antd/es/card/Meta";
+import { Content } from "antd/es/layout/layout";
+import Title from "antd/es/typography/Title";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetOneEmployeeInfo } from "./api";
 import "./style.css";
 
@@ -22,6 +26,9 @@ export const EmployeeProfile = (props) => {
   const [currentEmployee, setCurrentEmployee] = useState({});
   const [loading, setLoading] = useState(true);
   const [notify, contextHolder] = notification.useNotification();
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
 
   useEffect(() => {
     document.title = "Hồ sơ nhân viên";
@@ -42,68 +49,60 @@ export const EmployeeProfile = (props) => {
         }
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       });
   }, [employeeId]);
+  const title = (
+    <Space direction="horizontal" size={"large"} align="center">
+      <Avatar
+        style={{ backgroundColor: "#f56a00" }}
+        size={{
+          xs: 24,
+          sm: 32,
+          xl: 80,
+        }}
+      >
+        <span style={{ fontSize: 20 }}>
+          {(currentEmployee.FirstName || [])[0] +
+            (currentEmployee.LastName || [])[0]}
+        </span>
+      </Avatar>
+      <Title
+        level={3}
+        children={`${currentEmployee.LastName} ${currentEmployee.FirstName}`}
+      />
+    </Space>
+  );
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
-      {contextHolder}
-      <Row>
-        <Col flex="none">
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Link to="/employee/all">Nhân viên</Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Link to="">Hồ sơ</Link>
-            </Breadcrumb.Item>
-          </Breadcrumb>
-        </Col>
-        <Col flex="auto" style={{ textAlign: "right" }}>
-          <Button
-            style={{ margin: "5px 5px" }}
-            type="primary"
-            ghost
-            onClick={() => navigate(`/employee/edit/${employeeId}`)}
-          >
-            Cập nhật hồ sơ
-          </Button>
-        </Col>
-      </Row>
-      <Card bordered={false}>
-        <Skeleton avatar loading={loading} active={loading}>
-          <Meta
-            avatar={
-              <Avatar
-                style={{ backgroundColor: "#f56a00" }}
-                size={{
-                  xs: 24,
-                  sm: 32,
-                  md: 80,
-                  lg: 100,
-                  xl: 120,
-                }}
-              >
-                {currentEmployee.FirstName}
-              </Avatar>
-            }
-            description=<Descriptions
+    <Spin spinning={loading}>
+      <Space direction="vertical" style={{ width: "100%" }}>
+        {contextHolder}
+        <Row>
+          <Col flex="none">
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                <Link to="/employee/all">Nhân viên</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <Link to="">Hồ sơ</Link>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Col>
+          <Col flex="auto" style={{ textAlign: "right" }}>
+            <Button
+              style={{ margin: "5px 5px" }}
+              type="primary"
+              onClick={() => navigate(`/employee/edit/${employeeId}`)}
+              icon={<EditFilled />}
+            >
+              Cập nhật hồ sơ
+            </Button>
+          </Col>
+        </Row>
+        <Content style={{ background: colorBgContainer, padding: 20 }}>
+          <Skeleton avatar loading={loading} active={loading}>
+            <Descriptions
               column={{
                 xxl: 2,
                 xl: 2,
@@ -112,13 +111,13 @@ export const EmployeeProfile = (props) => {
                 sm: 1,
                 xs: 1,
               }}
-              title={`${currentEmployee.LastName} ${currentEmployee.FirstName}`}
+              title={title}
             >
               <Descriptions.Item label="ID">
                 {currentEmployee.Id}
               </Descriptions.Item>
               <Descriptions.Item label="Phòng ban/ Nhóm">
-                UI/UX Design Team
+                {currentEmployee.DepartmentName}
               </Descriptions.Item>
               <Descriptions.Item label="Vị trí">
                 {currentEmployee.Position}
@@ -141,9 +140,9 @@ export const EmployeeProfile = (props) => {
                 {currentEmployee.Gender ? "Nam" : "Nữ"}
               </Descriptions.Item>
             </Descriptions>
-          />
-        </Skeleton>
-      </Card>
-    </Space>
+          </Skeleton>
+        </Content>
+      </Space>
+    </Spin>
   );
 };

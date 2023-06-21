@@ -1,5 +1,9 @@
 import { SearchOutlined } from "@ant-design/icons";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsRotate,
+  faFileExport,
+  faMagnifyingGlass,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
@@ -7,11 +11,14 @@ import {
   Col,
   DatePicker,
   Form,
+  Image,
   Input,
   Row,
   Space,
   Table,
+  Tooltip,
   Typography,
+  theme,
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import { Content } from "antd/es/layout/layout";
@@ -24,8 +31,9 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { ImportTimekeeperData } from "./ImportComponent";
-import { GetStatisticV2 } from "./api";
+import { ExportAttendanceStatisticBE, GetStatisticV2 } from "./api";
 dayjs.extend(isSameOrBefore);
 
 const col1 = {
@@ -39,11 +47,16 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [reloading, setReloading] = useState(true);
   const [currentData, setCurrentData] = useState([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [total, setTotal] = useState(0);
   const [form] = Form.useForm();
+  const [processing, setProcessing] = useState(false);
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
   useEffect(() => {
     if (loginRequired && !userDetails.token) {
       notify.warning({
@@ -61,7 +74,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
 
   useEffect(() => {
     form.submit();
-  }, [page, pageSize]);
+  }, [page, pageSize, reloading]);
 
   let loadStatistic = async (values) => {
     try {
@@ -93,24 +106,51 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
         description: response.Description,
       });
     } catch (error) {
-      if (error.response) {
-        notify.error({
-          message: "Có lỗi ở response.",
-          description: `[${error.response.statusText}]`,
-        });
-      } else if (error.request) {
-        notify.error({
-          message: "Có lỗi ở request.",
-          description: error,
-        });
-      } else {
-        notify.error({
-          message: "Có lỗi ở máy khách",
-          description: error.message,
-        });
-      }
+      handleErrorOfRequest({ notify, error });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const exportTimesheetReport = async () => {
+    var url;
+    try {
+      setProcessing(true);
+      var dateRange = form.getFieldValue("DateRange"),
+        keyword = form.getFieldValue("Keyword");
+      var response = await ExportAttendanceStatisticBE({
+        DateFrom: dateRange[0],
+        DateTo: dateRange[1],
+        Keyword: keyword,
+      });
+      try {
+        var data = JSON.parse(response);
+        if (data.Status !== 1) {
+          notify.error({
+            message: <b>Thông báo</b>,
+            description: data.Description,
+          });
+        }
+      } catch (error) {
+        url = URL.createObjectURL(response);
+        var link = document.createElement("a");
+        link.href = url;
+        link.setAttribute(
+          "download",
+          `Dữ liệu chấm công từ ngày ${dateRange[0].format(
+            Config.DateFormat
+          )} dến ngày ${dateRange[1].format(Config.DateFormat)}`
+        );
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      }
+    } catch (error) {
+      handleErrorOfRequest({ error, notify });
+      console.error(error);
+    } finally {
+      setProcessing(false);
+      if ((url || "").length > 0) URL.revokeObjectURL(url);
     }
   };
 
@@ -133,36 +173,86 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <ImportTimekeeperData notify={notify} />
+          <Space wrap>
+            <Button
+              loading={loading}
+              onClick={() => setReloading(!reloading)}
+              style={{
+                backgroundColor: "#ec5504",
+                border: "1px solid #ec5504",
+              }}
+              type="primary"
+              icon={
+                <FontAwesomeIcon
+                  icon={faArrowsRotate}
+                  style={{ paddingRight: "8px" }}
+                />
+              }
+            >
+              Lấy lại dữ liệu
+            </Button>
+
+            <ImportTimekeeperData notify={notify} />
+          </Space>
         </Col>
       </Row>
-      <Row wrap>
-        <Form layout="inline" onFinish={loadStatistic} form={form}>
-          <Form.Item name="Keyword" wrapperCol={3}>
-            <Input
-              placeholder="Tìm kiếm"
-              suffix={<FontAwesomeIcon icon={faMagnifyingGlass} />}
-            />
-          </Form.Item>
-          <Form.Item
-            name="DateRange"
-            wrapperCol={3}
-            initialValue={[dayjs(), dayjs()]}
-          >
-            <DatePicker.RangePicker
-              locale={locale}
-              format={Config.DateFormat}
-              allowClear={true}
-            />
-          </Form.Item>
-          <Form.Item wrapperCol={3}>
-            <Button htmlType="submit" icon={<SearchOutlined />} type="primary">
-              Tìm kiếm
-            </Button>
-          </Form.Item>
-        </Form>
+      <Row wrap align="middle">
+        <Col flex="none">
+          <Form layout="inline" onFinish={loadStatistic} form={form}>
+            <Space wrap>
+              <Form.Item name="Keyword" wrapperCol={3}>
+                <Input
+                  placeholder="Tìm kiếm"
+                  suffix={<FontAwesomeIcon icon={faMagnifyingGlass} />}
+                />
+              </Form.Item>
+              <Form.Item
+                name="DateRange"
+                wrapperCol={3}
+                initialValue={[dayjs(), dayjs()]}
+              >
+                <DatePicker.RangePicker
+                  locale={locale}
+                  format={Config.DateFormat}
+                  allowClear={true}
+                />
+              </Form.Item>
+              <Form.Item wrapperCol={3}>
+                <Button
+                  htmlType="submit"
+                  icon={<SearchOutlined />}
+                  type="primary"
+                >
+                  Tìm kiếm
+                </Button>
+              </Form.Item>
+            </Space>
+          </Form>
+        </Col>
+        <Col flex="auto" style={{ textAlign: "right" }}>
+          <Space>
+            <Tooltip title="Xuất dữ liệu chấm công" placement="rightTop">
+              <Button
+                type="default"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faFileExport}
+                    style={{ paddingRight: 4 }}
+                  />
+                }
+                onClick={exportTimesheetReport}
+                loading={processing}
+              >
+                Xuất báo cáo
+              </Button>
+            </Tooltip>
+          </Space>
+        </Col>
       </Row>
-      <Content>
+      <Content
+        style={{ background: colorBgContainer, padding: 20 }}
+        className="boxShadow0 rounded"
+      >
         <Table
           loading={loading}
           bordered
@@ -188,10 +278,25 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           caption={<b>Chỉ lấy giờ chấm công vào sớm nhất và ra trễ nhất</b>}
         >
           <Column
-            title="Mã nhân viên"
+            title="#"
+            width={80}
+            render={(_, __, index) => index + 1}
+            align="right"
+          />
+          <Column
+            title="Ngày"
+            width={100}
+            sorter={(a, b) => compareDatetime(a, b, "Date")}
+            defaultSortOrder={["descending"]}
+            render={(record) => dayjs(record.Date).format(Config.DateFormat)}
+            align="center"
+          />
+          <Column
+            title="Mã NV"
             dataIndex="Id"
-            width={150}
+            width={100}
             sorter={(a, b) => a.Id > b.Id}
+            align="right"
           />
           <Column
             title="Họ và tên"
@@ -206,14 +311,6 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
             sorter={(a, b) => compareString(a, b, "EmployeeName")}
           />
           <Column
-            title="Ngày chấm công"
-            dataIndex="Date"
-            width={150}
-            sorter={(a, b) => compareDatetime(a, b, "Date")}
-            // defaultSortOrder={["descending"]}
-            // render={(record) => dayjs(record.Date).format(Config.DateFormat)}
-          />
-          <Column
             title="Giờ công vào"
             dataIndex="Time"
             width={150}
@@ -221,13 +318,22 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
               dayjs(record.Time).format(Config.NonSecondFormat)
             }
             defaultSortOrder={["ascending"]}
+            align="center"
           />
           <Column
             title="Phương thức chấm công"
             dataIndex="MethodText"
             width={150}
           />
-          <Column title="Ảnh đính kèm" dataIndex="AttachedImage" width={200} />
+          <Column
+            title="Ảnh đính kèm"
+            width={200}
+            dataIndex="DownloadUrl"
+            render={(value, record) => {
+              return <Image src={value} height={50} />;
+            }}
+            align="center"
+          />
         </Table>
       </Content>
     </Space>

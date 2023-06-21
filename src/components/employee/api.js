@@ -10,13 +10,26 @@ let AxiosInstance = axios.create({
   },
 });
 
-export const GetManyEmployee = async (requestData) => {
+export const GetManyEmployee = async (method = "GET", requestData) => {
   var params = {
     Page: requestData && requestData.page ? requestData.page : 1,
     PerPage: requestData && requestData.perPage ? requestData.perPage : 10,
   };
   var access_token = localStorage.getItem("access_token");
-  var response = await AxiosInstance.get("employee/many", {
+  var response = {};
+  if ( method === "POST") {
+    var req = {
+      Department: requestData.Department,
+    };
+    response = await AxiosInstance.post("employee/many", req, {
+      params: params,
+      headers: {
+        Authorization: "Bearer " + access_token,
+      },
+    });
+    return response.data;
+  }
+  response = await AxiosInstance.get("employee/many", {
     params: params,
     headers: {
       Authorization: "Bearer " + access_token,
@@ -96,7 +109,7 @@ export const GetTemplateFile = async (req) => {
       "Access-Control-Allow-Origin": "*",
       Authorization: "Bearer " + localStorage.getItem("access_token"),
     },
-    responseType: "blob"
+    responseType: "blob",
   });
   return response.data;
 };

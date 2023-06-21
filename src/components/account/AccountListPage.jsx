@@ -19,6 +19,7 @@ import Highlighter from "react-highlight-words";
 import { Link, NavLink } from "react-router-dom";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { AddAccount } from "./AddAccount";
 import { DeleteAccount } from "./DeleteAccount";
 import { EditAccount } from "./EditAccount";
@@ -63,22 +64,7 @@ export const AccountListPage = (props) => {
           description: Description,
         });
       } catch (error) {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       } finally {
         setLoading(false);
       }

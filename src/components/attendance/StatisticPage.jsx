@@ -21,13 +21,14 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { GetStatistic } from "./api";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 dayjs.extend(isSameOrBefore);
 
 const col1 = {
   title: "Nhân viên",
   dataIndex: "EmployeeName",
   width: 300,
-  fixed: 'left'
+  fixed: "left",
 };
 
 const StatisticPage = ({ notify, loginRequired, ...rest }) => {
@@ -81,7 +82,8 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
         setCurrentData(ResponseData.Statistics);
         setTotalRecords(ResponseData.Total);
       }
-    } catch (err) {
+    } catch (error) {
+      handleErrorOfRequest({ notify, error });
     } finally {
       setLoading(false);
     }
@@ -124,7 +126,7 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
               date.format("YYYY-MM-DD"),
               "LastCheckin",
             ],
-            width: 120
+            width: 120,
           },
         ],
       };
@@ -245,12 +247,10 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
             showTotal: (total) => `Tổng ${total} mục`,
           }}
           columns={columns}
-        >
-        </Table>
+        ></Table>
       </Content>
     </Space>
   );
 };
 
 export { StatisticPage };
-

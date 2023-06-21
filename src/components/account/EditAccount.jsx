@@ -11,6 +11,7 @@ import {
   notification,
 } from "antd";
 import React, { useState } from "react";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { UpdateUser } from "./api";
 
 const EditAccount = (props) => {
@@ -50,22 +51,7 @@ const EditAccount = (props) => {
         });
       })
       .catch((error) => {
-        if (error.response) {
-          notify.error({
-            message: "Có lỗi ở response.",
-            description: `[${error.response.statusText}]`,
-          });
-        } else if (error.request) {
-          notify.error({
-            message: "Có lỗi ở request.",
-            description: error,
-          });
-        } else {
-          notify.error({
-            message: "Có lỗi ở máy khách",
-            description: error.message,
-          });
-        }
+        handleErrorOfRequest({ notify, error });
       })
       .finally(() => {
         setLoading(false);
@@ -205,3 +191,4 @@ const EditAccount = (props) => {
 };
 
 export { EditAccount };
+

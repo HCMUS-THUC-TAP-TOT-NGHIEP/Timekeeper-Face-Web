@@ -472,21 +472,25 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
       <Row wrap gutter={[16, 16]}>
         <Col flex="auto" style={{ textAlign: "right" }}>
           <Space>
-            <Tooltip title="Tải lại">
+            <Tooltip title="Tải lại" placement="bottom">
               <Button
                 type="primary"
                 icon={<FontAwesomeIcon icon={faArrowsRotate} />}
                 loading={loading}
                 onClick={() => setReloading(!reloading)}
-              />
+              >
+                Tải lại
+              </Button>
             </Tooltip>
-            <Tooltip title="Xuất bảng chấm công" placement="rightTop">
+            <Tooltip title="Xuất bảng chấm công" placement="bottom">
               <Button
                 type="default"
                 icon={<FontAwesomeIcon icon={faFileExport} />}
                 onClick={exportTimesheetReport}
                 loading={processing}
-              />
+              >
+                Xuất bảng chấm công
+              </Button>
             </Tooltip>
           </Space>
         </Col>

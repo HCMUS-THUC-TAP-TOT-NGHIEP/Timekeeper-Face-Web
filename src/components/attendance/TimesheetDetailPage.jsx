@@ -469,13 +469,46 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           </Space>
         </Col>
       </Row>
-      <Row wrap gutter={[16, 16]}>
+      <Row wrap gutter={[16, 16]} align="middle">
+        <Col flex="none">
+          <Space direction="horizontal" align="center" size="large">
+            <Space>
+              <FontAwesomeIcon
+                icon={faCircle}
+                size="sm"
+                color={colorSuccessActive}
+              />
+              Đủ công
+            </Space>
+            <Space>
+              <FontAwesomeIcon
+                icon={faCircle}
+                size="sm"
+                color={colorWarningActive}
+              />
+              Không hợp lệ
+            </Space>
+            <Space>
+              <FontAwesomeIcon
+                icon={faCircle}
+                size="sm"
+                color={colorBgTextActive}
+              />
+              Nghỉ
+            </Space>
+          </Space>
+        </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
           <Space>
             <Tooltip title="Tải lại" placement="bottom">
               <Button
                 type="primary"
-                icon={<FontAwesomeIcon icon={faArrowsRotate} />}
+                icon={
+                  <FontAwesomeIcon
+                    icon={faArrowsRotate}
+                    style={{ paddingRight: 4 }}
+                  />
+                }
                 loading={loading}
                 onClick={() => setReloading(!reloading)}
               >
@@ -485,7 +518,12 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
             <Tooltip title="Xuất bảng chấm công" placement="bottom">
               <Button
                 type="default"
-                icon={<FontAwesomeIcon icon={faFileExport} />}
+                icon={
+                  <FontAwesomeIcon
+                    icon={faFileExport}
+                    style={{ paddingRight: 4 }}
+                  />
+                }
                 onClick={exportTimesheetReport}
                 loading={processing}
               >

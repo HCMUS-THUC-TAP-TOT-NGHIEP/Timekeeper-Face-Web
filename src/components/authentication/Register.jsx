@@ -109,7 +109,7 @@ const RegisterPage = ({ notify, ...rest }) => {
                   ]}
                   hasFeedback
                 >
-                  <Input size="large" placeholder="khanhnt" />
+                  <Input size="large" placeholder="username" />
                 </Form.Item>
                 <Form.Item
                   label="Email"

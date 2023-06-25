@@ -107,25 +107,7 @@ const ShiftList = function ({ notify, ...rest }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    GetShiftList({ Page: page, PerPage: perPage })
-      .then((response) => {
-        const { Status, Description, ResponseData } = response;
-        if (Status === 1) {
-          const { ShiftList, Total } = ResponseData;
-          setTotalPages(Total);
-          setCurrentShiftList(ShiftList);
-          return;
-        }
-        notify.error({
-          description: Description,
-        });
-      })
-      .catch((error) => {
-        handleErrorOfRequest({ notify, error });
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    loadData({ Page: page, PerPage: perPage });
   }, [perPage, page, notify, reload]);
 
   const updateOneShift = (value) => {
@@ -144,6 +126,25 @@ const ShiftList = function ({ notify, ...rest }) {
     setCurrentShiftList(
       currentShiftList.filter((shift) => shift.Id !== value.Id)
     );
+  };
+
+  const loadData = async ({ Page, PerPage }) => {
+    try {
+      setLoading(true);
+      var response = await GetShiftList({ Page, PerPage });
+      const { Status, Description, ResponseData } = response;
+      if (Status != 1) {
+        throw new Error(Description || "Lỗi chưa xác định");
+      }
+      const { ShiftList, Total } = ResponseData;
+      setTotalPages(Total);
+      setCurrentShiftList(ShiftList);
+      return;
+    } catch (error) {
+      handleErrorOfRequest({ error, notify });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -368,4 +369,3 @@ const ShiftList = function ({ notify, ...rest }) {
 };
 
 export { ShiftList };
-

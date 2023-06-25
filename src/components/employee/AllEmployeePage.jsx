@@ -60,23 +60,26 @@ export const AllEmployeesPage = (props) => {
   }, [page, perPage, reload]);
 
   const deleteOneEmployee = (values) => {
-    setCurrentEmployeeList(
-      currentEmployeeList.filter((a) => a.Id !== values.Id)
-    );
+    // setCurrentEmployeeList(
+    //   currentEmployeeList.filter((a) => a.Id !== values.Id)
+    // );
+    setReload(!reload);
   };
-  
-  let columns = [...defaultColumns,   {
-    title: "",
-    dataIndex: "Action",
-    key: "Action",
-    render: (_, employee) => (
-      <ActionMenu Employee={employee} deleteOneEmployee={deleteOneEmployee} />
-    ),
-    width: 120,
-    align: "center",
-  },
-  ]
-  
+
+  let columns = [
+    ...defaultColumns,
+    {
+      title: "",
+      dataIndex: "Action",
+      key: "Action",
+      render: (_, employee) => (
+        <ActionMenu Employee={employee} deleteOneEmployee={deleteOneEmployee} />
+      ),
+      width: 120,
+      align: "center",
+    },
+  ];
+
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}

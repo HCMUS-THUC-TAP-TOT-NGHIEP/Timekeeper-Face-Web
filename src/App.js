@@ -54,19 +54,37 @@ const useBeforeRender = (callback, deps) => {
 
 function App() {
   const [notify, contextHolder] = notification.useNotification();
-  useBeforeRender(() => {
+  // useBeforeRender(() => {
+  //   window.addEventListener("error", (e) => {
+  //     if (e) {
+  //       const resizeObserverErrDiv = document.getElementById(
+  //         "webpack-dev-server-client-overlay-div"
+  //       );
+  //       const resizeObserverErr = document.getElementById(
+  //         "webpack-dev-server-client-overlay"
+  //       );
+  //       if (resizeObserverErr)
+  //         resizeObserverErr.className = "hide-resize-observer";
+  //       if (resizeObserverErrDiv)
+  //         resizeObserverErrDiv.className = "hide-resize-observer";
+  //     }
+  //   });
+  // }, []);
+  useEffect(() => {
     window.addEventListener("error", (e) => {
-      if (e) {
+      if (e.message === "ResizeObserver loop limit exceeded") {
         const resizeObserverErrDiv = document.getElementById(
           "webpack-dev-server-client-overlay-div"
         );
         const resizeObserverErr = document.getElementById(
           "webpack-dev-server-client-overlay"
         );
-        if (resizeObserverErr)
-          resizeObserverErr.className = "hide-resize-observer";
-        if (resizeObserverErrDiv)
-          resizeObserverErrDiv.className = "hide-resize-observer";
+        if (resizeObserverErr) {
+          resizeObserverErr.setAttribute("style", "display: none");
+        }
+        if (resizeObserverErrDiv) {
+          resizeObserverErrDiv.setAttribute("style", "display: none");
+        }
       }
     });
   }, []);

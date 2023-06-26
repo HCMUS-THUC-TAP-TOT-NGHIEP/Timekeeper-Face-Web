@@ -233,7 +233,7 @@ export const EmployeeSelectionComponent = ({
         var response = await GetManyEmployee("POST", {
           page,
           perPage,
-          Department: department ? [department, null] : [null],
+          department: department ? [department, null] : [null],
         });
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {

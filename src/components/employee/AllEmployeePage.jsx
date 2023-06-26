@@ -23,6 +23,7 @@ import { DeleteOneEmployee, GetManyEmployee } from "./api";
 import "./style.css";
 import { defaultColumns } from ".";
 import { handleErrorOfRequest } from "../../utils/Helpers";
+import Search from "antd/es/input/Search";
 
 export const AllEmployeesPage = (props) => {
   const [page, setPage] = useState(1);
@@ -32,13 +33,18 @@ export const AllEmployeesPage = (props) => {
   const [notify, contextHolder] = notification.useNotification();
   const [total, setTotal] = useState(40);
   const [reload, setReload] = useState(true);
+  const [searchString, setSearchString] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        var response = await GetManyEmployee({ page, perPage });
+        var response = await GetManyEmployee("POST", {
+          page,
+          perPage,
+          searchString,
+        });
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
           const { EmployeeList, Total } = ResponseData;
@@ -51,13 +57,14 @@ export const AllEmployeesPage = (props) => {
           description: Description,
         });
       } catch (error) {
+        console.log(error);
         handleErrorOfRequest({ notify, error });
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, [page, perPage, reload]);
+  }, [page, perPage, searchString, reload]);
 
   const deleteOneEmployee = (values) => {
     // setCurrentEmployeeList(
@@ -75,8 +82,9 @@ export const AllEmployeesPage = (props) => {
       render: (_, employee) => (
         <ActionMenu Employee={employee} deleteOneEmployee={deleteOneEmployee} />
       ),
-      width: 120,
+      width: 80,
       align: "center",
+      fixed: "right",
     },
   ];
 
@@ -103,6 +111,34 @@ export const AllEmployeesPage = (props) => {
           <Space wrap>
             <Button
               type="primary"
+              icon={
+                <FontAwesomeIcon
+                  icon={faPlus}
+                  style={{ paddingRight: "8px" }}
+                />
+              }
+              onClick={() => navigate("/employee/add")}
+            >
+              Thêm nhân viên mới
+            </Button>
+            <ImportDataComponent notify={notify} />
+          </Space>
+        </Col>
+      </Row>{" "}
+      <Row gutter={[16, 16]} wrap={false} align="middle">
+        <Col flex="none">
+          <Space>
+            <Search
+              allowClear
+              enterButton
+              onSearch={(value) => setSearchString(value)}
+            />
+          </Space>
+        </Col>
+        <Col flex="auto" style={{ textAlign: "right" }}>
+          <Space wrap>
+            <Button
+              type="primary"
               onClick={() => setReload(!reload)}
               icon={
                 <FontAwesomeIcon
@@ -119,19 +155,6 @@ export const AllEmployeesPage = (props) => {
             >
               Lấy lại dữ liệu
             </Button>
-            <Button
-              type="primary"
-              icon={
-                <FontAwesomeIcon
-                  icon={faPlus}
-                  style={{ paddingRight: "8px" }}
-                />
-              }
-              onClick={() => navigate("/employee/add")}
-            >
-              Thêm nhân viên mới
-            </Button>
-            <ImportDataComponent notify={notify} />
           </Space>
         </Col>
       </Row>
@@ -139,8 +162,8 @@ export const AllEmployeesPage = (props) => {
         bordered
         loading={loading}
         scroll={{
-          x: 1500,
-          y: 1200,
+          x: 800,
+          y: 800,
         }}
         dataSource={currentEmployeeList}
         columns={columns}
@@ -167,18 +190,19 @@ function ActionMenu(props) {
   const navigate = useNavigate();
   return (
     <Space size="small">
-      <Tooltip title="Xem">
+      {/* <Tooltip title="Xem">
         <Button
           size="small"
           type="text"
           icon={<EyeTwoTone />}
           onClick={() => navigate(`/employee/${Employee.Id}`)}
         />
-      </Tooltip>
+      </Tooltip> */}
       <Tooltip title="Sửa">
         <Button
           size="small"
           type="text"
+          shape="circle"
           icon={<EditTwoTone />}
           onClick={() => navigate(`/employee/edit/${Employee.Id}`)}
         />
@@ -238,6 +262,7 @@ const DeleteEmployee = (props) => {
             size="small"
             icon={<DeleteOutlined />}
             danger
+            shape="circle"
           ></Button>
         </Tooltip>
       </Popconfirm>

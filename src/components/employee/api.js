@@ -10,16 +10,21 @@ let AxiosInstance = axios.create({
   },
 });
 
-export const GetManyEmployee = async (method = "GET", requestData) => {
+export const GetManyEmployee = async (
+  method = "GET",
+  { page, perPage, searchString, department, ...rest }
+) => {
+  console.log("requestData", { page, perPage, searchString, department });
   var params = {
-    Page: requestData && requestData.page ? requestData.page : 1,
-    PerPage: requestData && requestData.perPage ? requestData.perPage : 10,
+    Page: page || 1,
+    PerPage: perPage || 10,
+    SearchString: searchString,
   };
   var access_token = localStorage.getItem("access_token");
   var response = {};
-  if ( method === "POST") {
+  if (method === "POST") {
     var req = {
-      Department: requestData.Department,
+      Department: department,
     };
     response = await AxiosInstance.post("employee/many", req, {
       params: params,

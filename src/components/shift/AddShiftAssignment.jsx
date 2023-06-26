@@ -558,6 +558,8 @@ const AppliedTargetTable = (props) => {
   const [totaldeparment, setTotalDeparment] = useState(0);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const showModal = () => {
     setOpen(true);
   };
@@ -594,7 +596,10 @@ const AppliedTargetTable = (props) => {
           setTotalDeparment(Total);
         }
         if (type == _TargeType.ByEmployee) {
-          const response = await GetManyEmployee();
+          const response = await GetManyEmployee("GET", {
+            page: page,
+            pageSize: pageSize,
+          });
           if (response.Status !== 1) {
             notify.error({
               message: "Truy vấn nhân viên không thành công",
@@ -613,7 +618,7 @@ const AppliedTargetTable = (props) => {
       }
     };
     loadData();
-  }, [type]);
+  }, [type, page, pageSize]);
 
   function createModel() {
     var title = "";
@@ -673,6 +678,10 @@ const AppliedTargetTable = (props) => {
             showSizeChanger: true,
             showTotal: (total) => `Tổng ${total} bản ghi.`,
             pageSizeOptions: [10, 25, 50],
+            onChange: (changed_page, page_size) => {
+              setPage(changed_page);
+              setPageSize(page_size);
+            },
           }}
         ></Table>
       </Modal>
@@ -690,4 +699,3 @@ const AppliedTargetTable = (props) => {
 };
 
 export { AddShiftAssignmentPage };
-

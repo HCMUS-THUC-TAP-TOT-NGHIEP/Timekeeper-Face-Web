@@ -89,6 +89,7 @@ const EditShiftAssignmentPage = (props) => {
       setShiftList(response.ResponseData.ShiftList);
       return;
     } catch (error) {
+      console.error(error);
       handleErrorOfRequest({ error, notify });
     } finally {
       setLoading(false);
@@ -607,6 +608,8 @@ const AppliedTargetTable = (props) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [reloading, setReloading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const showModal = () => {
     setOpen(true);
   };
@@ -643,7 +646,10 @@ const AppliedTargetTable = (props) => {
           setTotalDeparment(Total);
         }
         if (type == _TargeType.ByEmployee) {
-          const response = await GetManyEmployee();
+          const response = await GetManyEmployee("GET", {
+            page: page,
+            pageSize: pageSize,
+          });
           if (response.Status !== 1) {
             notify.error({
               message: "Truy vấn nhân viên không thành công",
@@ -656,13 +662,14 @@ const AppliedTargetTable = (props) => {
           setTotalEmployee(Total);
         }
       } catch (error) {
+        console.error(error);
         handleErrorOfRequest({ notify, error });
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, [type, reloading]);
+  }, [type, reloading, page, pageSize]);
 
   function createModel() {
     var title = "";
@@ -754,6 +761,10 @@ const AppliedTargetTable = (props) => {
               showSizeChanger: true,
               showTotal: (total) => `Tổng ${total} bản ghi.`,
               pageSizeOptions: [10, 25, 50],
+              onChange: (changed_page, page_size) => {
+                setPage(changed_page);
+                setPageSize(page_size);
+              },
             }}
           ></Table>
         </Space>

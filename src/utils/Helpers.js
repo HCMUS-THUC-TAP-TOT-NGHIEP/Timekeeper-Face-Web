@@ -1,5 +1,6 @@
 export const handleErrorOfRequest = ({ error, notify, ...rest }) => {
   try {
+    console.log(error);
     const errorList = ["ECONNABORTED", "ERR_NETWORK"];
     if (errorList.includes(error.code)) {
       notify.error({
@@ -10,10 +11,20 @@ export const handleErrorOfRequest = ({ error, notify, ...rest }) => {
       return;
     }
     if (error.response) {
-      notify.error({
-        message: <b>Thông báo</b>,
-        description: `[${error.response.statusText}]`,
-      });
+      switch (error.response.status) {
+        case 401:
+          notify.error({
+            message: <b>Thông báo</b>,
+            description: error.response.data.Description,
+          });
+          break;
+        default:
+          notify.error({
+            message: <b>Thông báo</b>,
+            description: error.response.data.Description,
+          });
+          break;
+      }
     } else if (error.request) {
       notify.error({
         message: <b>Thông báo</b>,

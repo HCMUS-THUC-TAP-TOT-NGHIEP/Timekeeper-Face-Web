@@ -82,7 +82,13 @@ function App() {
           />
           <Route
             path="/manage/account"
-            element={<AccountIndexPage notify={notify} loginRequired={true} />}
+            element={
+              <AccountIndexPage
+                notify={notify}
+                loginRequired={true}
+                admin_required={true}
+              />
+            }
           >
             <Route
               path=""
@@ -278,9 +284,6 @@ function App() {
 
 function CustomLayout(props) {
   const [collapsed, setCollapsed] = useState(false);
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
   return (
     <Layout
       style={{
@@ -298,7 +301,6 @@ function CustomLayout(props) {
         >
           <Layout.Content
             style={{
-              // margin: "24px 16px",
               margin: "24px 16px 0",
               overflow: "initial",
               padding: 24,

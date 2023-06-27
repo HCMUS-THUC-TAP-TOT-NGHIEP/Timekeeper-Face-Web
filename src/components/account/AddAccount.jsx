@@ -1,4 +1,4 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusCircleTwoTone, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
   Col,
@@ -7,19 +7,21 @@ import {
   Input,
   Modal,
   Row,
+  Select,
   Space,
   notification,
 } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Config from "../../constant";
 import { handleErrorOfRequest } from "../../utils/Helpers";
-import { AddNewUser } from "./api";
+import { AddNewUser, GetUserRoleList } from "./api";
 
 const AddAccount = (props) => {
   const { insertFE } = props;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [notify, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(false);
+  const [roleList, setRoleList] = useState([]);
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -55,13 +57,43 @@ const AddAccount = (props) => {
     }
   };
 
+  useEffect(() => {
+    if (!isModalOpen) {
+      setRoleList([]);
+      return;
+    }
+
+    loadData();
+  }, [isModalOpen]);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+      let response = await GetUserRoleList();
+      if (response.Status === 1) {
+        let { RoleList } = response.ResponseData;
+        setRoleList(RoleList);
+      }
+    } catch (error) {
+      handleErrorOfRequest({ error: error, notify: notify });
+    } finally {
+      setLoading(false);
+    }
+  }
+  const title = (
+    <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
+      <PlusCircleTwoTone />
+      Thêm người dùng
+    </Space>
+  );
+
   return (
     <Space>
       <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
         Thêm người dùng
       </Button>
       <Modal
-        title={<Space>Thêm người dùng</Space>}
+        title={title}
         open={isModalOpen}
         keyboard={true}
         closable={true}
@@ -69,7 +101,12 @@ const AddAccount = (props) => {
         onCancel={handleCancel}
         destroyOnClose={true}
       >
-        <Form preserve={false} layout="vertical" onFinish={insertAccountBE}>
+        <Form
+          preserve={false}
+          layout="vertical"
+          onFinish={insertAccountBE}
+          size="small"
+        >
           <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
@@ -171,6 +208,26 @@ const AddAccount = (props) => {
                 <Input.Password />
               </Form.Item>
             </Col>
+            <Col xs={24} md={24}>
+              <Form.Item
+                label="Phân quyền"
+                name="Role"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng chọn phân quyền",
+                  },
+                ]}
+              >
+                <Select
+                  options={roleList.map((role) => ({
+                    label: role.Description,
+                    value: role.Id,
+                  }))}
+                  loading={loading}
+                ></Select>
+              </Form.Item>
+            </Col>
             <Divider />
             <Col xs={24} md={24}>
               <Form.Item
@@ -188,20 +245,6 @@ const AddAccount = (props) => {
                 <Input.Password />
               </Form.Item>
             </Col>
-            {/* <Col xs={24} md={24}>
-            <Form.Item
-              label="Vai trò"
-              name="Role"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng chọn vai trò",
-                },
-              ]}
-            >
-              <Input.Password placeholder="Nhập Họ tên" />
-            </Form.Item>
-          </Col> */}
           </Row>
           <Form.Item>
             <Space direction="horizontal">
@@ -227,4 +270,3 @@ const AddAccount = (props) => {
 };
 
 export { AddAccount };
-

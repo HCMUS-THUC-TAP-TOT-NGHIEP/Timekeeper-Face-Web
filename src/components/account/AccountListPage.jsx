@@ -10,6 +10,7 @@ import {
   Table,
   Typography,
   notification,
+  theme,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";
@@ -24,6 +25,9 @@ import { AddAccount } from "./AddAccount";
 import { DeleteAccount } from "./DeleteAccount";
 import { EditAccount } from "./EditAccount";
 import { GetAccountList } from "./api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import Search from "antd/es/input/Search";
 
 export const AccountListPage = (props) => {
   const [form] = Form.useForm();
@@ -36,6 +40,12 @@ export const AccountListPage = (props) => {
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [reloading, setReloading] = useState(true);
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
+  const searchInputRef = useRef();
+
   useEffect(() => {
     document.title = "Danh mục người dùng";
   }, []);
@@ -43,10 +53,14 @@ export const AccountListPage = (props) => {
   useEffect(() => {
     async function loadData() {
       try {
+        let searchString = searchInputRef.current
+          ? searchInputRef.current.input.value
+          : "";
         setLoading(true);
         var response = await GetAccountList({
           Page: currentPage,
           PerPage: pageSize,
+          SearchString: searchString,
         });
         const { Status, ResponseData, Description } = response;
         if (Status === 1) {
@@ -70,7 +84,7 @@ export const AccountListPage = (props) => {
       }
     }
     loadData();
-  }, [currentPage, pageSize, notify]);
+  }, [currentPage, pageSize, notify, reloading]);
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -178,7 +192,7 @@ export const AccountListPage = (props) => {
     setAccountList(updatedList);
   };
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}
       <Row wrap={false} gutter={[16, 16]} align="middle">
         <Col flex="none">
@@ -201,11 +215,52 @@ export const AccountListPage = (props) => {
         </Col>
       </Row>
       <Content style={{ paddingTop: 20 }}>
+        <Row
+          wrap={true}
+          gutter={[16, 16]}
+          align="middle"
+          style={{ marginBottom: 10 }}
+        >
+          <Col flex="none" style={{ width: 300 }}>
+            <Search
+              allowClear
+              ref={searchInputRef}
+              onSearch={(value) => {
+                setReloading(!reloading);
+              }}
+              enterButton
+              placeholder="Tìm kiếm bảng username, email"
+            ></Search>
+          </Col>
+          <Col flex="auto" style={{ textAlign: "right" }}>
+            <Space wrap>
+              <Button
+                loading={loading}
+                onClick={() => setReloading(!reloading)}
+                style={{
+                  backgroundColor: "#ec5504",
+                  border: "1px solid #ec5504",
+                }}
+                type="primary"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faArrowsRotate}
+                    style={{ paddingRight: "8px" }}
+                  />
+                }
+              >
+                Tải lại
+              </Button>
+            </Space>
+          </Col>
+        </Row>
         <Table
+          // className="boxShadow0"
           loading={loading}
           bordered
-          scroll={{ x: 500 }}
+          // scroll={{ y: 700 }}
           dataSource={accountList}
+          width={1000}
           pagination={{
             position: ["bottomRight"],
             pageSize: pageSize,
@@ -215,11 +270,11 @@ export const AccountListPage = (props) => {
               setCurrentPage(page);
               setPageSize(pageSize);
             },
+            showTotal: (total) => `Tổng ${total} bản ghi.`,
+            showSizeChanger: true,
             pageSizeOptions: [10, 15, 20],
           }}
-          rowSelection={{
-            type: "checkbox",
-          }}
+          style={{ maxWidth: "100%" }}
         >
           <Column
             title="Username"
@@ -227,7 +282,7 @@ export const AccountListPage = (props) => {
             key="Username"
             sorter={(a, b) => compareString(a, b, "Username")}
             {...getColumnSearchProps("Username")}
-            width={100}
+            width={80}
           />
           <Column
             title="Email"
@@ -246,6 +301,15 @@ export const AccountListPage = (props) => {
             width={200}
           />
           <Column
+            title="Phân quyền"
+            dataIndex="RoleText"
+            key="Role"
+            sorter={(a, b) => compareString(a, b, "RoleText")}
+            // {...getColumnSearchProps("Name")}
+            width={200}
+          />
+
+          <Column
             title="Ngày tạo"
             dataIndex="CreatedAt"
             key="CreatedAt"
@@ -256,14 +320,12 @@ export const AccountListPage = (props) => {
             width={100}
           />
           <Column
+            align="center"
             key="Action"
             width={20}
             title=""
             render={(_, record) => (
               <Space size="small">
-                {/* <Tooltip title="Xem nhanh">
-                  <Button type="text" icon={<EyeOutlined />} />
-                </Tooltip> */}
                 <EditAccount
                   form={form}
                   account={record}

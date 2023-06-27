@@ -50,3 +50,26 @@ export const UpdateUser = async (req) => {
   });
   return response.data;
 };
+
+export const GetUserRoleList = async () => {
+  var access_token = localStorage.getItem("access_token");
+  var response = await AxiosInstance.get("user/role", {
+    headers: {
+      Authorization: "Bearer " + access_token,
+    },
+  });
+  return response.data;
+};
+
+export const CheckAuthorization = async ({ MenuName, Permissions }) => {
+  var response = await AxiosInstance.get("/user/authorization", {
+    params: {
+      Target: MenuName,
+      Permissions: Permissions || [],
+    },
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
+  return response.data;
+};

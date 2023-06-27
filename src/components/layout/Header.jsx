@@ -73,7 +73,8 @@ function MyHeader(props) {
       .then((response) => {
         const { Status, ResponseData } = response;
         if (Status === 1) {
-          setUserInfo(ResponseData);
+          let { User } = ResponseData;
+          setUserInfo(User);
           return;
         }
         navigate("/login");

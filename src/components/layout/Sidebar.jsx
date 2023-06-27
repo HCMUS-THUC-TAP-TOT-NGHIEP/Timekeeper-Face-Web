@@ -103,7 +103,7 @@ function MySidebar(props) {
           {
             key: "group1",
             icon: <FontAwesomeIcon icon={faUniversalAccess} />,
-            label: <NavLink to="/manage/account">Người dùng</NavLink>,
+            label: <NavLink to="/manage/account">Người sử dụng</NavLink>,
           },
         ]}
       />

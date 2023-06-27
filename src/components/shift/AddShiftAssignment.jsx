@@ -45,9 +45,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
   const [assignmentTypeList, setAssignmentTypeList] = useState([]);
   const [shiftList, setShiftList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [assignment, setAssignment] = useState({});
   const [shiftDetail, setShiftDetail] = useState({});
-  const [editable, setEditable] = useState(props.editable || false);
   const [appliedDepartmentList, setAppliedDepartmentList] = useState([]);
   const [appliedEmployeeList, setAppliedEmployeeList] = useState([]);
   const [assignmentType, setAssignmentType] = useState(_TargeType.ByEmployee);
@@ -60,7 +58,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
   async function loadData() {
     try {
       let response = await GetAssignmentType();
-      if (response.Status == 1) {
+      if (response.Status === 1) {
         setAssignmentTypeList(response.ResponseData);
       } else {
         notify.error({
@@ -83,7 +81,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
   const onAssigningShift = async (values) => {
     try {
       setProcessing(true);
-      if (assignmentType == _TargeType.ByEmployee) {
+      if (assignmentType === _TargeType.ByEmployee) {
         values.EmployeeList = (appliedEmployeeList || []).map((rec) => rec.Id);
       } else {
         values.DepartmentList = (appliedDepartmentList || []).map(
@@ -223,7 +221,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
                       .includes(input.toLowerCase());
                   }}
                   onChange={(value, option) => {
-                    var shift = shiftList.find((s) => s.Id == value);
+                    var shift = shiftList.find((s) => s.Id === value);
                     setShiftDetail(shift);
                   }}
                   options={(shiftList || []).map((ob) => ({
@@ -453,12 +451,12 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
                   <Table
                     bordered
                     columns={
-                      assignmentType == _TargeType.ByEmployee
+                      assignmentType === _TargeType.ByEmployee
                         ? employeeColumns
                         : departmentColumns
                     }
                     dataSource={
-                      assignmentType == _TargeType.ByEmployee
+                      assignmentType === _TargeType.ByEmployee
                         ? appliedEmployeeList
                         : appliedDepartmentList
                     }
@@ -469,7 +467,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
                     }}
                     pagination={{
                       total:
-                        assignmentType == _TargeType.ByEmployee
+                        assignmentType === _TargeType.ByEmployee
                           ? appliedEmployeeList.length
                           : appliedDepartmentList.length,
                       showSizeChanger: true,
@@ -580,7 +578,7 @@ const AppliedTargetTable = (props) => {
     const loadData = async () => {
       try {
         setLoading(true);
-        if (type == _TargeType.ByDepartment) {
+        if (type === _TargeType.ByDepartment) {
           const response = await GetDepartmentList();
           if (response.Status !== 1) {
             notify.error({
@@ -593,7 +591,7 @@ const AppliedTargetTable = (props) => {
           setDepartmentList(DepartmentList);
           setTotalDeparment(Total);
         }
-        if (type == _TargeType.ByEmployee) {
+        if (type === _TargeType.ByEmployee) {
           const response = await GetManyEmployee();
           if (response.Status !== 1) {
             notify.error({
@@ -621,7 +619,7 @@ const AppliedTargetTable = (props) => {
     var dataSource = [];
     var total = 0;
     var selectionObject = {};
-    if (type == _TargeType.ByEmployee) {
+    if (type === _TargeType.ByEmployee) {
       title = "Chọn nhân viên";
       columns = employeeColumns;
       dataSource = employeeList;
@@ -633,7 +631,7 @@ const AppliedTargetTable = (props) => {
         },
         defaultSelectedRowKeys: appliedEmployeeList.map((x) => x.Id),
       };
-    } else if (type == _TargeType.ByDepartment) {
+    } else if (type === _TargeType.ByDepartment) {
       title = "Chọn phòng ban";
       columns = departmentColumns;
       dataSource = deparmentList;
@@ -690,4 +688,3 @@ const AppliedTargetTable = (props) => {
 };
 
 export { AddShiftAssignmentPage };
-

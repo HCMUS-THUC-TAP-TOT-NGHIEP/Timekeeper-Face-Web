@@ -1,4 +1,3 @@
-import { FilterFilled, SearchOutlined } from "@ant-design/icons";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,7 +5,6 @@ import {
   Button,
   Col,
   Form,
-  Input,
   Row,
   Space,
   Table,
@@ -18,7 +16,6 @@ import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
 import React, { useEffect, useRef, useState } from "react";
-import Highlighter from "react-highlight-words";
 import { Link, NavLink } from "react-router-dom";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
@@ -41,10 +38,6 @@ export const AccountListPage = (props) => {
   const [pageSize, setPageSize] = useState(10);
   const [reloading, setReloading] = useState(true);
   const searchInputRef = useRef();
-
-  useEffect(() => {
-    document.title = "Danh mục người dùng";
-  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -89,85 +82,85 @@ export const AccountListPage = (props) => {
     clearFilters();
     setSearchText("");
   };
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-      close,
-    }) => (
-      <div
-        style={{
-          padding: 8,
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <Input
-          ref={searchInput}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{
-            marginBottom: 8,
-            display: "block",
-          }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-          >
-            Tìm kiếm
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Đặt lại
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <FilterFilled
-        style={{
-          color: filtered ? "#1890ff" : undefined,
-        }}
-      />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(
-          () => (searchInput.current ? searchInput.current.input : undefined),
-          100
-        );
-      }
-    },
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{
-            backgroundColor: "#ffc069",
-            padding: 0,
-          }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ""}
-        />
-      ) : (
-        text
-      ),
-  });
+  // const getColumnSearchProps = (dataIndex) => ({
+  //   filterDropdown: ({
+  //     setSelectedKeys,
+  //     selectedKeys,
+  //     confirm,
+  //     clearFilters,
+  //     close,
+  //   }) => (
+  //     <div
+  //       style={{
+  //         padding: 8,
+  //       }}
+  //       onKeyDown={(e) => e.stopPropagation()}
+  //     >
+  //       <Input
+  //         ref={searchInput}
+  //         value={selectedKeys[0]}
+  //         onChange={(e) =>
+  //           setSelectedKeys(e.target.value ? [e.target.value] : [])
+  //         }
+  //         onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+  //         style={{
+  //           marginBottom: 8,
+  //           display: "block",
+  //         }}
+  //       />
+  //       <Space>
+  //         <Button
+  //           type="primary"
+  //           onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+  //           icon={<SearchOutlined />}
+  //           size="small"
+  //         >
+  //           Tìm kiếm
+  //         </Button>
+  //         <Button
+  //           onClick={() => clearFilters && handleReset(clearFilters)}
+  //           size="small"
+  //           style={{
+  //             width: 90,
+  //           }}
+  //         >
+  //           Đặt lại
+  //         </Button>
+  //       </Space>
+  //     </div>
+  //   ),
+  //   filterIcon: (filtered) => (
+  //     <FilterFilled
+  //       style={{
+  //         color: filtered ? "#1890ff" : undefined,
+  //       }}
+  //     />
+  //   ),
+  //   onFilter: (value, record) =>
+  //     record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+  //   onFilterDropdownOpenChange: (visible) => {
+  //     if (visible) {
+  //       setTimeout(
+  //         () => (searchInput.current ? searchInput.current.input : undefined),
+  //         100
+  //       );
+  //     }
+  //   },
+  //   render: (text) =>
+  //     searchedColumn === dataIndex ? (
+  //       <Highlighter
+  //         highlightStyle={{
+  //           backgroundColor: "#ffc069",
+  //           padding: 0,
+  //         }}
+  //         searchWords={[searchText]}
+  //         autoEscape
+  //         textToHighlight={text ? text.toString() : ""}
+  //       />
+  //     ) : (
+  //       text
+  //     ),
+  // });
   const insertAccount = (value) => {
     if (accountList.length < pageSize) setAccountList([...accountList, value]);
   };
@@ -193,14 +186,14 @@ export const AccountListPage = (props) => {
         <Col flex="none">
           <Space direction="vertical">
             <Typography.Title level={2} style={{ marginTop: 0 }}>
-              Danh sách người dùng
+              Danh mục người dùng
             </Typography.Title>
             <Breadcrumb>
               <Breadcrumb.Item>
                 <Link to="">Dashboard</Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <NavLink to="/manage/account">Quản lý người dùng</NavLink>
+                <NavLink to="/manage/account">Danh mục người dùng</NavLink>
               </Breadcrumb.Item>
             </Breadcrumb>
           </Space>
@@ -209,14 +202,14 @@ export const AccountListPage = (props) => {
           <AddAccount insertFE={insertAccount} />
         </Col>
       </Row>
-      <Content style={{ paddingTop: 20 }}>
+      <Content style={{ paddingTop: 10 }}>
         <Row
           wrap={true}
           gutter={[16, 16]}
           align="middle"
-          style={{ marginBottom: 10 }}
+          style={{ marginBottom: 16 }}
         >
-          <Col flex="none" style={{ width: 300 }}>
+          <Col flex="none" style={{ width: 400 }}>
             <Search
               allowClear
               ref={searchInputRef}
@@ -224,7 +217,7 @@ export const AccountListPage = (props) => {
                 setReloading(!reloading);
               }}
               enterButton
-              placeholder="Tìm kiếm bảng username, email"
+              placeholder="Tìm kiếm bằng username, email"
             ></Search>
           </Col>
           <Col flex="auto" style={{ textAlign: "right" }}>
@@ -275,7 +268,7 @@ export const AccountListPage = (props) => {
             dataIndex="Username"
             key="Username"
             sorter={(a, b) => compareString(a, b, "Username")}
-            {...getColumnSearchProps("Username")}
+            // {...getColumnSearchProps("Username")}
             width={100}
           />
           <Column
@@ -283,7 +276,7 @@ export const AccountListPage = (props) => {
             dataIndex="EmailAddress"
             key="EmailAddress"
             sorter={(a, b) => compareString(a, b, "EmailAddress")}
-            {...getColumnSearchProps("EmailAddress")}
+            // {...getColumnSearchProps("EmailAddress")}
             width={300}
           />
           <Column
@@ -291,7 +284,7 @@ export const AccountListPage = (props) => {
             dataIndex="Name"
             key="Name"
             sorter={(a, b) => compareString(a, b, "Name")}
-            {...getColumnSearchProps("Name")}
+            // {...getColumnSearchProps("Name")}
             width={200}
           />
           <Column
@@ -299,7 +292,6 @@ export const AccountListPage = (props) => {
             dataIndex="RoleText"
             key="Role"
             sorter={(a, b) => compareString(a, b, "RoleText")}
-            // {...getColumnSearchProps("Name")}
             width={200}
           />
 

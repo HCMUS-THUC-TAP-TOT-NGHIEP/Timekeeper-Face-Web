@@ -152,6 +152,7 @@ const DepartmentList = (props) => {
         </Col>
       </Row>
       <Table
+        className="boxShadow0 rounded"
         loading={loading}
         bordered
         rowKey="Id"

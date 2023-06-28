@@ -254,7 +254,7 @@ export const AccountListPage = (props) => {
               </Col>
             </Row>
             <Table
-              className="boxShadow0"
+              className="boxShadow0 rounded"
               loading={loading}
               bordered
               scroll={{ y: 700 }}

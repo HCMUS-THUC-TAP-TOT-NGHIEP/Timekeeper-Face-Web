@@ -449,6 +449,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
                     ]}
                   />
                   <Table
+                    className="boxShadow0 rounded"
                     bordered
                     columns={
                       assignmentType === _TargeType.ByEmployee

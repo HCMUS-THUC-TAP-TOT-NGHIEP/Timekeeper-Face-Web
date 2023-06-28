@@ -185,6 +185,7 @@ export const AllEmployeesPage = (props) => {
               </Col>
             </Row>
             <Table
+              className="boxShadow0 rounded"
               bordered
               loading={loading}
               scroll={{

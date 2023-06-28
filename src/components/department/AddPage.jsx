@@ -341,6 +341,7 @@ export const EmployeeSelectionComponent = ({
             </Col>
           </Row>
           <Table
+            className="boxShadow0 rounded"
             loading={loading}
             scroll={{
               x: 700,

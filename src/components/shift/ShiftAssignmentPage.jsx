@@ -500,6 +500,7 @@ const EditShiftAssignmentPage = (props) => {
                       ]}
                     />
                     <Table
+                      className="boxShadow0 rounded"
                       bordered
                       columns={
                         assignmentType == _TargeType.ByEmployee
@@ -739,6 +740,7 @@ const AppliedTargetTable = (props) => {
             </Col>
           </Row>
           <Table
+            className="boxShadow0 rounded"
             size="small"
             loading={loading}
             columns={columns}
@@ -1002,6 +1004,7 @@ const OnlyViewPage = ({
       <Form.Item wrapperCol={24}>
         <Space direction="vertical" style={{ maxWidth: "100%" }}>
           <Table
+            className="boxShadow0 rounded"
             bordered
             columns={
               type == _TargeType.ByEmployee

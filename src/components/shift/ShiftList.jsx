@@ -202,6 +202,7 @@ const ShiftList = function ({ notify, ...rest }) {
       </Row>
       <Content>
         <Table
+          className="boxShadow0 rounded"
           loading={loading}
           bordered
           scroll={{
@@ -368,4 +369,3 @@ const ShiftList = function ({ notify, ...rest }) {
 };
 
 export { ShiftList };
-

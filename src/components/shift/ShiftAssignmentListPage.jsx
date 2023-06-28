@@ -122,6 +122,7 @@ const ShiftAssignmentListPage = (props) => {
       </Row>
       <Content>
         <Table
+          className="boxShadow0 rounded"
           loading={loading}
           scroll={{
             x: 1500,

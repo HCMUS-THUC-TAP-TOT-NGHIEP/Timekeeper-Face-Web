@@ -29,7 +29,6 @@ let defaultCols = [
     dataIndex: "Department",
     width: 200,
   },
-
 ];
 
 const CustomStatisticsComponent = ({
@@ -81,7 +80,7 @@ const CustomStatisticsComponent = ({
         width={900}
       >
         <Table
-          bordered
+          className="boxShadow0 rounded"
           rootClassName=""
           columns={[...defaultCols, ...cols]}
           dataSource={dataSrc || []}

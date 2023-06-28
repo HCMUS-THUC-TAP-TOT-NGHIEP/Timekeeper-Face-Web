@@ -238,6 +238,7 @@ const ShiftAssignmentDetail = (props) => {
         />
       ) : assignment.TargetType === _TargeType.ByDepartment ? (
         <Table
+          className="boxShadow0 rounded"
           rowKey="Id"
           columns={[
             {

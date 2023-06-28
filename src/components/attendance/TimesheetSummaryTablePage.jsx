@@ -113,7 +113,7 @@ const TimesheetSummaryTablePage = ({ notify, loginRequired, ...rest }) => {
       <Content>
         <Table
           loading={loading}
-          className=""
+          className="boxShadow0 rounded"
           bordered
           scroll={{
             x: "calc(700px + 50%)",
@@ -175,7 +175,6 @@ const DeleteReportComponent = ({ notify, report, deleteReportFE, ...rest }) => {
       setLoading(true);
     } catch (error) {
       handleErrorOfRequest({ notify, error });
-
     } finally {
       setLoading(false);
     }
@@ -239,7 +238,6 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
       setLoading(true);
     } catch (error) {
       handleErrorOfRequest({ notify, error });
-
     } finally {
       setLoading(false);
     }
@@ -334,4 +332,3 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
 };
 
 export { TimesheetSummaryTablePage };
-

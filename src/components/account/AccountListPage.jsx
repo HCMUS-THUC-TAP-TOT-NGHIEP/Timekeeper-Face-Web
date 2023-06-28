@@ -187,32 +187,32 @@ export const AccountListPage = (props) => {
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}
-      {UserPermission && UserPermission.read ? (
-        <>
-          <Row wrap={false} gutter={[16, 16]} align="middle">
-            <Col flex="none">
-              <Space direction="vertical">
-                <Typography.Title level={2} style={{ marginTop: 0 }}>
-                  Danh mục người dùng
-                </Typography.Title>
-                <Breadcrumb>
-                  <Breadcrumb.Item>
-                    <Link to="">Dashboard</Link>
-                  </Breadcrumb.Item>
-                  <Breadcrumb.Item>
-                    <NavLink to="/manage/account">Danh mục người dùng</NavLink>
-                  </Breadcrumb.Item>
-                </Breadcrumb>
-              </Space>
-            </Col>
-            <Col flex="auto" style={{ textAlign: "right" }}>
-              {UserPermission.create ? (
-                <AddAccount insertFE={insertAccount} />
-              ) : (
-                <></>
-              )}
-            </Col>
-          </Row>
+      <Row wrap={false} gutter={[16, 16]} align="middle">
+        <Col flex="none">
+          <Space direction="vertical">
+            <Typography.Title level={2} style={{ marginTop: 0 }}>
+              Danh mục người dùng
+            </Typography.Title>
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                <Link to="">Dashboard</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <NavLink to="/manage/account">Danh mục người dùng</NavLink>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Space>
+        </Col>
+        <Col flex="auto" style={{ textAlign: "right" }}>
+          {UserPermission && UserPermission.create ? (
+            <AddAccount insertFE={insertAccount} />
+          ) : (
+            <></>
+          )}
+        </Col>
+      </Row>
+      {UserPermission ? (
+        UserPermission.read ? (
           <Content style={{ paddingTop: 10 }}>
             <Row
               wrap={true}
@@ -347,11 +347,13 @@ export const AccountListPage = (props) => {
               />
             </Table>
           </Content>
-        </>
+        ) : (
+          <Typography.Title level={4}>
+            Tài khoản không được phép truy cập đến mục này.
+          </Typography.Title>
+        )
       ) : (
-        <Typography.Title level={2}>
-          Tài khoản không được phép truy cập đến mục này.
-        </Typography.Title>
+        <></>
       )}
     </Space>
   );

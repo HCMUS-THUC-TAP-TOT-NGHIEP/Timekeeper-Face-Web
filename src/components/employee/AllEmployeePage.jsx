@@ -1,4 +1,4 @@
-import { DeleteOutlined, EditTwoTone, EyeTwoTone } from "@ant-design/icons";
+import { DeleteOutlined, EditTwoTone } from "@ant-design/icons";
 import { faArrowsRotate, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,19 +13,19 @@ import {
   Typography,
   notification,
 } from "antd";
+import { Content } from "antd/es/layout/layout";
+import Search from "antd/es/transfer/search";
 import dayjs from "dayjs";
 import React, { useEffect, useRef, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { defaultColumns } from ".";
+import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { ImportDataComponent } from "./ImportEmployeeList";
 import { DeleteOneEmployee, GetManyEmployee } from "./api";
 import "./style.css";
-import { defaultColumns } from ".";
-import { handleErrorOfRequest } from "../../utils/Helpers";
-import { Content } from "antd/es/layout/layout";
-import Search from "antd/es/transfer/search";
-import { useAuthState } from "../../Contexts/AuthContext";
 
 export const AllEmployeesPage = (props) => {
   const [page, setPage] = useState(1);
@@ -41,7 +41,9 @@ export const AllEmployeesPage = (props) => {
   const searchInputRef = useRef();
 
   useEffect(() => {
-    if (!EmployeePermission || !EmployeePermission.read) return;
+    if (!EmployeePermission || !EmployeePermission.read) {
+      return;
+    }
     const loadData = async () => {
       try {
         let searchString = searchInputRef.current
@@ -98,46 +100,46 @@ export const AllEmployeesPage = (props) => {
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}
-      {EmployeePermission && EmployeePermission.read ? (
-        <>
-          <Row gutter={[16, 16]} wrap={false} align="middle">
-            <Col flex="none">
-              <Space direction="vertical">
-                <Typography.Title level={2} style={{ marginTop: 0 }}>
-                  Danh sách nhân viên
-                </Typography.Title>
-                <Breadcrumb>
-                  <Breadcrumb.Item>
-                    <Link to="/">Dashboard</Link>
-                  </Breadcrumb.Item>
-                  <Breadcrumb.Item>
-                    <Link to="/employee/all">Nhân viên</Link>
-                  </Breadcrumb.Item>
-                </Breadcrumb>
-              </Space>
-            </Col>
-            <Col flex="auto" style={{ textAlign: "right" }}>
-              {EmployeePermission.create ? (
-                <Space wrap>
-                  <Button
-                    type="primary"
-                    icon={
-                      <FontAwesomeIcon
-                        icon={faPlus}
-                        style={{ paddingRight: "8px" }}
-                      />
-                    }
-                    onClick={() => navigate("/employee/add")}
-                  >
-                    Thêm nhân viên mới
-                  </Button>
-                  <ImportDataComponent notify={notify} />
-                </Space>
-              ) : (
-                <></>
-              )}
-            </Col>
-          </Row>
+      <Row gutter={[16, 16]} wrap={false} align="middle">
+        <Col flex="none">
+          <Space direction="vertical">
+            <Typography.Title level={2} style={{ marginTop: 0 }}>
+              Danh sách nhân viên
+            </Typography.Title>
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                <Link to="/">Dashboard</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <Link to="/employee/all">Nhân viên</Link>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Space>
+        </Col>
+        <Col flex="auto" style={{ textAlign: "right" }}>
+          {EmployeePermission && EmployeePermission.create ? (
+            <Space wrap>
+              <Button
+                type="primary"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faPlus}
+                    style={{ paddingRight: "8px" }}
+                  />
+                }
+                onClick={() => navigate("/employee/add")}
+              >
+                Thêm nhân viên mới
+              </Button>
+              <ImportDataComponent notify={notify} />
+            </Space>
+          ) : (
+            <></>
+          )}
+        </Col>
+      </Row>
+      {EmployeePermission ? (
+        EmployeePermission.read ? (
           <Content style={{ paddingTop: 10 }}>
             <Row
               wrap={true}
@@ -200,11 +202,13 @@ export const AllEmployeesPage = (props) => {
               }}
             />
           </Content>
-        </>
+        ) : (
+          <Typography.Title level={2}>
+            Tài khoản không được phép truy cập đến mục này.
+          </Typography.Title>
+        )
       ) : (
-        <Typography.Title level={2}>
-          Tài khoản không được phép truy cập đến mục này.
-        </Typography.Title>
+        <></>
       )}
     </Space>
   );

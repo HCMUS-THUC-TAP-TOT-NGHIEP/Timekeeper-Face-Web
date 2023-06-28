@@ -301,7 +301,7 @@ function CustomLayout(props) {
         >
           <Layout.Content
             style={{
-              margin: "24px 16px 0",
+              margin: "0 16px",
               overflow: "initial",
               padding: 24,
               minHeight: 280,

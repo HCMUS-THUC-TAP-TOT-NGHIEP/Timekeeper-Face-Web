@@ -1,4 +1,6 @@
 import { FilterFilled, SearchOutlined } from "@ant-design/icons";
+import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
@@ -10,8 +12,8 @@ import {
   Table,
   Typography,
   notification,
-  theme,
 } from "antd";
+import Search from "antd/es/input/Search";
 import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
@@ -25,9 +27,6 @@ import { AddAccount } from "./AddAccount";
 import { DeleteAccount } from "./DeleteAccount";
 import { EditAccount } from "./EditAccount";
 import { GetAccountList } from "./api";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
-import Search from "antd/es/input/Search";
 
 export const AccountListPage = (props) => {
   const [form] = Form.useForm();
@@ -41,9 +40,6 @@ export const AccountListPage = (props) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [reloading, setReloading] = useState(true);
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
   const searchInputRef = useRef();
 
   useEffect(() => {
@@ -70,7 +66,6 @@ export const AccountListPage = (props) => {
           }
           setAccountList(AccountList);
           setTotal(Total);
-          // setTotalPages(TotalPages);
           return;
         }
         notify.error({
@@ -255,10 +250,10 @@ export const AccountListPage = (props) => {
           </Col>
         </Row>
         <Table
-          // className="boxShadow0"
+          className="boxShadow0"
           loading={loading}
           bordered
-          // scroll={{ y: 700 }}
+          scroll={{ y: 700 }}
           dataSource={accountList}
           width={1000}
           pagination={{
@@ -274,7 +269,6 @@ export const AccountListPage = (props) => {
             showSizeChanger: true,
             pageSizeOptions: [10, 15, 20],
           }}
-          style={{ maxWidth: "100%" }}
         >
           <Column
             title="Username"
@@ -282,7 +276,7 @@ export const AccountListPage = (props) => {
             key="Username"
             sorter={(a, b) => compareString(a, b, "Username")}
             {...getColumnSearchProps("Username")}
-            width={80}
+            width={100}
           />
           <Column
             title="Email"
@@ -322,7 +316,7 @@ export const AccountListPage = (props) => {
           <Column
             align="center"
             key="Action"
-            width={20}
+            width={80}
             title=""
             render={(_, record) => (
               <Space size="small">
@@ -337,6 +331,7 @@ export const AccountListPage = (props) => {
                 />
               </Space>
             )}
+            fixed="right"
           />
         </Table>
       </Content>

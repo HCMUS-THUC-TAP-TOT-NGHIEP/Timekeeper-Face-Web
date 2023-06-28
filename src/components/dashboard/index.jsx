@@ -10,6 +10,8 @@ import {
   Statistic,
   Typography,
 } from "antd";
+import dayjs from "dayjs";
+import "dayjs/locale/vi";
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import CountUp from "react-countup";
@@ -18,10 +20,8 @@ import { useAuthState } from "../../Contexts/AuthContext";
 import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetDepartmentList } from "../department/api";
 import { GetManyEmployee } from "../employee/api";
-import "./style.css";
-import dayjs from "dayjs";
-import "dayjs/locale/vi";
 import { GetEarlyLateCount, GetOffCount } from "./api";
+import "./style.css";
 
 const formatter = (value) => <CountUp end={value} separator="," />;
 

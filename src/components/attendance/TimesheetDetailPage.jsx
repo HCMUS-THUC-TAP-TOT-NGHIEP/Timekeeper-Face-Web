@@ -379,7 +379,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           </Space>
         </Col>
       </Row>
-      <Row wrap gutter={[16, 16]}>
+      <Row wrap gutter={[24, 24]}>
         <Col flex="none">
           <Breadcrumb>
             <Breadcrumb.Item>
@@ -409,7 +409,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           </Space>
         </Col>
       </Row>
-      <Row wrap gutter={[16, 16]} align="middle">
+      <Row wrap gutter={[24, 24]} align="middle">
         <Col span={6}>
           <CustomStatisticsComponent
             key="late-early-employee"

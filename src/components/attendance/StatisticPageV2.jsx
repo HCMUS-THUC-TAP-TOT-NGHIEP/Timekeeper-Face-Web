@@ -1,8 +1,5 @@
 import { SearchOutlined } from "@ant-design/icons";
-import {
-  faArrowsRotate,
-  faFileExport,
-} from "@fortawesome/free-solid-svg-icons";
+import { faFileExport } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
@@ -22,6 +19,7 @@ import {
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import { Content } from "antd/es/layout/layout";
+import useNotification from "antd/es/notification/useNotification";
 import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
@@ -38,7 +36,6 @@ import {
   GetAllCheckinMethods,
   GetStatisticV2,
 } from "./api";
-import useNotification from "antd/es/notification/useNotification";
 dayjs.extend(isSameOrBefore);
 
 const col1 = {
@@ -159,7 +156,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="small">
-      <Row wrap={false} align="middle">
+      <Row wrap={false} align="middle" gutter={[24, 24]}>
         <Col flex="none">
           <Space direction="vertical" size="small">
             <Typography.Title level={2} style={{ marginTop: 0 }}>
@@ -185,9 +182,14 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
         </Col>
       </Row>
       <Content style={{ paddingTop: 10 }}>
-        <Row wrap align="middle" style={{ marginBottom: 16 }}>
+        <Row wrap align="middle" style={{ marginBottom: 16 }} gutter={[24, 24]}>
           <Col flex="none">
-            <Form layout="inline" onFinish={loadStatistic} form={form}>
+            <Form
+              layout="inline"
+              onFinish={loadStatistic}
+              form={form}
+              wrapperCol={10}
+            >
               <Space wrap>
                 <Form.Item
                   name="DateRange"
@@ -200,17 +202,17 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
                     allowClear={true}
                   />
                 </Form.Item>
-                <Form.Item name="Keyword" wrapperCol={5}>
-                  <Input
-                    placeholder="Tìm kiếm bằng mã nhân viên, nhân viên"
-                    style={{ width: 300, maxWidth: "100%" }}
-                  />
-                </Form.Item>
                 <Form.Item name="Method">
                   <CheckinMethodSelection
                     style={{
                       width: "200px",
                     }}
+                  />
+                </Form.Item>
+                <Form.Item name="Keyword">
+                  <Input
+                    placeholder="Tìm kiếm bằng mã nhân viên, nhân viên"
+                    style={{ width: 300, maxWidth: "100%" }}
                   />
                 </Form.Item>
                 <Form.Item wrapperCol={3}>
@@ -340,13 +342,7 @@ const CheckinMethodSelection = (props) => {
         let response = await GetAllCheckinMethods();
         if (response.Status === 1) {
           let { CheckinMethodList } = response.ResponseData;
-          setCheckinMethodList([
-            // {
-            //   Description: "Tất cả",
-            //   Id: 0,
-            // },
-            ...CheckinMethodList,
-          ]);
+          setCheckinMethodList([...CheckinMethodList]);
           setCheckinMethodList(CheckinMethodList);
           return;
         }
@@ -369,9 +365,12 @@ const CheckinMethodSelection = (props) => {
           key: method.Id,
         }))}
         loading={loading}
-        {...props}
+        defaultValue={checkinMethodList.map((element) => element.Id)}
         mode="multiple"
         placeholder="Phương thức"
+        showArrow
+        style={{ width: 300, maxWidth: "100%" }}
+        {...props}
       ></Select>
     </>
   );

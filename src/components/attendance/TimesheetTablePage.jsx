@@ -125,11 +125,8 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
           <AddReportComponent notify={notify} insertReportFE={insertReportFE} />
         </Col>
       </Row>
-      <Content
-        style={{ background: colorBgContainer, padding: 20 }}
-        className="boxShadow0 rounded"
-      >
-        <Row style={{ marginBottom: 20 }} wrap>
+      <Content style={{ paddingTop: 10 }}>
+        <Row style={{ marginBottom: 16 }} wrap>
           <Col flex="none">
             <Search
               placeholder="Tìm kiếm"
@@ -137,6 +134,7 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
               allowClear={true}
               loading={searching}
               enterButton
+              style={{ width: 400, maxWidth: "100%" }}
             />
           </Col>
           <Col flex="auto" style={{ textAlign: "right" }}>
@@ -157,8 +155,8 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
           </Col>
         </Row>
         <Table
+          className="boxShadow0 rounded"
           loading={loading}
-          className=""
           bordered
           scroll={{
             x: "calc(700px + 50%)",
@@ -188,7 +186,8 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
           <Column
             key="DateRange"
             title="Thời gian"
-            width={120}
+            align="center"
+            width={80}
             render={(_, record) =>
               `${dayjs(record.DateFrom).format(Config.DateFormat)} - ${dayjs(
                 record.DateTo
@@ -198,7 +197,7 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
           <Column
             key="Name"
             title="Tên bảng chấm công"
-            width={250}
+            width={180}
             render={(_, record) => (
               <NavLink
                 to={`/timesheet/timekeeping/timesheet-detail/${record.Id}`}
@@ -221,7 +220,7 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
             key="LockedStatus"
             title="Trạng thái"
             dataIndex="LockedStatus"
-            width={100}
+            width={80}
             render={(_, record) => {
               return record.LockedStatus ? (
                 <Tag
@@ -247,11 +246,13 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
                 </Tag>
               );
             }}
+            align="center"
           />
           <Column
             key="Action"
             title=""
             width={40}
+            align="center"
             render={(_, record, index) => {
               return (
                 <DeleteReportComponent
@@ -261,6 +262,7 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
                 />
               );
             }}
+            fixed="right"
           />
         </Table>
       </Content>
@@ -428,6 +430,39 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
       Modal.destroyAll();
     }
   };
+  const changeDateRangeSelect = (value) => {
+    switch (value) {
+      case 0:
+        form.setFieldValue("DateRange", [dayjs().startOf("month"), dayjs()]);
+        form.setFieldsValue({
+          Name: `Bảng chấm công từ ngày ${dayjs()
+            .startOf("month")
+            .format(Config.DateFormat)} đến ngày ${dayjs().format(
+            Config.DateFormat
+          )}`,
+        });
+
+        break;
+      case 1:
+        form.setFieldValue("DateRange", [
+          dayjs().subtract(1, "month").startOf("month"),
+          dayjs().subtract(1, "month").endOf("month"),
+        ]);
+        form.setFieldsValue({
+          Name: `Bảng chấm công từ ngày ${dayjs()
+            .subtract(1, "month")
+            .startOf("month")
+            .format(Config.DateFormat)} đến ngày ${dayjs()
+            .subtract(1, "month")
+            .endOf("month")
+            .format(Config.DateFormat)}`,
+        });
+
+        break;
+      default:
+        break;
+    }
+  };
   const title = (
     <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
       <FontAwesomeIcon icon={faFileCirclePlus} opacity={1} fillOpacity={0.4} />
@@ -497,16 +532,6 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
                 treeNodeLabelProp="title"
                 treeDefaultExpandAll={true}
               ></TreeSelect>
-              {/* <Select
-                mode="multiple"
-                // options={(optionList || []).map((option) => ({
-                //   value: option.Id,
-                //   label: option.Name,
-                // }))}
-                showSearch={true}
-                loading={loading}
-                
-              /> */}
             </Form.Item>
             <Form.Item
               label="Tên bảng chấm công"
@@ -518,7 +543,7 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
             </Form.Item>
             <Form.Item label="Thời gian" key="Time" required>
               <Form.Item key="select">
-                <Select defaultValue={0}>
+                <Select defaultValue={0} onChange={changeDateRangeSelect}>
                   <Select.Option key={0} value={0}>
                     Tháng này
                   </Select.Option>

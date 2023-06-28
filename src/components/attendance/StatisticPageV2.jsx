@@ -2,7 +2,6 @@ import { SearchOutlined } from "@ant-design/icons";
 import {
   faArrowsRotate,
   faFileExport,
-  faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,6 +13,7 @@ import {
   Image,
   Input,
   Row,
+  Select,
   Space,
   Table,
   Tooltip,
@@ -33,7 +33,12 @@ import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
 import { handleErrorOfRequest } from "../../utils/Helpers";
 import { ImportTimekeeperData } from "./ImportComponent";
-import { ExportAttendanceStatisticBE, GetStatisticV2 } from "./api";
+import {
+  ExportAttendanceStatisticBE,
+  GetAllCheckinMethods,
+  GetStatisticV2,
+} from "./api";
+import useNotification from "antd/es/notification/useNotification";
 dayjs.extend(isSameOrBefore);
 
 const col1 = {
@@ -92,6 +97,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
         DateFrom: dateFrom,
         DateTo: dateTo,
         Keyword,
+        MethodList: values.Method,
         Page: page,
         PageSize: pageSize,
       });
@@ -101,10 +107,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
         setTotal(ResponseData.Total);
         return;
       }
-      notify.error({
-        message: "",
-        description: response.Description,
-      });
+      throw new Error(response.Description);
     } catch (error) {
       handleErrorOfRequest({ notify, error });
     } finally {
@@ -155,10 +158,10 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space direction="vertical" style={{ width: "100%" }} size="small">
       <Row wrap={false} align="middle">
         <Col flex="none">
-          <Space direction="vertical">
+          <Space direction="vertical" size="small">
             <Typography.Title level={2} style={{ marginTop: 0 }}>
               Dữ liệu chấm công
             </Typography.Title>
@@ -169,91 +172,82 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
               <Breadcrumb.Item>
                 <NavLink to="">Chấm công</NavLink>
               </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <NavLink to="/timesheet/timekeeper_v2">Dữ liệu</NavLink>
+              </Breadcrumb.Item>
             </Breadcrumb>
           </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
           <Space wrap>
-            <Button
-              loading={loading}
-              onClick={() => setReloading(!reloading)}
-              style={{
-                backgroundColor: "#ec5504",
-                border: "1px solid #ec5504",
-              }}
-              type="primary"
-              icon={
-                <FontAwesomeIcon
-                  icon={faArrowsRotate}
-                  style={{ paddingRight: "8px" }}
-                />
-              }
-            >
-              Lấy lại dữ liệu
-            </Button>
-
             <ImportTimekeeperData notify={notify} />
           </Space>
         </Col>
       </Row>
-      <Row wrap align="middle">
-        <Col flex="none">
-          <Form layout="inline" onFinish={loadStatistic} form={form}>
-            <Space wrap>
-              <Form.Item name="Keyword" wrapperCol={3}>
-                <Input
-                  placeholder="Tìm kiếm"
-                  suffix={<FontAwesomeIcon icon={faMagnifyingGlass} />}
-                />
-              </Form.Item>
-              <Form.Item
-                name="DateRange"
-                wrapperCol={3}
-                initialValue={[dayjs(), dayjs()]}
-              >
-                <DatePicker.RangePicker
-                  locale={locale}
-                  format={Config.DateFormat}
-                  allowClear={true}
-                />
-              </Form.Item>
-              <Form.Item wrapperCol={3}>
-                <Button
-                  htmlType="submit"
-                  icon={<SearchOutlined />}
-                  type="primary"
+      <Content style={{ paddingTop: 10 }}>
+        <Row wrap align="middle" style={{ marginBottom: 16 }}>
+          <Col flex="none">
+            <Form layout="inline" onFinish={loadStatistic} form={form}>
+              <Space wrap>
+                <Form.Item
+                  name="DateRange"
+                  wrapperCol={3}
+                  initialValue={[dayjs(), dayjs()]}
                 >
-                  Tìm kiếm
-                </Button>
-              </Form.Item>
-            </Space>
-          </Form>
-        </Col>
-        <Col flex="auto" style={{ textAlign: "right" }}>
-          <Space>
-            <Tooltip title="Xuất dữ liệu chấm công" placement="rightTop">
-              <Button
-                type="default"
-                icon={
-                  <FontAwesomeIcon
-                    icon={faFileExport}
-                    style={{ paddingRight: 4 }}
+                  <DatePicker.RangePicker
+                    locale={locale}
+                    format={Config.DateFormat}
+                    allowClear={true}
                   />
-                }
-                onClick={exportTimesheetReport}
-                loading={processing}
-              >
-                Xuất báo cáo
-              </Button>
-            </Tooltip>
-          </Space>
-        </Col>
-      </Row>
-      <Content
-        style={{ background: colorBgContainer, padding: 20 }}
-        className="boxShadow0 rounded"
-      >
+                </Form.Item>
+                <Form.Item name="Keyword" wrapperCol={5}>
+                  <Input
+                    placeholder="Tìm kiếm bằng mã nhân viên, nhân viên"
+                    style={{ width: 300, maxWidth: "100%" }}
+                  />
+                </Form.Item>
+                <Form.Item name="Method">
+                  <CheckinMethodSelection
+                    style={{
+                      width: "200px",
+                    }}
+                  />
+                </Form.Item>
+                <Form.Item wrapperCol={3}>
+                  <Button
+                    htmlType="submit"
+                    icon={<SearchOutlined />}
+                    type="primary"
+                    loading={loading}
+                  >
+                    Tìm kiếm
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form>
+          </Col>
+          <Col flex="auto" style={{ textAlign: "right" }}>
+            <Space>
+              <Tooltip title="Xuất dữ liệu chấm công" placement="rightTop">
+                <Button
+                  type="primary"
+                  icon={
+                    <FontAwesomeIcon
+                      icon={faFileExport}
+                      style={{ paddingRight: 8 }}
+                    />
+                  }
+                  onClick={exportTimesheetReport}
+                  loading={processing}
+                >
+                  Xuất báo cáo
+                </Button>
+              </Tooltip>
+            </Space>
+          </Col>
+        </Row>
         <Table
+          className="boxShadow0 rounded"
           loading={loading}
           bordered
           scroll={{
@@ -320,11 +314,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
             defaultSortOrder={["ascending"]}
             align="center"
           />
-          <Column
-            title="Phương thức chấm công"
-            dataIndex="MethodText"
-            width={150}
-          />
+          <Column title="PTCC" dataIndex="MethodText" width={120} />
           <Column
             title="Ảnh đính kèm"
             width={200}
@@ -339,5 +329,51 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
     </Space>
   );
 };
-
+const CheckinMethodSelection = (props) => {
+  const [notify, contextHolder] = useNotification();
+  const [loading, setLoading] = useState();
+  const [checkinMethodList, setCheckinMethodList] = useState([]);
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        let response = await GetAllCheckinMethods();
+        if (response.Status === 1) {
+          let { CheckinMethodList } = response.ResponseData;
+          setCheckinMethodList([
+            // {
+            //   Description: "Tất cả",
+            //   Id: 0,
+            // },
+            ...CheckinMethodList,
+          ]);
+          setCheckinMethodList(CheckinMethodList);
+          return;
+        }
+        throw new Error(response.Description);
+      } catch (error) {
+        handleErrorOfRequest({ notify, error });
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+  return (
+    <>
+      {contextHolder}
+      <Select
+        options={checkinMethodList.map((method) => ({
+          label: method.Description,
+          value: method.Id,
+          key: method.Id,
+        }))}
+        loading={loading}
+        {...props}
+        mode="multiple"
+        placeholder="Phương thức"
+      ></Select>
+    </>
+  );
+};
 export { StatisticPageV2 };

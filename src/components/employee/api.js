@@ -14,10 +14,12 @@ export const GetManyEmployee = async (method = "GET", requestData) => {
   var params = {
     Page: requestData && requestData.page ? requestData.page : 1,
     PerPage: requestData && requestData.perPage ? requestData.perPage : 10,
+    SearchString:
+      requestData && requestData.searchString ? requestData.searchString : "",
   };
   var access_token = localStorage.getItem("access_token");
   var response = {};
-  if ( method === "POST") {
+  if (method === "POST") {
     var req = {
       Department: requestData.Department,
     };

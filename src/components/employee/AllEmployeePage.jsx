@@ -14,7 +14,6 @@ import {
   notification,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
-import Search from "antd/es/transfer/search";
 import dayjs from "dayjs";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -26,6 +25,7 @@ import { handleErrorOfRequest } from "../../utils/Helpers";
 import { ImportDataComponent } from "./ImportEmployeeList";
 import { DeleteOneEmployee, GetManyEmployee } from "./api";
 import "./style.css";
+import Search from "antd/es/input/Search";
 
 export const AllEmployeesPage = (props) => {
   const [page, setPage] = useState(1);
@@ -50,7 +50,11 @@ export const AllEmployeesPage = (props) => {
           ? searchInputRef.current.input.value
           : "";
         setLoading(true);
-        var response = await GetManyEmployee({ page, perPage, searchString });
+        var response = await GetManyEmployee("GET", {
+          page,
+          perPage,
+          searchString,
+        });
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
           const { EmployeeList, Total } = ResponseData;
@@ -155,7 +159,7 @@ export const AllEmployeesPage = (props) => {
                     setReloading(!reloading);
                   }}
                   enterButton
-                  placeholder="Tìm kiếm bằng username, email"
+                  placeholder="Tìm kiếm bằng mã, họ tên nhân viên"
                 ></Search>
               </Col>
               <Col flex="auto" style={{ textAlign: "right" }}>

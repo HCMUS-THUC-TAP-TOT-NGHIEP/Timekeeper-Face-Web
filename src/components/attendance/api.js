@@ -147,7 +147,7 @@ export const ExportTimesheetBE = async ({ Id }) => {
         "Access-Control-Allow-Origin": "*",
         Authorization: "Bearer " + localStorage.getItem("access_token"),
       },
-      timeout: 60*1000,
+      timeout: 60 * 1000,
       responseType: "blob",
     }
   );
@@ -160,23 +160,18 @@ export const ExportAttendanceStatisticBE = async (req) => {
     DateTo: req.DateTo,
     Keyword: req.Keyword,
   };
-  var response = await AxiosInstance.post(
-    "checkin/report",
-    requestData,
-    {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        Authorization: "Bearer " + localStorage.getItem("access_token"),
-      },
-      timeout: 60*1000,
-      responseType: "blob",
-    }
-  );
+  var response = await AxiosInstance.post("checkin/report", requestData, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+    timeout: 60 * 1000,
+    responseType: "blob",
+  });
   return response.data;
 };
 
-export const UpdateTimesheetDetail = async (request) =>
-{
+export const UpdateTimesheetDetail = async (request) => {
   let response = await AxiosInstance.put("checkin/timesheet/detail", request, {
     headers: {
       "Access-Control-Allow-Origin": "*",
@@ -184,9 +179,12 @@ export const UpdateTimesheetDetail = async (request) =>
     },
   });
   return response.data;
-
-}
-export const ImportDataTimesheetDataBE = async ({ fileList, timesheetId,...rest }) => {
+};
+export const ImportDataTimesheetDataBE = async ({
+  fileList,
+  timesheetId,
+  ...rest
+}) => {
   var formData = new FormData();
   formData.append("ImportData", fileList[0], fileList[0].name);
   formData.append("Type", fileList[0].type);
@@ -202,8 +200,17 @@ export const ImportDataTimesheetDataBE = async ({ fileList, timesheetId,...rest 
         Authorization: "Bearer " + localStorage.getItem("access_token"),
         "Content-Type": "multipart/form-data",
       },
-      timeout: 60*1000,
+      timeout: 60 * 1000,
     }
   );
   return response.data;
+};
+
+export const GetAllCheckinMethods = async () => {
+  var res = await AxiosInstance.get("/checkin/method", {
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("access_token"),
+    },
+  });
+  return res.data;
 };

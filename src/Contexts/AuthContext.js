@@ -20,6 +20,7 @@ export const initialState = {
   refresh_token: "" || refresh_token,
   loading: false,
   errorMessage: null,
+  authorization: {},
 };
 
 export function useAuthState() {
@@ -40,7 +41,7 @@ export function useAuthDispatch() {
 
 export const AuthProvider = ({ children }) => {
   const [user, dispatch] = useReducer(AuthReducer, initialState);
-  
+
   return (
     <AuthStateContext.Provider value={user}>
       <AuthDispatchContext.Provider value={dispatch}>

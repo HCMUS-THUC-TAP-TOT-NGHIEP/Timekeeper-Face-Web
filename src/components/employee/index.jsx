@@ -1,18 +1,20 @@
 import dayjs from "dayjs";
 import React, { useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuthState } from "../../Contexts/AuthContext";
+import { useAuthDispatch, useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
 import "./style.css";
-
+import { CheckAuthorization } from "../account/api";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 
 const EmployeePageIndex = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
+  const dispatch = useAuthDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Nhân viên";
+    document.title = "Danh mục nhân viên";
     if (loginRequired && !userDetails.token) {
       notify.warning({
         message: "Yêu cầu đăng nhập để tiếp tục.",
@@ -20,10 +22,34 @@ const EmployeePageIndex = ({ notify, loginRequired, ...rest }) => {
       navigate("/login");
       return;
     }
+    checkAuthorization();
   }, []);
+  async function checkAuthorization() {
+    try {
+      var response = await CheckAuthorization({
+        MenuName: "Employee",
+        Permissions: [],
+      });
+      if (response.Status === 1) {
+        let { Authorization } = response.ResponseData;
+        console.log("User authorization", Authorization);
+        dispatch({
+          type: "CHECK_AUTHORIZATION",
+          payload: {
+            current: userDetails,
+            permission: Authorization,
+          },
+        });
+        return;
+      }
+      throw new Error(response.Description);
+    } catch (error) {
+      handleErrorOfRequest(error, notify);
+    } finally {
+    }
+  }
   return <Outlet />;
 };
-
 
 export let defaultColumns = [
   {
@@ -115,9 +141,8 @@ export let defaultColumns = [
   },
 ];
 
-export {  EmployeePageIndex };
+export { EmployeePageIndex };
 export * from "./AllEmployeePage";
 export * from "./EditEmployeePage";
 export * from "./EmployeeProfile";
 export * from "./NewEmployeePage";
-

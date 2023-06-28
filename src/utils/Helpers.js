@@ -1,16 +1,16 @@
 export const handleErrorOfRequest = ({ error, notify, ...rest }) => {
   try {
     console.log(error);
-    const errorList = ["ECONNABORTED", "ERR_NETWORK"];
-    if (errorList.includes(error.code)) {
-      notify.error({
-        message: <b>Thông báo</b>,
-        description:
-          "Không nhận được phản hồi của máy chủ. Hãy kiểm tra lại kết nối Internet.",
-      });
-      return;
-    }
     if (error.response) {
+      const errorList = ["ECONNABORTED", "ERR_NETWORK"];
+      if (errorList.includes(error.code)) {
+        notify.error({
+          message: <b>Thông báo</b>,
+          description:
+            "Không nhận được phản hồi của máy chủ. Hãy kiểm tra lại kết nối Internet.",
+        });
+        return;
+      }
       switch (error.response.status) {
         case 401:
           notify.error({

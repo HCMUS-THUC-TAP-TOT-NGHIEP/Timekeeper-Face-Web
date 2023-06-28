@@ -24,6 +24,7 @@ import { AddAccount } from "./AddAccount";
 import { DeleteAccount } from "./DeleteAccount";
 import { EditAccount } from "./EditAccount";
 import { GetAccountList } from "./api";
+import { useAuthState } from "../../Contexts/AuthContext";
 
 export const AccountListPage = (props) => {
   const [form] = Form.useForm();
@@ -38,8 +39,11 @@ export const AccountListPage = (props) => {
   const [pageSize, setPageSize] = useState(10);
   const [reloading, setReloading] = useState(true);
   const searchInputRef = useRef();
+  const { authorization } = useAuthState();
+  const UserPermission = authorization.User;
 
   useEffect(() => {
+    if (!UserPermission || !UserPermission.read) return;
     async function loadData() {
       try {
         let searchString = searchInputRef.current
@@ -72,7 +76,8 @@ export const AccountListPage = (props) => {
       }
     }
     loadData();
-  }, [currentPage, pageSize, notify, reloading]);
+    console.log("UserPermission", UserPermission);
+  }, [currentPage, pageSize, notify, reloading, authorization]);
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -182,151 +187,172 @@ export const AccountListPage = (props) => {
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}
-      <Row wrap={false} gutter={[16, 16]} align="middle">
-        <Col flex="none">
-          <Space direction="vertical">
-            <Typography.Title level={2} style={{ marginTop: 0 }}>
-              Danh mục người dùng
-            </Typography.Title>
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                <Link to="">Dashboard</Link>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <NavLink to="/manage/account">Danh mục người dùng</NavLink>
-              </Breadcrumb.Item>
-            </Breadcrumb>
-          </Space>
-        </Col>
-        <Col flex="auto" style={{ textAlign: "right" }}>
-          <AddAccount insertFE={insertAccount} />
-        </Col>
-      </Row>
-      <Content style={{ paddingTop: 10 }}>
-        <Row
-          wrap={true}
-          gutter={[16, 16]}
-          align="middle"
-          style={{ marginBottom: 16 }}
-        >
-          <Col flex="none" style={{ width: 400 }}>
-            <Search
-              allowClear
-              ref={searchInputRef}
-              onSearch={(value) => {
-                setReloading(!reloading);
-              }}
-              enterButton
-              placeholder="Tìm kiếm bằng username, email"
-            ></Search>
-          </Col>
-          <Col flex="auto" style={{ textAlign: "right" }}>
-            <Space wrap>
-              <Button
-                loading={loading}
-                onClick={() => setReloading(!reloading)}
-                style={{
-                  backgroundColor: "#ec5504",
-                  border: "1px solid #ec5504",
-                }}
-                type="primary"
-                icon={
-                  <FontAwesomeIcon
-                    icon={faArrowsRotate}
-                    style={{ paddingRight: "8px" }}
-                  />
-                }
-              >
-                Tải lại
-              </Button>
-            </Space>
-          </Col>
-        </Row>
-        <Table
-          className="boxShadow0"
-          loading={loading}
-          bordered
-          scroll={{ y: 700 }}
-          dataSource={accountList}
-          width={1000}
-          pagination={{
-            position: ["bottomRight"],
-            pageSize: pageSize,
-            total: total,
-            current: currentPage,
-            onChange: (page, pageSize) => {
-              setCurrentPage(page);
-              setPageSize(pageSize);
-            },
-            showTotal: (total) => `Tổng ${total} bản ghi.`,
-            showSizeChanger: true,
-            pageSizeOptions: [10, 15, 20],
-          }}
-        >
-          <Column
-            title="Username"
-            dataIndex="Username"
-            key="Username"
-            sorter={(a, b) => compareString(a, b, "Username")}
-            // {...getColumnSearchProps("Username")}
-            width={100}
-          />
-          <Column
-            title="Email"
-            dataIndex="EmailAddress"
-            key="EmailAddress"
-            sorter={(a, b) => compareString(a, b, "EmailAddress")}
-            // {...getColumnSearchProps("EmailAddress")}
-            width={300}
-          />
-          <Column
-            title="Tên"
-            dataIndex="Name"
-            key="Name"
-            sorter={(a, b) => compareString(a, b, "Name")}
-            // {...getColumnSearchProps("Name")}
-            width={200}
-          />
-          <Column
-            title="Phân quyền"
-            dataIndex="RoleText"
-            key="Role"
-            sorter={(a, b) => compareString(a, b, "RoleText")}
-            width={200}
-          />
-
-          <Column
-            title="Ngày tạo"
-            dataIndex="CreatedAt"
-            key="CreatedAt"
-            render={(_, record) => {
-              return dayjs(record.CreatedAt).format(Config.DateFormat);
-            }}
-            sorter={(a, b) => compareDatetime(a, b, "CreatedAt")}
-            width={100}
-          />
-          <Column
-            align="center"
-            key="Action"
-            width={80}
-            title=""
-            render={(_, record) => (
-              <Space size="small">
-                <EditAccount
-                  form={form}
-                  account={record}
-                  editAccountFE={editAccount}
-                />
-                <DeleteAccount
-                  account={record}
-                  deleteAccountFE={deleteAccount}
-                />
+      {UserPermission && UserPermission.read ? (
+        <>
+          <Row wrap={false} gutter={[16, 16]} align="middle">
+            <Col flex="none">
+              <Space direction="vertical">
+                <Typography.Title level={2} style={{ marginTop: 0 }}>
+                  Danh mục người dùng
+                </Typography.Title>
+                <Breadcrumb>
+                  <Breadcrumb.Item>
+                    <Link to="">Dashboard</Link>
+                  </Breadcrumb.Item>
+                  <Breadcrumb.Item>
+                    <NavLink to="/manage/account">Danh mục người dùng</NavLink>
+                  </Breadcrumb.Item>
+                </Breadcrumb>
               </Space>
-            )}
-            fixed="right"
-          />
-        </Table>
-      </Content>
+            </Col>
+            <Col flex="auto" style={{ textAlign: "right" }}>
+              {UserPermission.create ? (
+                <AddAccount insertFE={insertAccount} />
+              ) : (
+                <></>
+              )}
+            </Col>
+          </Row>
+          <Content style={{ paddingTop: 10 }}>
+            <Row
+              wrap={true}
+              gutter={[16, 16]}
+              align="middle"
+              style={{ marginBottom: 16 }}
+            >
+              <Col flex="none" style={{ width: 400 }}>
+                <Search
+                  allowClear
+                  ref={searchInputRef}
+                  onSearch={(value) => {
+                    setReloading(!reloading);
+                  }}
+                  enterButton
+                  placeholder="Tìm kiếm bằng username, email"
+                ></Search>
+              </Col>
+              <Col flex="auto" style={{ textAlign: "right" }}>
+                <Space wrap>
+                  <Button
+                    loading={loading}
+                    onClick={() => setReloading(!reloading)}
+                    style={{
+                      backgroundColor: "#ec5504",
+                      border: "1px solid #ec5504",
+                    }}
+                    type="primary"
+                    icon={
+                      <FontAwesomeIcon
+                        icon={faArrowsRotate}
+                        style={{ paddingRight: "8px" }}
+                      />
+                    }
+                  >
+                    Tải lại
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+            <Table
+              className="boxShadow0"
+              loading={loading}
+              bordered
+              scroll={{ y: 700 }}
+              dataSource={accountList}
+              width={1000}
+              pagination={{
+                position: ["bottomRight"],
+                pageSize: pageSize,
+                total: total,
+                current: currentPage,
+                onChange: (page, pageSize) => {
+                  setCurrentPage(page);
+                  setPageSize(pageSize);
+                },
+                showTotal: (total) => `Tổng ${total} bản ghi.`,
+                showSizeChanger: true,
+                pageSizeOptions: [10, 15, 20],
+              }}
+            >
+              <Column
+                title="Username"
+                dataIndex="Username"
+                key="Username"
+                sorter={(a, b) => compareString(a, b, "Username")}
+                // {...getColumnSearchProps("Username")}
+                width={100}
+              />
+              <Column
+                title="Email"
+                dataIndex="EmailAddress"
+                key="EmailAddress"
+                sorter={(a, b) => compareString(a, b, "EmailAddress")}
+                // {...getColumnSearchProps("EmailAddress")}
+                width={300}
+              />
+              <Column
+                title="Tên"
+                dataIndex="Name"
+                key="Name"
+                sorter={(a, b) => compareString(a, b, "Name")}
+                // {...getColumnSearchProps("Name")}
+                width={200}
+              />
+              <Column
+                title="Phân quyền"
+                dataIndex="RoleText"
+                key="Role"
+                sorter={(a, b) => compareString(a, b, "RoleText")}
+                width={160}
+              />
+
+              <Column
+                title="Ngày tạo"
+                dataIndex="CreatedAt"
+                key="CreatedAt"
+                render={(_, record) => {
+                  return dayjs(record.CreatedAt).format(Config.DateFormat);
+                }}
+                sorter={(a, b) => compareDatetime(a, b, "CreatedAt")}
+                width={120}
+                align="center"
+              />
+              <Column
+                align="center"
+                key="Action"
+                width={80}
+                title=""
+                render={(_, record) => (
+                  <Space size="small">
+                    {UserPermission.update ? (
+                      <EditAccount
+                        form={form}
+                        account={record}
+                        editAccountFE={editAccount}
+                      />
+                    ) : (
+                      <></>
+                    )}
+                    {UserPermission.delete ? (
+                      <DeleteAccount
+                        account={record}
+                        deleteAccountFE={deleteAccount}
+                      />
+                    ) : (
+                      <></>
+                    )}
+                  </Space>
+                )}
+                fixed="right"
+              />
+            </Table>
+          </Content>
+        </>
+      ) : (
+        <Typography.Title level={2}>
+          Tài khoản không được phép truy cập đến mục này.
+        </Typography.Title>
+      )}
     </Space>
   );
 };

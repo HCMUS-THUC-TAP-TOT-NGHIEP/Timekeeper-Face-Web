@@ -28,20 +28,6 @@ const formatter = (value) => <CountUp end={value} separator="," />;
 export const Dashboard = function ({ notify, ...rest }) {
   const userDetails = useAuthState();
   const navigate = useNavigate();
-  const [options, setOptions] = useState({
-    chart: {
-      id: "apexchart-example",
-    },
-    xaxis: {
-      categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999],
-    },
-  });
-  const [series, setSeries] = useState([
-    {
-      name: "series-1",
-      data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
-    },
-  ]);
   useEffect(() => {
     document.title = "Tổng quan";
     const access_token = localStorage.getItem("access_token");
@@ -89,15 +75,6 @@ export const Dashboard = function ({ notify, ...rest }) {
         <Col xs={24} sm={24} md={24} lg={16} xl={12}>
           <OffChart notify={notify} />
         </Col>
-
-        {/* <Col xs={24} sm={24} md={24} lg={12} xl={12}>
-          <Card className="boxShadow0">
-            <Typography.Title level={3} style={{ textAlign: "center" }}>
-              Đi muộn về sớm
-            </Typography.Title>
-            <Chart options={options} series={series} type="bar" height={320} />
-          </Card>
-        </Col> */}
       </Row>
     </>
   );
@@ -373,7 +350,6 @@ const OffChart = ({ notify, ...rest }) => {
     },
   ]);
   const [loading, setLoading] = useState(false);
-  // const [month, setMonth] = useState(dayjs().month);
   useEffect(() => {
     async function loadData() {
       try {
@@ -407,7 +383,6 @@ const OffChart = ({ notify, ...rest }) => {
       }
     }
     loadData();
-    // }, [notify, month]);
   }, [notify]);
 
   return (

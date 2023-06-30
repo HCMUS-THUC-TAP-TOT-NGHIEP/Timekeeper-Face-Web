@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
+  Card,
   Checkbox,
   Col,
   DatePicker,
@@ -53,7 +54,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
   const [form] = Form.useForm();
 
   const {
-    token: { colorBgContainer, colorBgLayout },
+    token: { colorBgLayout },
   } = theme.useToken();
   async function loadData() {
     try {
@@ -137,7 +138,7 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
                 <Link to="">Dashboard</Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <Link to="/shift">Quản lý ca làm việc</Link>
+                <Link to="/shift/assignment">Phân ca làm việc</Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <Link to="">Phân ca</Link>
@@ -160,326 +161,433 @@ const AddShiftAssignmentPage = ({ notify, ...props }) => {
           </Space>
         </Col>
       </Row>
-      <Content style={{ background: colorBgContainer, padding: 20 }}>
+      <Content style={{ padding: 10 }}>
         <Spin spinning={loading}>
           <Skeleton loading={loading}>
             <Form
               layout="horizontal"
-              labelCol={{ sm: { span: 6 }, md: { span: 4 } }}
-              wrapperCol={{ sm: { span: 18 }, md: { span: 20 } }}
+              labelCol={{
+                xs: { span: 24 },
+                sm: { span: 24 },
+                md: { span: 8 },
+                lg: { span: 4 },
+                xl: { span: 4 },
+              }}
+              wrapperCol={{
+                xs: { span: 24 },
+                sm: { span: 24 },
+                md: { span: 16 },
+                lg: { span: 20 },
+                xl: { span: 20 },
+              }}
               labelWrap
               onFinish={onAssigningShift}
-              labelAlign="left"
               form={form}
             >
-              {/* region Thông tin chung */}
-
-              <Typography.Title
-                level={4}
-                style={{
-                  background: colorBgLayout,
-                  padding: "4px 8px",
-                }}
-              >
-                Thông tin chung
-              </Typography.Title>
-              <Form.Item
-                label="Tên bảng phân ca"
-                name="Description"
-                required
-                rules={[
-                  {
-                    required: true,
-                    message: "Tên bảng phân ca là trường bắt buộc.",
-                  },
-                ]}
-              >
-                <Input placeholder="Nhập Tên bảng phân ca" />
-              </Form.Item>
-              <Form.Item label="Ghi chú" name="Note">
-                <TextArea showCount rows={2} maxLength={1000} />
-              </Form.Item>
-              <Form.Item
-                label="Chọn ca làm việc"
-                name="ShiftId"
-                required
-                rules={[
-                  {
-                    required: true,
-                    message: "Ca là trường bắt buộc.",
-                  },
-                ]}
-              >
-                <Select
-                  showSearch
-                  placeholder="Chọn Ca"
-                  optionFilterProp="children"
-                  filterOption={(input, option) => {
-                    if (!option) return false;
-                    return (option.label || "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase());
-                  }}
-                  onChange={(value, option) => {
-                    var shift = shiftList.find((s) => s.Id === value);
-                    setShiftDetail(shift);
-                  }}
-                  options={(shiftList || []).map((ob) => ({
-                    value: ob.Id,
-                    label: ob.Description,
-                  }))}
-                />
-              </Form.Item>
-
-              {/* endregion */}
-              <Divider />
-              {/* region Thời gian áp dụng */}
-
-              <Typography.Title
-                level={4}
-                style={{
-                  background: colorBgLayout,
-                  padding: "4px 8px",
-                }}
-              >
-                Thời gian áp dụng
-              </Typography.Title>
-              <Form.Item>
-                <Form.Item
-                  label="Ngày bắt đầu"
-                  name="StartDate"
-                  required
-                  style={{ display: "inline-block", width: "50%" }}
-                  labelCol={{ span: 8 }}
-                  wrapperCol={{ span: 16 }}
-                >
-                  <DatePicker
-                    format={Config.DateFormat}
-                    locale={locale}
-                    inputReadOnly={true}
-                    aria-readonly={true}
-                  />
-                </Form.Item>
-                <Form.Item
-                  label="Ngày kết thúc"
-                  name="EndDate"
-                  required
-                  labelCol={{ span: 8 }}
-                  wrapperCol={{ span: 16 }}
-                  style={{ display: "inline-block", width: "50%" }}
-                >
-                  <DatePicker
-                    value={
-                      shiftDetail.EndDate ? dayjs(shiftDetail.EndDate) : null
-                    }
-                    format={Config.DateFormat}
-                    locale={locale}
-                    inputReadOnly={true}
-                    aria-readonly={true}
-                  />
-                </Form.Item>
-              </Form.Item>
-              {(shiftDetail || {}) !== {} ? (
-                <>
-                  <Form.Item>
+              <Row gutter={[16, 16]}>
+                <Col span={24}>
+                  {/* region Thông tin chung */}
+                  <Card className="boxShadow0 rounded">
+                    <Typography.Title
+                      level={4}
+                      style={{
+                        background: colorBgLayout,
+                        padding: "4px 8px",
+                      }}
+                    >
+                      Thông tin chung
+                    </Typography.Title>
                     <Form.Item
-                      label="Giờ bắt đầu ca"
+                      label="Tên bảng phân ca"
+                      name="Description"
                       required
-                      labelCol={{ span: 8 }}
-                      wrapperCol={{ span: 16 }}
-                      style={{ display: "inline-block", width: "50%" }}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Tên bảng phân ca là trường bắt buộc.",
+                        },
+                      ]}
                     >
-                      <TimePicker
-                        value={
-                          shiftDetail.StartTime
-                            ? dayjs(shiftDetail.StartTime, Config.TimeFormat)
-                            : null
-                        }
-                        format={Config.NonSecondFormat}
-                        locale={locale}
-                        inputReadOnly={true}
-                        aria-readonly={true}
-                      />
+                      <Input placeholder="Nhập Tên bảng phân ca" />
+                    </Form.Item>
+                    <Form.Item label="Ghi chú" name="Note">
+                      <TextArea showCount rows={2} maxLength={1000} />
                     </Form.Item>
                     <Form.Item
-                      label="Giờ kết thúc ca"
+                      label="Chọn ca làm việc"
+                      name="ShiftId"
                       required
-                      labelCol={{ span: 8 }}
-                      wrapperCol={{ span: 16 }}
-                      style={{ display: "inline-block", width: "50%" }}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Ca là trường bắt buộc.",
+                        },
+                      ]}
                     >
-                      <TimePicker
-                        value={
-                          shiftDetail.FinishTime
-                            ? dayjs(shiftDetail.FinishTime, Config.TimeFormat)
-                            : null
-                        }
-                        format={Config.NonSecondFormat}
-                        locale={locale}
-                        inputReadOnly={true}
-                        aria-readonly={true}
+                      <Select
+                        showSearch
+                        placeholder="Chọn Ca"
+                        optionFilterProp="children"
+                        filterOption={(input, option) => {
+                          if (!option) return false;
+                          return (option.label || "")
+                            .toLowerCase()
+                            .includes(input.toLowerCase());
+                        }}
+                        onChange={(value, option) => {
+                          var shift = shiftList.find((s) => s.Id === value);
+                          setShiftDetail(shift);
+                        }}
+                        options={(shiftList || []).map((ob) => ({
+                          value: ob.Id,
+                          label: ob.Description,
+                        }))}
                       />
                     </Form.Item>
-                  </Form.Item>
-                  <Form.Item>
+                  </Card>
+                  {/* endregion */}
+                </Col>
+                <Col span={24}>
+                  {/* region Thời gian áp dụng */}
+                  <Card className="boxShadow0 rounded">
+                    <Typography.Title
+                      level={4}
+                      style={{
+                        background: colorBgLayout,
+                        padding: "4px 8px",
+                      }}
+                    >
+                      Thời gian áp dụng
+                    </Typography.Title>
+                    <Form.Item wrapperCol={24}>
+                      <Form.Item
+                        label="Ngày bắt đầu"
+                        name="StartDate"
+                        required
+                        style={{ display: "inline-block", width: "50%" }}
+                        labelCol={{
+                          xs: { span: 24 },
+                          sm: { span: 24 },
+                          md: { span: 8 },
+                          lg: { span: 8 },
+                          xl: { span: 8 },
+                        }}
+                        wrapperCol={{
+                          xs: { span: 24 },
+                          sm: { span: 24 },
+                          md: { span: 14 },
+                          lg: { span: 12 },
+                          xl: { span: 12 },
+                        }}
+                      >
+                        <DatePicker
+                          style={{ width: "100%" }}
+                          format={Config.DateFormat}
+                          locale={locale}
+                          inputReadOnly={true}
+                          aria-readonly={true}
+                        />
+                      </Form.Item>
+                      <Form.Item
+                        label="Ngày kết thúc"
+                        name="EndDate"
+                        required
+                        labelCol={{
+                          xs: { span: 24 },
+                          sm: { span: 24 },
+                          md: { span: 8 },
+                          lg: { span: 8 },
+                          xl: { span: 8 },
+                        }}
+                        wrapperCol={{
+                          xs: { span: 24 },
+                          sm: { span: 24 },
+                          md: { span: 14 },
+                          lg: { span: 12 },
+                          xl: { span: 12 },
+                        }}
+                        style={{ display: "inline-block", width: "50%" }}
+                      >
+                        <DatePicker
+                          style={{ width: "100%" }}
+                          value={
+                            shiftDetail.EndDate
+                              ? dayjs(shiftDetail.EndDate)
+                              : null
+                          }
+                          format={Config.DateFormat}
+                          locale={locale}
+                          inputReadOnly={true}
+                          aria-readonly={true}
+                        />
+                      </Form.Item>
+                    </Form.Item>
+                    {(shiftDetail || {}) !== {} ? (
+                      <>
+                        <Form.Item wrapperCol={24}>
+                          <Form.Item
+                            label="Giờ bắt đầu ca"
+                            required
+                            labelCol={{
+                              xs: { span: 24 },
+                              sm: { span: 24 },
+                              md: { span: 8 },
+                              lg: { span: 8 },
+                              xl: { span: 8 },
+                            }}
+                            wrapperCol={{
+                              xs: { span: 24 },
+                              sm: { span: 24 },
+                              md: { span: 14 },
+                              lg: { span: 12 },
+                              xl: { span: 12 },
+                            }}
+                            style={{ display: "inline-block", width: "50%" }}
+                          >
+                            <TimePicker
+                              style={{ width: "100%" }}
+                              value={
+                                shiftDetail.StartTime
+                                  ? dayjs(
+                                      shiftDetail.StartTime,
+                                      Config.TimeFormat
+                                    )
+                                  : null
+                              }
+                              format={Config.NonSecondFormat}
+                              locale={locale}
+                              inputReadOnly={true}
+                              aria-readonly={true}
+                            />
+                          </Form.Item>
+                          <Form.Item
+                            label="Giờ kết thúc ca"
+                            required
+                            labelCol={{
+                              xs: { span: 24 },
+                              sm: { span: 24 },
+                              md: { span: 8 },
+                              lg: { span: 8 },
+                              xl: { span: 8 },
+                            }}
+                            wrapperCol={{
+                              xs: { span: 24 },
+                              sm: { span: 24 },
+                              md: { span: 14 },
+                              lg: { span: 12 },
+                              xl: { span: 12 },
+                            }}
+                            style={{ display: "inline-block", width: "50%" }}
+                          >
+                            <TimePicker
+                              style={{ width: "100%" }}
+                              value={
+                                shiftDetail.FinishTime
+                                  ? dayjs(
+                                      shiftDetail.FinishTime,
+                                      Config.TimeFormat
+                                    )
+                                  : null
+                              }
+                              format={Config.NonSecondFormat}
+                              locale={locale}
+                              inputReadOnly={true}
+                              aria-readonly={true}
+                            />
+                          </Form.Item>
+                        </Form.Item>
+                        <Form.Item wrapperCol={24}>
+                          <Form.Item
+                            label="Giờ bắt đầu nghỉ giữa ca"
+                            labelCol={{
+                              xs: { span: 24 },
+                              sm: { span: 24 },
+                              md: { span: 8 },
+                              lg: { span: 8 },
+                              xl: { span: 8 },
+                            }}
+                            wrapperCol={{
+                              xs: { span: 24 },
+                              sm: { span: 24 },
+                              md: { span: 14 },
+                              lg: { span: 12 },
+                              xl: { span: 12 },
+                            }}
+                            style={{ display: "inline-block", width: "50%" }}
+                          >
+                            <TimePicker
+                              style={{ width: "100%" }}
+                              value={
+                                shiftDetail.BreakAt
+                                  ? dayjs(
+                                      shiftDetail.BreakAt,
+                                      Config.TimeFormat
+                                    )
+                                  : null
+                              }
+                              format={Config.NonSecondFormat}
+                              locale={locale}
+                              inputReadOnly={true}
+                              aria-readonly={true}
+                              placeholder=""
+                            />
+                          </Form.Item>
+                          <Form.Item
+                            label="Giờ kết thúc nghỉ giữa ca"
+                            labelCol={{
+                              xs: { span: 24 },
+                              sm: { span: 24 },
+                              md: { span: 8 },
+                              lg: { span: 8 },
+                              xl: { span: 8 },
+                            }}
+                            wrapperCol={{
+                              xs: { span: 24 },
+                              sm: { span: 24 },
+                              md: { span: 14 },
+                              lg: { span: 12 },
+                              xl: { span: 12 },
+                            }}
+                            style={{ display: "inline-block", width: "50%" }}
+                          >
+                            <TimePicker
+                              style={{ width: "100%" }}
+                              value={
+                                shiftDetail.BreakEnd
+                                  ? dayjs(
+                                      shiftDetail.BreakEnd,
+                                      Config.TimeFormat
+                                    )
+                                  : null
+                              }
+                              format={Config.NonSecondFormat}
+                              locale={locale}
+                              inputReadOnly={true}
+                              aria-readonly={true}
+                              placeholder=""
+                            />
+                          </Form.Item>
+                        </Form.Item>
+                        <Form.Item
+                          name="DaysInWeek"
+                          label="Ngày trong tuần"
+                          valuePropName="checked"
+                          required
+                        >
+                          <Checkbox.Group>
+                            <Row wrap>
+                              <Col xs={8} sm={8} md={8} lg={4} xl={4} xxl={4}>
+                                <Checkbox value={1}>Thứ 2</Checkbox>
+                              </Col>
+                              <Col xs={8} sm={8} md={8} lg={4} xl={4} xxl={4}>
+                                <Checkbox value={2}>Thứ 3</Checkbox>
+                              </Col>
+                              <Col xs={8} sm={8} md={8} lg={4} xl={4} xxl={4}>
+                                <Checkbox value={3}>Thứ 4</Checkbox>
+                              </Col>
+                              <Col xs={8} sm={8} md={8} lg={4} xl={4} xxl={4}>
+                                <Checkbox value={4}>Thứ 5</Checkbox>
+                              </Col>
+                              <Col xs={8} sm={8} md={8} lg={4} xl={4} xxl={4}>
+                                <Checkbox value={5}>Thứ 6</Checkbox>
+                              </Col>
+                              <Col xs={8} sm={8} md={8} lg={4} xl={4} xxl={4}>
+                                <Checkbox value={6}>Thứ 7</Checkbox>
+                              </Col>
+                              <Col xs={8} sm={8} md={8} lg={6} xl={6} xxl={4}>
+                                <Checkbox value={0}>Chủ nhật</Checkbox>
+                              </Col>
+                            </Row>
+                          </Checkbox.Group>
+                        </Form.Item>
+                      </>
+                    ) : (
+                      <></>
+                    )}
+                  </Card>
+                  {/* endregion */}
+                </Col>
+                <Col span={24}>
+                  {/* region Đối tượng áp dụng */}
+                  <Card className="boxShadow0 rounded">
+                    <Typography.Title
+                      level={4}
+                      style={{
+                        background: colorBgLayout,
+                        padding: "4px 8px",
+                      }}
+                    >
+                      Đối tượng áp dụng
+                    </Typography.Title>
                     <Form.Item
-                      label="Giờ bắt đầu nghỉ giữa ca"
-                      labelCol={{ span: 8 }}
-                      wrapperCol={{ span: 16 }}
-                      style={{ display: "inline-block", width: "50%" }}
+                      label="Kiểu phân ca"
+                      name="TargetType"
+                      required
+                      rules={[
+                        {
+                          required: true,
+                          message: "Kiểu phân ca là trường bắt buộc.",
+                        },
+                      ]}
+                      initialValue={assignmentType}
                     >
-                      <TimePicker
-                        value={
-                          shiftDetail.BreakAt
-                            ? dayjs(shiftDetail.BreakAt, Config.TimeFormat)
-                            : null
-                        }
-                        format={Config.NonSecondFormat}
-                        locale={locale}
-                        inputReadOnly={true}
-                        aria-readonly={true}
-                        placeholder=""
+                      <Radio.Group
+                        buttonStyle="solid"
+                        onChange={(e) => setAssignmentType(e.target.value)}
+                        options={assignmentTypeList.map((assignmentType) => ({
+                          value: assignmentType.Id,
+                          label: assignmentType.Name,
+                        }))}
                       />
                     </Form.Item>
-                    <Form.Item
-                      label="Giờ kết thúc nghỉ giữa ca"
-                      labelCol={{ span: 8 }}
-                      wrapperCol={{ span: 16 }}
-                      style={{ display: "inline-block", width: "50%" }}
-                    >
-                      <TimePicker
-                        value={
-                          shiftDetail.BreakEnd
-                            ? dayjs(shiftDetail.BreakEnd, Config.TimeFormat)
-                            : null
-                        }
-                        format={Config.NonSecondFormat}
-                        locale={locale}
-                        inputReadOnly={true}
-                        aria-readonly={true}
-                        placeholder=""
-                      />
+                    <Form.Item wrapperCol={24}>
+                      <Space direction="vertical" style={{ maxWidth: "100%" }}>
+                        <AppliedTargetTable
+                          type={assignmentType}
+                          notify={notify}
+                          appliedDepartment={[
+                            appliedDepartmentList,
+                            setAppliedDepartmentList,
+                          ]}
+                          appliedEmployee={[
+                            appliedEmployeeList,
+                            setAppliedEmployeeList,
+                          ]}
+                        />
+                        <Table
+                          className="boxShadow0 rounded"
+                          bordered
+                          columns={
+                            assignmentType === _TargeType.ByEmployee
+                              ? employeeColumns
+                              : departmentColumns
+                          }
+                          dataSource={
+                            assignmentType === _TargeType.ByEmployee
+                              ? appliedEmployeeList
+                              : appliedDepartmentList
+                          }
+                          rowKey="Id"
+                          scroll={{
+                            x: 800,
+                            y: 800,
+                          }}
+                          pagination={{
+                            total:
+                              assignmentType === _TargeType.ByEmployee
+                                ? appliedEmployeeList.length
+                                : appliedDepartmentList.length,
+                            showSizeChanger: true,
+                            showTotal: (total) => `Tổng ${total} bản ghi.`,
+                            pageSizeOptions: [10, 25, 50],
+                          }}
+                        ></Table>
+                      </Space>
                     </Form.Item>
-                  </Form.Item>
-                  <Form.Item
-                    name="DaysInWeek"
-                    label="Ngày trong tuần"
-                    valuePropName="checked"
-                    required
-                  >
-                    <Checkbox.Group>
-                      <Row>
-                        <Col span={8}>
-                          <Checkbox value={1}>Thứ 2</Checkbox>
-                        </Col>
-                        <Col span={8}>
-                          <Checkbox value={2}>Thứ 3</Checkbox>
-                        </Col>
-                        <Col span={8}>
-                          <Checkbox value={3}>Thứ 4</Checkbox>
-                        </Col>
-                        <Col span={8}>
-                          <Checkbox value={4}>Thứ 5</Checkbox>
-                        </Col>
-                        <Col span={8}>
-                          <Checkbox value={5}>Thứ 6</Checkbox>
-                        </Col>
-                        <Col span={8}>
-                          <Checkbox value={6} checked>
-                            Thứ 7
-                          </Checkbox>
-                        </Col>
-                        <Col span={8}>
-                          <Checkbox value={0}>Chủ nhật</Checkbox>
-                        </Col>
-                      </Row>
-                    </Checkbox.Group>
-                  </Form.Item>
-                </>
-              ) : (
-                <></>
-              )}
-
-              {/* endregion */}
-              <Divider />
-              {/* region Đối tượng áp dụng */}
-
-              <Typography.Title
-                level={4}
-                style={{
-                  background: colorBgLayout,
-                  padding: "4px 8px",
-                }}
-              >
-                Đối tượng áp dụng
-              </Typography.Title>
-              <Form.Item
-                label="Kiểu phân ca"
-                name="TargetType"
-                required
-                rules={[
-                  {
-                    required: true,
-                    message: "Kiểu phân ca là trường bắt buộc.",
-                  },
-                ]}
-                initialValue={assignmentType}
-              >
-                <Radio.Group
-                  buttonStyle="solid"
-                  onChange={(e) => setAssignmentType(e.target.value)}
-                  options={assignmentTypeList.map((assignmentType) => ({
-                    value: assignmentType.Id,
-                    label: assignmentType.Name,
-                  }))}
-                />
-              </Form.Item>
-              <Form.Item wrapperCol={24}>
-                <Space direction="vertical" style={{ maxWidth: "100%" }}>
-                  <AppliedTargetTable
-                    type={assignmentType}
-                    notify={notify}
-                    appliedDepartment={[
-                      appliedDepartmentList,
-                      setAppliedDepartmentList,
-                    ]}
-                    appliedEmployee={[
-                      appliedEmployeeList,
-                      setAppliedEmployeeList,
-                    ]}
-                  />
-                  <Table
-                    className="boxShadow0 rounded"
-                    bordered
-                    columns={
-                      assignmentType === _TargeType.ByEmployee
-                        ? employeeColumns
-                        : departmentColumns
-                    }
-                    dataSource={
-                      assignmentType === _TargeType.ByEmployee
-                        ? appliedEmployeeList
-                        : appliedDepartmentList
-                    }
-                    rowKey="Id"
-                    scroll={{
-                      x: 800,
-                      y: 800,
-                    }}
-                    pagination={{
-                      total:
-                        assignmentType === _TargeType.ByEmployee
-                          ? appliedEmployeeList.length
-                          : appliedDepartmentList.length,
-                      showSizeChanger: true,
-                      showTotal: (total) => `Tổng ${total} bản ghi.`,
-                      pageSizeOptions: [10, 25, 50],
-                    }}
-                  ></Table>
-                </Space>
-              </Form.Item>
-
-              {/* endregion */}
+                  </Card>
+                  {/* endregion */}
+                </Col>
+              </Row>
             </Form>
           </Skeleton>
         </Spin>

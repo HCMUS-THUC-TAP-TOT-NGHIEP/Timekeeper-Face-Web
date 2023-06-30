@@ -138,7 +138,7 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space direction="vertical" style={{ width: "100%" }}>
       <Row wrap={false} align="middle">
         <Col flex="none">
           <Space direction="vertical">

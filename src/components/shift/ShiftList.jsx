@@ -260,8 +260,9 @@ const ShiftList = function ({ notify, ...rest }) {
             title="Mã ca"
             dataIndex="Id"
             key="Id"
-            sorter={(a, b) => a.Id > b.Id}
+            sorter={(a, b) => a.Id - b.Id}
             width={100}
+            align="right"
             fixed="left"
           />
 
@@ -289,7 +290,7 @@ const ShiftList = function ({ notify, ...rest }) {
                   )
                 : ""
             }
-            width={200}
+            width={150}
             align="center"
           />
           <Column
@@ -304,7 +305,7 @@ const ShiftList = function ({ notify, ...rest }) {
                   )
                 : ""
             }
-            width={200}
+            width={150}
             align="center"
           />
           <Column
@@ -319,7 +320,7 @@ const ShiftList = function ({ notify, ...rest }) {
                   )
                 : ""
             }
-            width={250}
+            width={150}
             align="center"
           />
           <Column
@@ -334,7 +335,7 @@ const ShiftList = function ({ notify, ...rest }) {
                   )
                 : ""
             }
-            width={250}
+            width={150}
             align="center"
           />
           <Column
@@ -342,7 +343,7 @@ const ShiftList = function ({ notify, ...rest }) {
             dataIndex="WorkingDay"
             key="WorkingDay"
             sorter={(a, b) => a.WorkingDay > b.WorkingDay}
-            width={200}
+            width={150}
             align="right"
           />
           <Column
@@ -350,7 +351,7 @@ const ShiftList = function ({ notify, ...rest }) {
             dataIndex="WorkingHour"
             key="WorkingHour"
             sorter={(a, b) => a.WorkingHour > b.WorkingHour}
-            width={200}
+            width={150}
             align="right"
           />
 
@@ -358,7 +359,7 @@ const ShiftList = function ({ notify, ...rest }) {
             title="Trạng thái"
             dataIndex="Status"
             key="Status"
-            width={200}
+            width={120}
             sorter={(a, b) => a.Status > b.Status}
             render={(_, record) => {
               var content = "";

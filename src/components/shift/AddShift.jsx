@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
+  Card,
   Checkbox,
   Col,
   DatePicker,
@@ -25,8 +26,8 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
-import { CreateNewShift, GetShiftTypeList } from "./api";
 import { handleErrorOfRequest } from "../../utils/Helpers";
+import { CreateNewShift, GetShiftTypeList } from "./api";
 
 const AddShift = (props) => {
   const { insertOneShiftFE, notify, currentShiftList } = props;
@@ -401,7 +402,7 @@ const AddShiftPage = (props) => {
   const [totalWorkingTime, setTotalWorkingTime] = useState([0, 0]);
   const navigate = useNavigate();
   const {
-    token: { colorBgContainer, colorBgLayout },
+    token: { colorBgLayout },
   } = theme.useToken();
   const [hasBreak, setHasBreak] = useState(false);
 
@@ -444,24 +445,23 @@ const AddShiftPage = (props) => {
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
-          values.Id = ResponseData.Id;
-          var shiftType = shiftTypeList.find((s) => s.Id == values.ShiftType);
-          values.ShiftTypeText = shiftType.Description;
+          console.log(ResponseData);
           notify.success({
-            description: "Ca làm việc mới đã được tạo",
+            message: <b>Thông báo</b>,
+            description: (
+              <div>
+                Đã tạo ca làm việc <b>{values.Description}</b>
+              </div>
+            ),
           });
           handleCancel();
-          navigate("/shift")
+          navigate("/shift");
           return;
         }
-        notify.error({
-          message: "Không thành công",
-          description: Description,
-        });
+        throw new Error(Description);
       })
       .catch((error) => {
         handleErrorOfRequest({ notify, error });
-
       })
       .finally(() => {
         setLoading(false);
@@ -489,7 +489,7 @@ const AddShiftPage = (props) => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space direction="vertical" style={{ width: "100%" }}>
       <Row wrap={false} align="middle">
         <Col flex="none">
           <Space direction="vertical">
@@ -511,7 +511,10 @@ const AddShiftPage = (props) => {
                 <NavLink to="">Dashboard</NavLink>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <NavLink to="">Ca làm việc</NavLink>
+                <NavLink to="/shift">Ca làm việc</NavLink>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <NavLink to="">Thêm mới ca làm việc</NavLink>
               </Breadcrumb.Item>
             </Breadcrumb>
           </Space>
@@ -525,24 +528,25 @@ const AddShiftPage = (props) => {
           </Space>
         </Col>
       </Row>
-      <Content style={{ background: colorBgContainer, padding: "5px 20px" }}>
-        <Typography.Title
-          level={4}
-          style={{
-            background: colorBgLayout,
-            padding: "4px 8px",
-            textTransform: "uppercase",
-          }}
-        >
-          Thông tin chung
-        </Typography.Title>
-
+      <Content style={{ paddingTop: 10 }}>
         <Form
           form={form}
           preserve={false}
           autoComplete="off"
-          labelCol={{ span: 6 }}
-          wrapperCol={{ span: 18 }}
+          labelCol={{
+            xs: { span: 24 },
+            sm: { span: 24 },
+            md: { span: 8 },
+            lg: { span: 8 },
+            xl: { span: 8 },
+          }}
+          wrapperCol={{
+            xs: { span: 24 },
+            sm: { span: 24 },
+            md: { span: 16 },
+            lg: { span: 16 },
+            xl: { span: 16 },
+          }}
           labelWrap
           labelAlign="left"
           onFinish={onSubmit}
@@ -551,135 +555,155 @@ const AddShiftPage = (props) => {
             FinishTime: dayjs("17:00", Config.NonSecondFormat),
           }}
         >
-          <Form.Item
-            form={form}
-            hasFeedback
-            label="Tên ca làm việc"
-            name="Description"
-            rules={[
-              {
-                required: true,
-                message: "Mô tả là trường bắt buộc.",
-              },
-              {
-                min: 8,
-                message: "Tên ca làm việc cần tối thiểu 8 ký tự."
-              }
-              ,
-              {
-                max: 100,
-                message:  "Tên ca làm việc cần tối đa 100 ký tự."
-              }
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            hasFeedback
-            label="Giờ bắt đầu ca"
-            name="StartTime"
-            rules={[
-              {
-                required: true,
-                message: "Giờ bắt đầu ca là trường bắt buộc.",
-              },
-            ]}
-          >
-            <TimePicker
-              minuteStep={15}
-              locale={locale}
-              format={Config.NonSecondFormat}
-              style={{ display: "inline-block" }}
-              onChange={() => calculateWorkingHour()}
-            />
-          </Form.Item>
-          <Form.Item
-            hasFeedback
-            label="Giờ kết thúc ca"
-            name="FinishTime"
-            rules={[
-              {
-                required: true,
-                message: "Giờ kết thúc ca là trường bắt buộc.",
-              },
-            ]}
-          >
-            <TimePicker
-              minuteStep={15}
-              locale={locale}
-              style={{ display: "inline-block" }}
-              format={Config.NonSecondFormat}
-              onChange={() => calculateWorkingHour()}
-            />
-          </Form.Item>
-          <Form.Item name="HasBreak" valuePropName="checked">
-            <Checkbox
-              onChange={(e) => {
-                setHasBreak(e.target.checked);
-                calculateWorkingHour();
-              }}
-            >
-              Có nghỉ giữa ca
-            </Checkbox>
-          </Form.Item>
-          <Form.Item
-            label="Giờ bắt đầu"
-            hasFeedback
-            name="BreakAt"
-            required={hasBreak}
-            hidden={!hasBreak}
-          >
-            <TimePicker
-              onChange={() => calculateWorkingHour()}
-              style={{ display: "inline-block" }}
-              minuteStep={15}
-              placeholder="Chọn giờ nghỉ"
-              format={Config.NonSecondFormat}
-              locale={locale}
-            />
-          </Form.Item>
-          <Form.Item
-            label="Giờ kết thúc"
-            hasFeedback
-            name="BreakEnd"
-            required={hasBreak}
-            hidden={!hasBreak}
-          >
-            <TimePicker
-              onChange={() => calculateWorkingHour()}
-              minuteStep={15}
-              style={{ display: "inline-block" }}
-              placeholder="Chọn giờ kết thúc nghỉ"
-              format={Config.NonSecondFormat}
-              locale={locale}
-            />
-          </Form.Item>
-          <Typography.Title
-            level={4}
-            style={{
-              background: colorBgLayout,
-              padding: "4px 8px",
-              textTransform: "uppercase",
-            }}
-          >
-            TÍNH CÔNG
-          </Typography.Title>
-          <Form.Item>
-            <Form.Item
-              label="Giờ công"
-              name="WorkingHour"
-              style={{ display: "inline-block", width: "50%" }}
-            >
-              <InputNumber min={0} step={0.1} readOnly />
-            </Form.Item>
-            <Form.Item
-              label="Ngày công"
-              name="WorkingDay"
-              style={{ display: "inline-block", width: "50%" }}
-            >
-              <InputNumber min={0} step={0.1} />
-            </Form.Item>
-          </Form.Item>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+              <Card className="boxShadow0 rounded">
+                <Typography.Title
+                  level={4}
+                  style={{
+                    background: colorBgLayout,
+                    padding: "4px 8px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Thông tin chung
+                </Typography.Title>
+
+                <Form.Item
+                  form={form}
+                  hasFeedback
+                  label="Tên ca làm việc"
+                  name="Description"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Mô tả là trường bắt buộc.",
+                    },
+                    {
+                      min: 5,
+                      message: "Tên ca làm việc cần tối thiểu 8 ký tự.",
+                    },
+                    {
+                      max: 100,
+                      message: "Tên ca làm việc cần tối đa 100 ký tự.",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  hasFeedback
+                  label="Giờ bắt đầu ca"
+                  name="StartTime"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Giờ bắt đầu ca là trường bắt buộc.",
+                    },
+                  ]}
+                >
+                  <TimePicker
+                    minuteStep={15}
+                    locale={locale}
+                    format={Config.NonSecondFormat}
+                    style={{ display: "inline-block" }}
+                    onChange={() => calculateWorkingHour()}
+                  />
+                </Form.Item>
+                <Form.Item
+                  hasFeedback
+                  label="Giờ kết thúc ca"
+                  name="FinishTime"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Giờ kết thúc ca là trường bắt buộc.",
+                    },
+                  ]}
+                >
+                  <TimePicker
+                    minuteStep={15}
+                    locale={locale}
+                    style={{ display: "inline-block" }}
+                    format={Config.NonSecondFormat}
+                    onChange={() => calculateWorkingHour()}
+                  />
+                </Form.Item>
+                <Form.Item name="HasBreak" valuePropName="checked">
+                  <Checkbox
+                    onChange={(e) => {
+                      setHasBreak(e.target.checked);
+                      calculateWorkingHour();
+                    }}
+                  >
+                    Có nghỉ giữa ca
+                  </Checkbox>
+                </Form.Item>
+                <Form.Item
+                  label="Giờ bắt đầu"
+                  hasFeedback
+                  name="BreakAt"
+                  required={hasBreak}
+                  hidden={!hasBreak}
+                >
+                  <TimePicker
+                    onChange={() => calculateWorkingHour()}
+                    style={{ display: "inline-block" }}
+                    minuteStep={15}
+                    placeholder="Chọn giờ nghỉ"
+                    format={Config.NonSecondFormat}
+                    locale={locale}
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="Giờ kết thúc"
+                  hasFeedback
+                  name="BreakEnd"
+                  required={hasBreak}
+                  hidden={!hasBreak}
+                >
+                  <TimePicker
+                    onChange={() => calculateWorkingHour()}
+                    minuteStep={15}
+                    style={{ display: "inline-block" }}
+                    placeholder="Chọn giờ kết thúc nghỉ"
+                    format={Config.NonSecondFormat}
+                    locale={locale}
+                  />
+                </Form.Item>
+              </Card>
+            </Col>
+            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+              <Card className="boxShadow0 rounded">
+                <Typography.Title
+                  level={4}
+                  style={{
+                    background: colorBgLayout,
+                    padding: "4px 8px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  TÍNH CÔNG
+                </Typography.Title>
+                <Form.Item>
+                  <Form.Item
+                    label="Giờ công"
+                    name="WorkingHour"
+                    style={{ display: "inline-block", width: "50%" }}
+                  >
+                    <InputNumber min={0} step={0.1} readOnly />
+                  </Form.Item>
+                  <Form.Item
+                    label="Ngày công"
+                    name="WorkingDay"
+                    style={{ display: "inline-block", width: "50%" }}
+                  >
+                    <InputNumber min={0} step={0.1} />
+                  </Form.Item>
+                </Form.Item>
+              </Card>
+            </Col>
+          </Row>
         </Form>
       </Content>
     </Space>
@@ -687,4 +711,3 @@ const AddShiftPage = (props) => {
 };
 
 export { AddShift, AddShiftPage };
-

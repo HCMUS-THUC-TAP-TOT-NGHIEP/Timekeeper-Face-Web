@@ -319,12 +319,13 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           <Column title="PTCC" dataIndex="MethodText" width={120} />
           <Column
             title="Ảnh đính kèm"
-            width={200}
             dataIndex="DownloadUrl"
             render={(value, record) => {
               return <Image src={value} height={50} />;
             }}
             align="center"
+            width={100}
+            fixed="right"
           />
         </Table>
       </Content>

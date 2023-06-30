@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
+  Card,
   Checkbox,
   Col,
   Form,
@@ -48,11 +49,17 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
     form.setFieldsValue({
       Id: shift.Id,
       Description: shift.Description,
-      StartTime: dayjs(detail.StartTime, Config.TimeFormat),
-      FinishTime: dayjs(detail.FinishTime, Config.TimeFormat),
+      StartTime: detail.StartTime
+        ? dayjs(detail.StartTime, Config.TimeFormat)
+        : null,
+      FinishTime: detail.FinishTime
+        ? dayjs(detail.FinishTime, Config.TimeFormat)
+        : null,
       HasBreak: detail.HasBreak,
-      BreakAt: dayjs(detail.BreakAt, Config.TimeFormat),
-      BreakEnd: dayjs(detail.BreakEnd, Config.TimeFormat),
+      BreakAt: detail.BreakAt ? dayjs(detail.BreakAt, Config.TimeFormat) : null,
+      BreakEnd: detail.BreakEnd
+        ? dayjs(detail.BreakEnd, Config.TimeFormat)
+        : null,
       WorkingHour: detail.WorkingHour,
       WorkingDay: detail.WorkingDay,
     });
@@ -68,7 +75,9 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
         setDetail(Detail);
         setHasBreak(Detail.HasBreak);
         setShift(Shift);
+        return;
       }
+      throw new Error(Description);
     } catch (error) {
       handleErrorOfRequest({ notify, error });
     } finally {
@@ -88,11 +97,11 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
     }
     var diff1 = finishTime.diff(startTime, "hour", true);
     if (!hasBreak || !breakAt || !breakEnd) {
-      form.setFieldValue("WorkingHour", diff1);
+      form.setFieldValue("WorkingHour", diff1.toFixed(2));
       return;
     }
     var diff2 = breakEnd.diff(breakAt, "hour", true);
-    form.setFieldValue("WorkingHour", diff1 - diff2);
+    form.setFieldValue("WorkingHour", (diff1 - diff2).toFixed(2));
     return;
   };
 
@@ -111,14 +120,16 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
         setDetail(response.ResponseData.Detail);
         setEditable(false);
         notify.success({
-          message: `Cập nhập ca làm việc ${shift.Id} thành công.`,
+          message: <b>Thông báo</b>,
+          description: (
+            <div>
+              Đã cập nhập ca làm việc <b>{shift.Description}</b> thành công.
+            </div>
+          ),
         });
         return;
       }
-      notify.error({
-        message: `Cập nhập ca làm việc ${shift.Id} không thành công.`,
-        description: response.Description,
-      });
+      throw new Error(response.Description);
     } catch (error) {
       handleErrorOfRequest({ notify, error });
     } finally {
@@ -147,7 +158,7 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
                 />
               </Tooltip>
               <Typography.Title level={2} style={{ margin: 0 }}>
-                Ca làm việc
+                {shift && shift.Description ? shift.Description : "Ca làm việc"}
               </Typography.Title>
             </Space>
             <Breadcrumb>
@@ -157,6 +168,13 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
               <Breadcrumb.Item>
                 <NavLink to="/shift">Ca làm việc</NavLink>
               </Breadcrumb.Item>
+              {shift && shift.Description ? (
+                <Breadcrumb.Item>
+                  <NavLink>{shift.Description}</NavLink>
+                </Breadcrumb.Item>
+              ) : (
+                <></>
+              )}
             </Breadcrumb>
           </Space>
         </Col>
@@ -164,7 +182,7 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
           <Space>
             {editable ? (
               <>
-                <Button onClick={() => navigate("/shift")}>Hủy</Button>
+                <Button onClick={() => setEditable(false)}>Hủy</Button>
                 <Button
                   type="primary"
                   loading={updatingLoading}
@@ -186,191 +204,220 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
         </Col>
       </Row>
       <Spin spinning={loading}>
-        <Content style={{ background: colorBgContainer, padding: "5px 20px" }}>
-          <Typography.Title
-            level={4}
-            style={{
-              background: colorBgLayout,
-              padding: "4px 8px",
-              textTransform: "uppercase",
-            }}
-          >
-            Thông tin chung
-          </Typography.Title>
+        <Content style={{ paddingTop: 10 }}>
           {editable ? (
+            // <Card className="boxShadow0 rounded">
             <Form
               form={form}
               preserve={false}
               autoComplete="off"
-              labelCol={{ span: 4 }}
+              labelCol={{
+                xs: { span: 24 },
+                sm: { span: 24 },
+                md: { span: 8 },
+                lg: { span: 8 },
+                xl: { span: 8 },
+              }}
+              wrapperCol={{
+                xs: { span: 24 },
+                sm: { span: 24 },
+                md: { span: 16 },
+                lg: { span: 16 },
+                xl: { span: 16 },
+              }}
               labelWrap
               labelAlign="left"
               onFinish={onUpdatingShift}
               initialValues={{
                 Id: shift.Id,
                 Description: shift.Description,
-                StartTime: dayjs(detail.StartTime, Config.TimeFormat),
-                FinishTime: dayjs(detail.FinishTime, Config.TimeFormat),
+                StartTime: detail.StartTime
+                  ? dayjs(detail.StartTime, Config.TimeFormat)
+                  : null,
+                FinishTime: detail.FinishTime
+                  ? dayjs(detail.FinishTime, Config.TimeFormat)
+                  : null,
                 HasBreak: detail.HasBreak,
-                BreakAt: dayjs(detail.BreakAt, Config.TimeFormat),
-                BreakEnd: dayjs(detail.BreakEnd, Config.TimeFormat),
+                BreakAt: detail.BreakAt
+                  ? dayjs(detail.BreakAt, Config.TimeFormat)
+                  : null,
+                BreakEnd: detail.BreakEnd
+                  ? dayjs(detail.BreakEnd, Config.TimeFormat)
+                  : null,
                 WorkingHour: detail.WorkingHour,
                 WorkingDay: detail.WorkingDay,
               }}
             >
-              <Form.Item
-                hasFeedback
-                label="Tên ca làm việc"
-                name="Description"
-                wrapperCol={{ span: 20 }}
-                rules={[
-                  {
-                    required: true,
-                    message: "Mô tả là trường bắt buộc.",
-                  },
-                  {
-                    min: 8,
-                    message: "Tên ca làm việc cần tối thiểu 8 ký tự.",
-                  },
-                  {
-                    max: 100,
-                    message: "Tên ca làm việc cần tối đa 100 ký tự.",
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                label="Mã ca làm việc"
-                name="Id"
-                wrapperCol={{ span: 4 }}
-                required
-              >
-                <Input readOnly />
-              </Form.Item>
-              <Form.Item
-                hasFeedback
-                label="Giờ bắt đầu ca"
-                name="StartTime"
-                rules={[
-                  {
-                    required: true,
-                    message: "Giờ bắt đầu ca là trường bắt buộc.",
-                  },
-                ]}
-                wrapperCol={{ span: 4 }}
-              >
-                <TimePicker
-                  minuteStep={15}
-                  locale={locale}
-                  format={Config.NonSecondFormat}
-                  style={{ width: "100%" }}
-                  onChange={() => calculateWorkingHour()}
-                />
-              </Form.Item>
-              <Form.Item
-                hasFeedback={editable}
-                label="Giờ kết thúc ca"
-                name="FinishTime"
-                wrapperCol={{ span: 4 }}
-                rules={[
-                  {
-                    required: true,
-                    message: "Giờ kết thúc ca là trường bắt buộc.",
-                  },
-                ]}
-              >
-                <TimePicker
-                  minuteStep={15}
-                  locale={locale}
-                  style={{ width: "100%" }}
-                  format={Config.NonSecondFormat}
-                  onChange={() => calculateWorkingHour()}
-                />
-              </Form.Item>
-              <Form.Item name="HasBreak" valuePropName="checked">
-                <Checkbox
-                  disabled={!editable}
-                  checked={hasBreak}
-                  onChange={(e) => {
-                    setHasBreak(e.target.checked);
-                    calculateWorkingHour();
-                  }}
-                >
-                  Có nghỉ giữa ca
-                </Checkbox>
-              </Form.Item>
-              <Form.Item
-                label="Giờ bắt đầu"
-                hasFeedback
-                name="BreakAt"
-                required={hasBreak}
-                hidden={!hasBreak}
-                wrapperCol={{ span: 4 }}
-              >
-                <TimePicker
-                  onChange={() => calculateWorkingHour()}
-                  style={{ width: "100%" }}
-                  minuteStep={15}
-                  placeholder="Chọn giờ nghỉ"
-                  format={Config.NonSecondFormat}
-                  locale={locale}
-                />
-              </Form.Item>
-              <Form.Item
-                label="Giờ kết thúc"
-                hasFeedback={editable}
-                name="BreakEnd"
-                required={hasBreak}
-                hidden={!hasBreak}
-                wrapperCol={{ span: 4 }}
-              >
-                <TimePicker
-                  onChange={() => calculateWorkingHour()}
-                  minuteStep={15}
-                  placeholder="Chọn giờ kết thúc nghỉ"
-                  format={Config.NonSecondFormat}
-                  locale={locale}
-                  style={{ width: "100%" }}
-                />
-              </Form.Item>
-              <Typography.Title
-                level={4}
-                style={{
-                  background: colorBgLayout,
-                  padding: "4px 8px",
-                  textTransform: "uppercase",
-                }}
-              >
-                TÍNH CÔNG
-              </Typography.Title>
-              <Form.Item>
-                <Form.Item
-                  label="Giờ công"
-                  name="WorkingHour"
-                  style={{ display: "inline-block", width: "50%" }}
-                >
-                  <InputNumber
-                    min={0}
-                    step={0.1}
-                    readOnly
-                    style={{ borderBottom: "solid 1px #ccc" }}
-                  />
-                </Form.Item>
-                <Form.Item
-                  label="Ngày công"
-                  name="WorkingDay"
-                  style={{ display: "inline-block", width: "50%" }}
-                >
-                  <InputNumber
-                    min={0}
-                    step={0.1}
-                    style={{ borderBottom: "solid 1px #ccc" }}
-                  />
-                </Form.Item>
-              </Form.Item>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                  <Card className="boxShadow0 rounded">
+                    <Typography.Title
+                      level={4}
+                      style={{
+                        background: colorBgLayout,
+                        padding: "4px 8px",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Thông tin chung
+                    </Typography.Title>
+                    <Form.Item
+                      hasFeedback
+                      label="Tên ca làm việc"
+                      name="Description"
+                      wrapperCol={{ span: 20 }}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Mô tả là trường bắt buộc.",
+                        },
+                        {
+                          min: 8,
+                          message: "Tên ca làm việc cần tối thiểu 8 ký tự.",
+                        },
+                        {
+                          max: 100,
+                          message: "Tên ca làm việc cần tối đa 100 ký tự.",
+                        },
+                      ]}
+                    >
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      label="Mã ca làm việc"
+                      name="Id"
+                      wrapperCol={{ span: 4 }}
+                      required
+                    >
+                      <Input readOnly />
+                    </Form.Item>
+                    <Form.Item
+                      hasFeedback
+                      label="Giờ bắt đầu ca"
+                      name="StartTime"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Giờ bắt đầu ca là trường bắt buộc.",
+                        },
+                      ]}
+                    >
+                      <TimePicker
+                        minuteStep={15}
+                        locale={locale}
+                        format={Config.NonSecondFormat}
+                        style={{ width: "100%" }}
+                        onChange={() => calculateWorkingHour()}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      hasFeedback={editable}
+                      label="Giờ kết thúc ca"
+                      name="FinishTime"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Giờ kết thúc ca là trường bắt buộc.",
+                        },
+                      ]}
+                    >
+                      <TimePicker
+                        minuteStep={15}
+                        locale={locale}
+                        style={{ width: "100%" }}
+                        format={Config.NonSecondFormat}
+                        onChange={() => calculateWorkingHour()}
+                      />
+                    </Form.Item>
+                    <Form.Item name="HasBreak" valuePropName="checked">
+                      <Checkbox
+                        disabled={!editable}
+                        checked={hasBreak}
+                        onChange={(e) => {
+                          setHasBreak(e.target.checked);
+                          calculateWorkingHour();
+                        }}
+                      >
+                        Có nghỉ giữa ca
+                      </Checkbox>
+                    </Form.Item>
+                    <Form.Item
+                      label="Giờ bắt đầu"
+                      hasFeedback
+                      name="BreakAt"
+                      required={hasBreak}
+                      hidden={!hasBreak}
+                    >
+                      <TimePicker
+                        onChange={() => calculateWorkingHour()}
+                        style={{ width: "100%" }}
+                        minuteStep={15}
+                        placeholder="Chọn giờ nghỉ"
+                        format={Config.NonSecondFormat}
+                        locale={locale}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      label="Giờ kết thúc"
+                      hasFeedback={editable}
+                      name="BreakEnd"
+                      required={hasBreak}
+                      hidden={!hasBreak}
+                    >
+                      <TimePicker
+                        onChange={() => calculateWorkingHour()}
+                        minuteStep={15}
+                        placeholder="Chọn giờ kết thúc nghỉ"
+                        format={Config.NonSecondFormat}
+                        locale={locale}
+                        style={{ width: "100%" }}
+                      />
+                    </Form.Item>
+                  </Card>
+                </Col>
+                <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                  <Card className="boxShadow0 rounded">
+                    <Typography.Title
+                      level={4}
+                      style={{
+                        background: colorBgLayout,
+                        padding: "4px 8px",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      TÍNH CÔNG
+                    </Typography.Title>
+                    <Form.Item>
+                      <Form.Item
+                        label="Giờ công"
+                        name="WorkingHour"
+                        style={{ display: "inline-block", width: "50%" }}
+                      >
+                        <InputNumber
+                          min={0}
+                          step={0.1}
+                          readOnly
+                          style={{ borderBottom: "solid 1px #ccc" }}
+                        />
+                      </Form.Item>
+                      <Form.Item
+                        label="Ngày công"
+                        name="WorkingDay"
+                        style={{ display: "inline-block", width: "50%" }}
+                      >
+                        <InputNumber
+                          min={0}
+                          step={0.1}
+                          style={{ borderBottom: "solid 1px #ccc" }}
+                        />
+                      </Form.Item>
+                    </Form.Item>
+                  </Card>
+                </Col>
+              </Row>
             </Form>
-          ) : shift && detail ? (
+          ) : // </Card>
+          shift && detail ? (
             <OnlyViewDetailComponent shift={shift} detail={detail} />
           ) : (
             <></>
@@ -383,7 +430,7 @@ const ShiftDetailPage = function ({ notify, ...rest }) {
 
 const OnlyViewDetailComponent = ({ shift, detail, ...rest }) => {
   const {
-    token: { colorBgContainer, colorBgLayout },
+    token: { colorBgLayout },
   } = theme.useToken();
   const [form] = Form.useForm();
   const [hasBreak, setHasBreak] = useState(false);
@@ -419,138 +466,171 @@ const OnlyViewDetailComponent = ({ shift, detail, ...rest }) => {
       preserve={false}
       form={form}
       autoComplete="off"
-      labelCol={{ span: 4 }}
+      labelCol={{
+        xs: { span: 24 },
+        sm: { span: 24 },
+        md: { span: 8 },
+        lg: { span: 8 },
+        xl: { span: 8 },
+      }}
+      wrapperCol={{
+        xs: { span: 24 },
+        sm: { span: 24 },
+        md: { span: 16 },
+        lg: { span: 16 },
+        xl: { span: 16 },
+      }}
       labelWrap
       labelAlign="left"
     >
-      <Form.Item
-        label="Tên ca làm việc"
-        name="Description"
-        wrapperCol={{ span: 20 }}
-        required
-      >
-        <Input
-          readOnly
-          bordered={false}
-          style={{ borderBottom: "solid 1px #ccc" }}
-        />
-      </Form.Item>
-      <Form.Item
-        label="Mã ca làm việc"
-        name="Id"
-        wrapperCol={{ span: 4 }}
-        required
-      >
-        <Input
-          readOnly
-          bordered={false}
-          style={{
-            borderBottom: "solid 1px #ccc",
-            display: "inline-block",
-          }}
-        />
-      </Form.Item>
-      <Form.Item
-        label="Giờ bắt đầu ca"
-        name="StartTime"
-        wrapperCol={{ span: 4 }}
-        required
-      >
-        <Input
-          readOnly
-          bordered={false}
-          style={{
-            borderBottom: "solid 1px #ccc",
-            display: "inline-block",
-          }}
-        />
-      </Form.Item>
-      <Form.Item
-        label="Giờ kết thúc ca"
-        name="FinishTime"
-        wrapperCol={{ span: 4 }}
-        required
-      >
-        <Input
-          readOnly
-          bordered={false}
-          style={{
-            borderBottom: "solid 1px #ccc",
-            display: "inline-block",
-          }}
-        />
-      </Form.Item>
-      <Form.Item name="HasBreak" valuePropName="checked">
-        <Checkbox disabled checked={hasBreak}>
-          Có nghỉ giữa ca
-        </Checkbox>
-      </Form.Item>
-      <Form.Item
-        label="Giờ bắt đầu"
-        name="BreakAt"
-        required
-        hidden={!hasBreak}
-        wrapperCol={{ span: 4 }}
-      >
-        <Input
-          readOnly
-          bordered={false}
-          style={{
-            borderBottom: "solid 1px #ccc",
-            display: "inline-block",
-          }}
-        />
-      </Form.Item>
-      <Form.Item
-        label="Giờ kết thúc"
-        name="BreakEnd"
-        required
-        hidden={!hasBreak}
-        wrapperCol={{ span: 4 }}
-      >
-        <Input
-          readOnly
-          bordered={false}
-          style={{
-            borderBottom: "solid 1px #ccc",
-            display: "inline-block",
-          }}
-        />
-      </Form.Item>
-      <Typography.Title
-        level={4}
-        style={{
-          background: colorBgLayout,
-          padding: "4px 8px",
-          textTransform: "uppercase",
-        }}
-      >
-        TÍNH CÔNG
-      </Typography.Title>
-      <Form.Item>
-        <Form.Item
-          label="Giờ công"
-          name="WorkingHour"
-          style={{ display: "inline-block", width: "50%" }}
-        >
-          <InputNumber
-            readOnly
-            bordered={false}
-            style={{ borderBottom: "solid 1px #ccc" }}
-          />
-        </Form.Item>
-        <Form.Item
-          label="Ngày công"
-          name="WorkingDay"
-          style={{ display: "inline-block", width: "50%" }}
-        >
-          <InputNumber
-            readOnly
-            bordered={false}
-            style={{ borderBottom: "solid 1px #ccc" }}
-          />
-        </Form.Item>
-      </Form.Item>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+          <Card className="boxShadow0 rounded">
+            <Typography.Title
+              level={4}
+              style={{
+                background: colorBgLayout,
+                padding: "4px 8px",
+                textTransform: "uppercase",
+              }}
+            >
+              Thông tin chung
+            </Typography.Title>
+            <Form.Item
+              label="Tên ca làm việc"
+              name="Description"
+              wrapperCol={{ span: 20 }}
+              required
+            >
+              <Input
+                readOnly
+                bordered={false}
+                style={{ borderBottom: "solid 1px #ccc" }}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Mã ca làm việc"
+              name="Id"
+              wrapperCol={{ span: 4 }}
+              required
+            >
+              <Input
+                readOnly
+                bordered={false}
+                style={{
+                  borderBottom: "solid 1px #ccc",
+                  display: "inline-block",
+                }}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Giờ bắt đầu ca"
+              name="StartTime"
+              wrapperCol={{ span: 4 }}
+              required
+            >
+              <Input
+                readOnly
+                bordered={false}
+                style={{
+                  borderBottom: "solid 1px #ccc",
+                  display: "inline-block",
+                }}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Giờ kết thúc ca"
+              name="FinishTime"
+              wrapperCol={{ span: 4 }}
+              required
+            >
+              <Input
+                readOnly
+                bordered={false}
+                style={{
+                  borderBottom: "solid 1px #ccc",
+                  display: "inline-block",
+                }}
+              />
+            </Form.Item>
+            <Form.Item name="HasBreak" valuePropName="checked">
+              <Checkbox disabled checked={hasBreak}>
+                Có nghỉ giữa ca
+              </Checkbox>
+            </Form.Item>
+            <Form.Item
+              label="Giờ bắt đầu"
+              name="BreakAt"
+              required
+              hidden={!hasBreak}
+              wrapperCol={{ span: 4 }}
+            >
+              <Input
+                readOnly
+                bordered={false}
+                style={{
+                  borderBottom: "solid 1px #ccc",
+                  display: "inline-block",
+                }}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Giờ kết thúc"
+              name="BreakEnd"
+              required
+              hidden={!hasBreak}
+              wrapperCol={{ span: 4 }}
+            >
+              <Input
+                readOnly
+                bordered={false}
+                style={{
+                  borderBottom: "solid 1px #ccc",
+                  display: "inline-block",
+                }}
+              />
+            </Form.Item>
+          </Card>
+        </Col>
+        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+          <Card className="boxShadow0 rounded">
+            <Typography.Title
+              level={4}
+              style={{
+                background: colorBgLayout,
+                padding: "4px 8px",
+                textTransform: "uppercase",
+              }}
+            >
+              TÍNH CÔNG
+            </Typography.Title>
+            <Form.Item>
+              <Form.Item
+                label="Giờ công"
+                name="WorkingHour"
+                style={{ display: "inline-block", width: "50%" }}
+              >
+                <InputNumber
+                  readOnly
+                  bordered={false}
+                  style={{ borderBottom: "solid 1px #ccc" }}
+                />
+              </Form.Item>
+              <Form.Item
+                label="Ngày công"
+                name="WorkingDay"
+                style={{ display: "inline-block", width: "50%" }}
+              >
+                <InputNumber
+                  readOnly
+                  bordered={false}
+                  style={{ borderBottom: "solid 1px #ccc" }}
+                />
+              </Form.Item>
+            </Form.Item>
+          </Card>
+        </Col>
+      </Row>
     </Form>
   );
 };

@@ -69,10 +69,10 @@ export const Dashboard = function ({ notify, ...rest }) {
         </Col>
       </Row>
       <Row gutter={[24, 24]}>
-        <Col xs={24} sm={24} md={24} lg={16} xl={12}>
+        <Col xs={24} sm={24} md={24} lg={24} xl={12}>
           <EarlyLateChart notify={notify} />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={16} xl={12}>
+        <Col xs={24} sm={24} md={24} lg={24} xl={12}>
           <OffChart notify={notify} />
         </Col>
       </Row>

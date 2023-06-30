@@ -43,10 +43,7 @@ export const EditDepartmentForm = function (props) {
           form.setFieldsValue({ ManagerId: department.ManagerId });
           return;
         }
-        notify.error({
-          message: "Có lỗi",
-          description: Description,
-        });
+        throw new Error(Description);
       })
       .catch((error) => {
         handleErrorOfRequest({ notify, error });
@@ -57,6 +54,7 @@ export const EditDepartmentForm = function (props) {
   }, [department, open]);
 
   const onSubmit = (values) => {
+    setProcessing(true);
     UpdateOneDepartment(values)
       .then((response) => {
         const { Status, Description, ResponseData } = response;
@@ -64,22 +62,29 @@ export const EditDepartmentForm = function (props) {
           var manager = currentEmployeeList.find(
             (employee) => employee.Id === values.ManagerId
           );
-          values.ManagerName = `${manager.LastName} ${manager.FirstName}`;
-          updateOneDepartment(values);
+          // let managerName = `${manager.LastName} ${manager.FirstName}`;
+          updateOneDepartment({
+            ...ResponseData,
+            ManagerName: `${manager.LastName} ${manager.FirstName}`,
+          });
           notify.success({
-            description: "Chỉnh sửa thành công",
+            message: <b>Thông báo</b>,
+            description: (
+              <div>
+                Chỉnh sửa phòng ban <b>{values.Name}</b> thành công
+              </div>
+            ),
           });
           hideModal();
           return;
         }
-        notify.error({
-          message: "Có lỗi",
-          description:
-            "Truy vấn danh sách nhân viên không thành công. " + Description,
-        });
+        throw new Error(Description);
       })
       .catch((error) => {
         handleErrorOfRequest({ notify, error });
+      })
+      .finally(() => {
+        setProcessing(false);
       });
   };
 
@@ -88,7 +93,6 @@ export const EditDepartmentForm = function (props) {
   };
   const hideModal = () => {
     setOpen(false);
-    Modal.destroyAll();
   };
   const title = (
     <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>

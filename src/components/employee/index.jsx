@@ -112,7 +112,7 @@ export let defaultColumns = [
     key: "DepartmentName",
     sorter: (a, b) => compareString(a.DepartmentName, b.DepartmentName),
     onFilter: (value, record) => record.DepartmentId.startsWith(value),
-    width: 200,
+    width: 220,
   },
   {
     title: "Ngày vào",

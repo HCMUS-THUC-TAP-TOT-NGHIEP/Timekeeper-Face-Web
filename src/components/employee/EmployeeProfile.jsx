@@ -3,12 +3,14 @@ import {
   Avatar,
   Breadcrumb,
   Button,
+  Card,
   Col,
   Descriptions,
   Row,
   Skeleton,
   Space,
   Spin,
+  Typography,
   notification,
   theme,
 } from "antd";
@@ -26,9 +28,6 @@ export const EmployeeProfile = (props) => {
   const [currentEmployee, setCurrentEmployee] = useState({});
   const [loading, setLoading] = useState(true);
   const [notify, contextHolder] = notification.useNotification();
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
 
   useEffect(() => {
     document.title = "Hồ sơ nhân viên";
@@ -78,70 +77,78 @@ export const EmployeeProfile = (props) => {
     <Spin spinning={loading}>
       <Space direction="vertical" style={{ width: "100%" }}>
         {contextHolder}
-        <Row>
+        <Row gutter={[16, 16]} align="middle">
           <Col flex="none">
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                <Link to="/employee/all">Nhân viên</Link>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <Link to="">Hồ sơ</Link>
-              </Breadcrumb.Item>
-            </Breadcrumb>
-          </Col>
-          <Col flex="auto" style={{ textAlign: "right" }}>
-            <Button
-              style={{ margin: "5px 5px" }}
-              type="primary"
-              onClick={() => navigate(`/employee/edit/${employeeId}`)}
-              icon={<EditFilled />}
-            >
-              Cập nhật hồ sơ
-            </Button>
+            <Space direction="vertical">
+              <Skeleton loading={loading}>
+                <Typography.Title level={2} style={{ marginTop: 0 }}>
+                  {currentEmployee.LastName + " " + currentEmployee.FirstName}
+                </Typography.Title>
+              </Skeleton>
+              <Breadcrumb>
+                <Breadcrumb.Item>
+                  <Link to="/">Dashboard</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to="/employee">Nhân viên</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to={`/employee/${employeeId}`}>
+                    <Skeleton loading={loading}>
+                      {currentEmployee.LastName +
+                        " " +
+                        currentEmployee.FirstName}
+                    </Skeleton>
+                  </Link>
+                </Breadcrumb.Item>
+              </Breadcrumb>
+            </Space>
           </Col>
         </Row>
-        <Content style={{ background: colorBgContainer, padding: 20 }}>
-          <Skeleton avatar loading={loading} active={loading}>
-            <Descriptions
-              column={{
-                xxl: 2,
-                xl: 2,
-                lg: 2,
-                md: 1,
-                sm: 1,
-                xs: 1,
-              }}
-              title={title}
-            >
-              <Descriptions.Item label="ID">
-                {currentEmployee.Id}
-              </Descriptions.Item>
-              <Descriptions.Item label="Phòng ban/ Nhóm">
-                {currentEmployee.DepartmentName}
-              </Descriptions.Item>
-              <Descriptions.Item label="Vị trí">
-                {currentEmployee.Position}
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày vào">
-                {new Date(
-                  Date.parse(currentEmployee.JoinDate)
-                ).toLocaleDateString()}
-              </Descriptions.Item>
-              <Descriptions.Item label="ĐTDĐ">
-                {currentEmployee.MobilePhone}
-              </Descriptions.Item>
-              <Descriptions.Item label="Địa chỉ">
-                {currentEmployee.Address}
-              </Descriptions.Item>
-              <Descriptions.Item label="Email">
-                {currentEmployee.Email}
-              </Descriptions.Item>
-              <Descriptions.Item label="Giới tính">
-                {currentEmployee.Gender ? "Nam" : "Nữ"}
-              </Descriptions.Item>
-            </Descriptions>
-          </Skeleton>
-        </Content>
+        <Skeleton loading={loading} active={loading}>
+          <Content style={{ paddingTop: 10 }}>
+            <Card className="boxShadow0 rounded">
+              <Descriptions
+                column={{
+                  xxl: 2,
+                  xl: 2,
+                  lg: 2,
+                  md: 1,
+                  sm: 1,
+                  xs: 1,
+                }}
+                title={title}
+              >
+                <Descriptions.Item label="ID">
+                  {currentEmployee.Id}
+                </Descriptions.Item>
+                <Descriptions.Item label="Phòng ban/ Nhóm">
+                  {currentEmployee.DepartmentName}
+                </Descriptions.Item>
+                <Descriptions.Item label="Vị trí">
+                  {currentEmployee.Position}
+                </Descriptions.Item>
+                <Descriptions.Item label="Ngày vào">
+                  {new Date(
+                    Date.parse(currentEmployee.JoinDate)
+                  ).toLocaleDateString()}
+                </Descriptions.Item>
+                <Descriptions.Item label="ĐTDĐ">
+                  {currentEmployee.MobilePhone}
+                </Descriptions.Item>
+                <Descriptions.Item label="Địa chỉ">
+                  {currentEmployee.Address}
+                </Descriptions.Item>
+                <Descriptions.Item label="Email">
+                  {currentEmployee.Email}
+                </Descriptions.Item>
+                <Descriptions.Item label="Giới tính">
+                  {currentEmployee.Gender ? "Nam" : "Nữ"}
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+          </Content>
+        </Skeleton>
       </Space>
     </Spin>
   );

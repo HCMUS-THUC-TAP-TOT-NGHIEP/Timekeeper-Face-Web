@@ -7,7 +7,7 @@ const DepartmentPageIndex = ({ notify, loginRequired, ...rest }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Phòng ban";
+    document.title = "Danh mục phòng ban";
     if (loginRequired && !userDetails.token) {
       notify.warning({
         message: "Yêu cầu đăng nhập để tiếp tục.",

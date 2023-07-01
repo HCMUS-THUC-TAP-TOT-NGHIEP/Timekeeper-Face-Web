@@ -85,6 +85,7 @@ export const GetTimesheetDetail = async (req) => {
   const response = await AxiosInstance.get("checkin/timesheet/detail", {
     params: {
       Id: req.Id,
+      SearchString: req.SearchString,
     },
     headers: {
       "Access-Control-Allow-Origin": "*",

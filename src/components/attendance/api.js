@@ -2,7 +2,7 @@ import axios from "axios";
 import Config from "../../constant";
 let AxiosInstance = axios.create({
   baseURL: Config.ServerApiUrl,
-  timeout: Config.Timeout || 6000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",

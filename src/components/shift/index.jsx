@@ -6,7 +6,7 @@ const ShiftManagementIndex = ({ loginRequired, notify, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
   useEffect(() => {
-    document.title = "Quản lý ca làm việc";
+    document.title = "Danh mục ca làm việc";
     if (loginRequired && !userDetails.token) {
       notify.warning({
         message: "Yêu cầu đăng nhập để tiếp tục.",
@@ -24,4 +24,3 @@ export * from "./ShiftAssignmentPage";
 export * from "./ShiftDetailPage";
 export * from "./AddShiftAssignment";
 export { ShiftManagementIndex };
-

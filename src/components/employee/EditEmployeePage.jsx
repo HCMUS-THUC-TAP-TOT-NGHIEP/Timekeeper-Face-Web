@@ -36,6 +36,7 @@ export const EditEmployeePage = ({ loginRequired, ...rest }) => {
   const [currentEmployee, setCurrentEmployee] = useState({});
   const [departmentList, setDepartmentList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
   const [form] = Form.useForm();
   const userDetails = useAuthState();
   useEffect(() => {
@@ -83,23 +84,25 @@ export const EditEmployeePage = ({ loginRequired, ...rest }) => {
   }, [employeeId]);
 
   const onSubmit = (values) => {
+    setProcessing(true);
     ModifyEmployeeInfo(values)
       .then((response) => {
         const { Status, Description } = response;
         if (Status === 1) {
           notification.success({
-            description: "Cập nhật thông tin nhân viên thành công",
+            message: <b>Thông báo</b>,
+            description: <div>Cập nhật thông tin nhân viên thành công</div>,
           });
           navigate(`/employee/${currentEmployee.Id}`);
           return;
         }
-        notification.error({
-          title: "Cập nhật Không thành công",
-          description: Description,
-        });
+        throw new Error(Description);
       })
       .catch((error) => {
         handleErrorOfRequest({ notify, error });
+      })
+      .finally(() => {
+        setProcessing(false);
       });
   };
 
@@ -358,7 +361,12 @@ export const EditEmployeePage = ({ loginRequired, ...rest }) => {
                 </Col>
               </Row>
               <Form.Item>
-                <Button type="primary" htmlType="submit" size="large">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  loading={processing}
+                >
                   Cập nhật thông tin
                 </Button>
               </Form.Item>

@@ -1,10 +1,10 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
   Col,
-  Form,
   Popconfirm,
   Row,
   Space,
@@ -13,25 +13,39 @@ import {
   Typography,
   notification,
 } from "antd";
-import React, { useEffect, useState } from "react";
+import { Content } from "antd/es/layout/layout";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { AddDepartmentFrom } from "./AddPage";
 import { EditDepartmentForm } from "./EditPage";
 import { DeleteOneDepartment, GetDepartmentList } from "./api";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { handleErrorOfRequest } from "../../utils/Helpers";
+import Search from "antd/es/input/Search";
+import dayjs from "dayjs";
+import "dayjs/locale/vi";
+import Config from "../../constant";
+import { compareString } from "../../utils/Comparation";
 
 const DepartmentList = (props) => {
   const { notify } = props;
   const [loading, setLoading] = useState(true);
-  const [reload, setReload] = useState(true);
+  const [reloading, setReloading] = useState(true);
   const [currentDepartmentList, setCurrentDepartmentList] = useState([]);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [total, setTotal] = useState(0);
+  const searchInputRef = useRef();
+
   useEffect(() => {
     setLoading(true);
-    GetDepartmentList({ Page: page, PerPage: perPage })
+    let searchString = searchInputRef.current
+      ? searchInputRef.current.input.value
+      : "";
+    GetDepartmentList({
+      Page: page,
+      PerPage: perPage,
+      SearchString: searchString,
+    })
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
@@ -51,7 +65,7 @@ const DepartmentList = (props) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [perPage, page, reload]);
+  }, [perPage, page, reloading]);
 
   const updateOneDepartment = (values) => {
     const newCurrentDepartmentList = currentDepartmentList.map((department) => {
@@ -75,10 +89,10 @@ const DepartmentList = (props) => {
       key: "Id",
       width: 80,
       sorter: (a, b) => a.Id - b.Id,
-      fixed: "left",
+      align: "right",
     },
     {
-      title: "Tên",
+      title: "Phòng ban/ Bộ phận",
       dataIndex: "Name",
       key: "Name",
       sorter: (a, b) => a.Name.localeCompare(b.Name),
@@ -88,7 +102,27 @@ const DepartmentList = (props) => {
       dataIndex: "Manager",
       key: "Manager",
       render: (_, { ManagerName }) => ManagerName,
+      sorter: (a, b) => compareString(a.ManagerName, b.ManagerName),
       with: 200,
+    },
+    {
+      title: "Số nhân viên",
+      dataIndex: "EmployeeTotal",
+      key: "EmployeeTotal",
+      sorter: (a, b) => a.EmployeeTotal - b.EmployeeTotal,
+      width: 150,
+      align: "right",
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "CreatedAt",
+      key: "CreatedAt",
+      render: (value) =>
+        dayjs(value).locale("vi").format(Config.TimestampFormat),
+      with: 50,
+      sorter: (a, b) =>
+        dayjs(a.CreatedAt).locale("vi").toDate() -
+        dayjs(b.CreatedAt).locale("vi").toDate(),
     },
     {
       title: "",
@@ -127,52 +161,77 @@ const DepartmentList = (props) => {
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
           <Space wrap align="center">
-            <Button
-              type="primary"
-              onClick={() => setReload(!reload)}
-              icon={
-                <FontAwesomeIcon
-                  icon={faArrowsRotate}
-                  style={{ paddingRight: "8px" }}
-                  spin={loading}
-                />
-              }
-              loading={loading}
-              style={{
-                backgroundColor: "#ec5504",
-                border: "1px solid #ec5504",
-              }}
-            >
-              Lấy lại dữ liệu
-            </Button>
             <AddDepartmentFrom
               listState={[insertOneDepartment, currentDepartmentList]}
             />
           </Space>
         </Col>
       </Row>
-      <Table
-        loading={loading}
-        bordered
-        rowKey="Id"
-        scroll={{
-          x: 900,
-        }}
-        dataSource={currentDepartmentList}
-        columns={columns}
-        pagination={{
-          pageSize: perPage,
-          current: page,
-          total: total,
-          pageSizeOptions: [10, 20, 50],
-          showSizeChanger: true,
-          onChange: (page, pageSize) => {
-            setPage(page);
-            setPerPage(pageSize);
-          },
-          showTotal: (total) => "Tổng " + total + " bản ghi.",
-        }}
-      />
+      <Content style={{ paddingTop: 10 }}>
+        <Row
+          wrap={true}
+          gutter={[16, 16]}
+          align="middle"
+          style={{ marginBottom: 16 }}
+        >
+          <Col flex="none" style={{ width: 400 }}>
+            <Search
+              allowClear
+              ref={searchInputRef}
+              onSearch={(value) => {
+                setReloading(!reloading);
+              }}
+              enterButton
+              placeholder="Tìm kiếm bằng mã, tên phòng ban"
+            ></Search>
+          </Col>
+          <Col flex="auto" style={{ textAlign: "right" }}>
+            <Space wrap>
+              <Button
+                loading={loading}
+                onClick={() => setReloading(!reloading)}
+                style={{
+                  backgroundColor: "#ec5504",
+                  border: "1px solid #ec5504",
+                }}
+                type="primary"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faArrowsRotate}
+                    style={{ paddingRight: "8px" }}
+                  />
+                }
+              >
+                Tải lại
+              </Button>
+            </Space>
+          </Col>
+        </Row>
+
+        <Table
+          className="boxShadow0 rounded"
+          loading={loading}
+          bordered
+          rowKey="Id"
+          scroll={{
+            x: 900,
+          }}
+          dataSource={currentDepartmentList}
+          columns={columns}
+          pagination={{
+            pageSize: perPage,
+            current: page,
+            total: total,
+            pageSizeOptions: [10, 20, 50],
+            showSizeChanger: true,
+            onChange: (page, pageSize) => {
+              setPage(page);
+              setPerPage(pageSize);
+            },
+            showTotal: (total) => "Tổng " + total + " bản ghi.",
+          }}
+        />
+      </Content>
     </Space>
   );
 };

@@ -16,6 +16,7 @@ export const initialState = {
   refresh_token: "" || refresh_token,
   loading: false,
   errorMessage: null,
+  authorization: {},
 };
 
 export const AuthReducer = (initialState, action) => {
@@ -47,7 +48,18 @@ export const AuthReducer = (initialState, action) => {
         loading: false,
         errorMessage: action.error,
       };
-
+    case "CHECK_AUTHORIZATION":
+      console.log(action);
+      let currentPermissions = action.payload.current.authorization;
+      currentPermissions = {
+        ...currentPermissions,
+        ...action.payload.permission,
+      };
+      console.log(currentPermissions);
+      return {
+        ...action.payload.current,
+        authorization: currentPermissions,
+      };
     default:
       throw new Error(`Unhandled action type: ${action.type}`);
   }

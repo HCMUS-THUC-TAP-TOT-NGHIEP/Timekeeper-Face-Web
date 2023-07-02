@@ -2,17 +2,19 @@ import { EditTwoTone } from "@ant-design/icons";
 import {
   Button,
   Col,
+  Divider,
   Form,
   Input,
   Modal,
   Row,
+  Select,
   Space,
   Tooltip,
   notification,
 } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { handleErrorOfRequest } from "../../utils/Helpers";
-import { UpdateUser } from "./api";
+import { GetUserRoleList, UpdateUser } from "./api";
 
 const EditAccount = (props) => {
   const { account, editAccountFE } = props;
@@ -22,6 +24,8 @@ const EditAccount = (props) => {
   const [readonlyForm, setReadonlyForm] = useState(
     props.isReadOnly ? true : false
   );
+  const [roleList, setRoleList] = useState([]);
+
   const handleCancel = () => {
     setIsModalOpen(false);
   };
@@ -34,14 +38,14 @@ const EditAccount = (props) => {
     setLoading(true);
     UpdateUser(values)
       .then((response) => {
-        const { Status, Description } = response;
+        let { Status, ResponseData, Description } = response;
         if (Status === 1) {
           notify.success({
-            message: "Đã cập nhật tài khoản " + account.Username,
+            message: <b>Thông báo</b>,
+            description: "Đã cập nhật tài khoản " + account.Username,
           });
-          account.Name = values.Name;
-          account.EmailAddress = values.EmailAddress;
-          editAccountFE(account);
+          let { User } = ResponseData;
+          editAccountFE(User);
           success = true;
           return;
         }
@@ -61,13 +65,43 @@ const EditAccount = (props) => {
       });
   };
 
+  useEffect(() => {
+    if (!isModalOpen) {
+      setRoleList([]);
+      return;
+    }
+
+    loadData();
+  }, [isModalOpen]);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+      let response = await GetUserRoleList();
+      if (response.Status === 1) {
+        let { RoleList } = response.ResponseData;
+        setRoleList(RoleList);
+      }
+    } catch (error) {
+      handleErrorOfRequest({ error: error, notify: notify });
+    } finally {
+      setLoading(false);
+    }
+  }
+  const title = (
+    <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
+      <EditTwoTone />
+      Chỉnh sửa người dùng
+    </Space>
+  );
+
   return (
     <Space>
       <Tooltip title="Chỉnh sửa">
         <Button type="text" icon={<EditTwoTone />} onClick={showEditForm} />
       </Tooltip>
       <Modal
-        title={<Space>Chỉnh sửa người dùng</Space>}
+        title={title}
         open={isModalOpen}
         keyboard={true}
         closable={true}
@@ -86,6 +120,7 @@ const EditAccount = (props) => {
             Username: account.Username,
             EmailAddress: account.EmailAddress,
             Name: account.Name,
+            Role: account.Role,
           }}
           style={{ width: "100%" }}
         >
@@ -152,6 +187,27 @@ const EditAccount = (props) => {
             </Col>
             <Col xs={24} md={24}>
               <Form.Item
+                label="Phân quyền"
+                name="Role"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng chọn phân quyền",
+                  },
+                ]}
+              >
+                <Select
+                  options={roleList.map((role) => ({
+                    label: role.Description,
+                    value: role.Id,
+                  }))}
+                  loading={loading}
+                ></Select>
+              </Form.Item>
+            </Col>
+            <Divider />
+            <Col xs={24} md={24}>
+              <Form.Item
                 label="Xác thực mật khẩu"
                 name="ConfirmPassword"
                 required
@@ -191,4 +247,3 @@ const EditAccount = (props) => {
 };
 
 export { EditAccount };
-

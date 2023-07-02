@@ -1,4 +1,4 @@
-import { DeleteOutlined, EditTwoTone, EyeTwoTone } from "@ant-design/icons";
+import { DeleteOutlined, EditTwoTone } from "@ant-design/icons";
 import { faArrowsRotate, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,16 +13,19 @@ import {
   Typography,
   notification,
 } from "antd";
+import Search from "antd/es/input/Search";
+import { Content } from "antd/es/layout/layout";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { defaultColumns } from ".";
+import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { compareDatetime, compareString } from "../../utils/Comparation";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { ImportDataComponent } from "./ImportEmployeeList";
 import { DeleteOneEmployee, GetManyEmployee } from "./api";
 import "./style.css";
-import { defaultColumns } from ".";
-import { handleErrorOfRequest } from "../../utils/Helpers";
 
 export const AllEmployeesPage = (props) => {
   const [page, setPage] = useState(1);
@@ -31,14 +34,27 @@ export const AllEmployeesPage = (props) => {
   const [loading, setLoading] = useState(true);
   const [notify, contextHolder] = notification.useNotification();
   const [total, setTotal] = useState(40);
-  const [reload, setReload] = useState(true);
+  const [reloading, setReloading] = useState(true);
   const navigate = useNavigate();
+  const { authorization } = useAuthState();
+  const EmployeePermission = authorization.Employee;
+  const searchInputRef = useRef();
 
   useEffect(() => {
+    if (!EmployeePermission || !EmployeePermission.read) {
+      return;
+    }
     const loadData = async () => {
       try {
+        let searchString = searchInputRef.current
+          ? searchInputRef.current.input.value
+          : "";
         setLoading(true);
-        var response = await GetManyEmployee({ page, perPage });
+        var response = await GetManyEmployee("GET", {
+          page,
+          perPage,
+          searchString,
+        });
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
           const { EmployeeList, Total } = ResponseData;
@@ -57,26 +73,34 @@ export const AllEmployeesPage = (props) => {
       }
     };
     loadData();
-  }, [page, perPage, reload]);
+  }, [page, perPage, reloading, EmployeePermission]);
 
   const deleteOneEmployee = (values) => {
     setCurrentEmployeeList(
       currentEmployeeList.filter((a) => a.Id !== values.Id)
     );
   };
-  
-  let columns = [...defaultColumns,   {
-    title: "",
-    dataIndex: "Action",
-    key: "Action",
-    render: (_, employee) => (
-      <ActionMenu Employee={employee} deleteOneEmployee={deleteOneEmployee} />
-    ),
-    width: 120,
-    align: "center",
-  },
-  ]
-  
+
+  let columns = [
+    ...defaultColumns,
+    {
+      title: "",
+      dataIndex: "Action",
+      key: "Action",
+      render: (_, employee) => (
+        <ActionMenu
+          Employee={employee}
+          deleteOneEmployee={deleteOneEmployee}
+          allowUpdate={EmployeePermission && EmployeePermission.update}
+          allowDelete={EmployeePermission && EmployeePermission.delete}
+        />
+      ),
+      width: 120,
+      align: "center",
+      fixed: "right",
+    },
+  ];
+
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {contextHolder}
@@ -97,94 +121,131 @@ export const AllEmployeesPage = (props) => {
           </Space>
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
-          <Space wrap>
-            <Button
-              type="primary"
-              onClick={() => setReload(!reload)}
-              icon={
-                <FontAwesomeIcon
-                  icon={faArrowsRotate}
-                  style={{ paddingRight: "8px" }}
-                  spin={loading}
-                />
-              }
-              loading={loading}
-              style={{
-                backgroundColor: "#ec5504",
-                border: "1px solid #ec5504",
-              }}
-            >
-              Lấy lại dữ liệu
-            </Button>
-            <Button
-              type="primary"
-              icon={
-                <FontAwesomeIcon
-                  icon={faPlus}
-                  style={{ paddingRight: "8px" }}
-                />
-              }
-              onClick={() => navigate("/employee/add")}
-            >
-              Thêm nhân viên mới
-            </Button>
-            <ImportDataComponent notify={notify} />
-          </Space>
+          {EmployeePermission && EmployeePermission.create ? (
+            <Space wrap>
+              <Button
+                type="primary"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faPlus}
+                    style={{ paddingRight: "8px" }}
+                  />
+                }
+                onClick={() => navigate("/employee/add")}
+              >
+                Thêm nhân viên mới
+              </Button>
+              <ImportDataComponent notify={notify} />
+            </Space>
+          ) : (
+            <></>
+          )}
         </Col>
       </Row>
-      <Table
-        bordered
-        loading={loading}
-        scroll={{
-          x: 1500,
-          y: 1200,
-        }}
-        dataSource={currentEmployeeList}
-        columns={columns}
-        rowKey="Id"
-        pagination={{
-          onChange: (page, pageSize) => {
-            setPage(page);
-            setPerPage(pageSize);
-          },
-          total: total,
-          pageSizeOptions: [10, 15, 25, 50],
-          showSizeChanger: true,
-          showTotal: (total, range) => `Tổng số bản ghi: ${total}`,
-          position: "",
-        }}
-      />
+      {EmployeePermission ? (
+        EmployeePermission.read ? (
+          <Content style={{ paddingTop: 10 }}>
+            <Row
+              wrap={true}
+              gutter={[16, 16]}
+              align="middle"
+              style={{ marginBottom: 16 }}
+            >
+              <Col flex="none" style={{ width: 400 }}>
+                <Search
+                  allowClear
+                  ref={searchInputRef}
+                  onSearch={(value) => {
+                    setReloading(!reloading);
+                  }}
+                  enterButton
+                  placeholder="Tìm kiếm bằng mã, họ tên nhân viên"
+                ></Search>
+              </Col>
+              <Col flex="auto" style={{ textAlign: "right" }}>
+                <Space wrap>
+                  <Button
+                    loading={loading}
+                    onClick={() => setReloading(!reloading)}
+                    style={{
+                      backgroundColor: "#ec5504",
+                      border: "1px solid #ec5504",
+                    }}
+                    type="primary"
+                    icon={
+                      <FontAwesomeIcon
+                        icon={faArrowsRotate}
+                        style={{ paddingRight: "8px" }}
+                      />
+                    }
+                  >
+                    Tải lại
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+            <Table
+              className="boxShadow0 rounded"
+              bordered
+              loading={loading}
+              scroll={{
+                x: 1500,
+                y: 1200,
+              }}
+              dataSource={currentEmployeeList}
+              columns={columns}
+              rowKey="Id"
+              pagination={{
+                onChange: (page, pageSize) => {
+                  setPage(page);
+                  setPerPage(pageSize);
+                },
+                total: total,
+                pageSizeOptions: [10, 15, 25, 50],
+                showSizeChanger: true,
+                showTotal: (total) => `Tổng số bản ghi: ${total}`,
+              }}
+            />
+          </Content>
+        ) : (
+          <Typography.Title level={2}>
+            Tài khoản không được phép truy cập đến mục này.
+          </Typography.Title>
+        )
+      ) : (
+        <></>
+      )}
     </Space>
   );
 };
 
 function ActionMenu(props) {
-  const { Employee, deleteOneEmployee } = props;
+  const { Employee, deleteOneEmployee, allowUpdate, allowDelete } = props;
   const [notify, contextHolder] = notification.useNotification();
   const navigate = useNavigate();
   return (
     <Space size="small">
-      <Tooltip title="Xem">
-        <Button
-          size="small"
-          type="text"
-          icon={<EyeTwoTone />}
-          onClick={() => navigate(`/employee/${Employee.Id}`)}
+      {allowUpdate ? (
+        <Tooltip title="Sửa">
+          <Button
+            size="small"
+            type="text"
+            icon={<EditTwoTone />}
+            onClick={() => navigate(`/employee/edit/${Employee.Id}`)}
+          />
+        </Tooltip>
+      ) : (
+        <></>
+      )}
+      {allowDelete ? (
+        <DeleteEmployee
+          notify={notify}
+          employee={Employee}
+          deleteOneEmployee={deleteOneEmployee}
         />
-      </Tooltip>
-      <Tooltip title="Sửa">
-        <Button
-          size="small"
-          type="text"
-          icon={<EditTwoTone />}
-          onClick={() => navigate(`/employee/edit/${Employee.Id}`)}
-        />
-      </Tooltip>
-      <DeleteEmployee
-        notify={notify}
-        employee={Employee}
-        deleteOneEmployee={deleteOneEmployee}
-      />
+      ) : (
+        <></>
+      )}
       {contextHolder}
     </Space>
   );

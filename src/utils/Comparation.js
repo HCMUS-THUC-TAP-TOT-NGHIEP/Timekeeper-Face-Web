@@ -16,10 +16,10 @@ function compareString(a, b, field) {
 
 function compareDatetime(a, b, field) {
   try {
-    if (a[field] == b[field]) {
+    if (a[field] === b[field]) {
       return 0;
     }
-    if (a[field] == b[field]) {
+    if (a[field] === b[field]) {
       return 1;
     }
     return -1;

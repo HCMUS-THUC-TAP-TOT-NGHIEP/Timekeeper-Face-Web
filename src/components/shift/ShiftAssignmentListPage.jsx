@@ -20,47 +20,55 @@ import {
 import { Content } from "antd/es/layout/layout";
 import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Config from "../../constant";
-import { DeleteShiftAssignment, GetAssignmentList } from "./api";
 import { handleErrorOfRequest } from "../../utils/Helpers";
-import useNotification from "antd/es/notification/useNotification";
+import { DeleteShiftAssignment, GetAssignmentList } from "./api";
+import { useAuthState } from "../../Contexts/AuthContext";
+import Search from "antd/es/input/Search";
+import { compareString } from "../../utils/Comparation";
 
 const ShiftAssignmentListPage = (props) => {
   const { notify } = props;
   const [loading, setLoading] = useState(true);
-  const [reload, setReload] = useState(true);
+  const [reloading, setReloading] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
+  const searchInputRef = useRef();
+  const { authorization } = useAuthState();
+
   const [shiftAssignmentList, setShiftAssignmentList] = useState([]);
 
   useEffect(() => {
+    document.title = "Danh mục bảng phân ca chi tiết";
+  }, []);
+
+  useEffect(() => {
     setLoading(true);
-    GetAssignmentList({ Page: page, PageSize: pageSize })
+    let SearchString = searchInputRef.current
+      ? searchInputRef.current.input.value
+      : "";
+    GetAssignmentList({ Page: page, PageSize: pageSize, SearchString })
       .then((response) => {
         const { Status, ResponseData, Description } = response;
         if (Status === 1) {
-          console.log(ResponseData);
           const { ShiftAssignmentList, Total } = ResponseData;
           setShiftAssignmentList(ShiftAssignmentList);
           setTotal(Total);
           return;
         }
-        notify.error({
-          message: "Có lỗi",
-          description: Description,
-        });
+        throw new Error(Description);
       })
       .catch((error) => {
         handleErrorOfRequest({ notify, error });
       })
-      .finally((done) => {
+      .finally(() => {
         setLoading(false);
       });
-  }, [page, pageSize, reload]);
+  }, [page, pageSize, reloading]);
 
   const deleteOnFE = function (value) {
     var newList = shiftAssignmentList.filter(
@@ -94,24 +102,6 @@ const ShiftAssignmentListPage = (props) => {
           <Space wrap>
             <Button
               type="primary"
-              onClick={() => setReload(!reload)}
-              icon={
-                <FontAwesomeIcon
-                  icon={faArrowsRotate}
-                  style={{ paddingRight: "8px" }}
-                  spin={loading}
-                />
-              }
-              loading={loading}
-              style={{
-                backgroundColor: "#ec5504",
-                border: "1px solid #ec5504",
-              }}
-            >
-              Lấy lại dữ liệu
-            </Button>
-            <Button
-              type="primary"
               onClick={() => navigate("/shift/assignment/new")}
               icon={<PlusOutlined />}
             >
@@ -120,8 +110,48 @@ const ShiftAssignmentListPage = (props) => {
           </Space>
         </Col>
       </Row>
-      <Content>
+      <Content style={{ paddingTop: 10 }}>
+        <Row
+          wrap={true}
+          gutter={[16, 16]}
+          align="middle"
+          style={{ marginBottom: 16 }}
+        >
+          <Col flex="none" style={{ width: 400 }}>
+            <Search
+              allowClear
+              ref={searchInputRef}
+              onSearch={(value) => {
+                setReloading(!reloading);
+              }}
+              enterButton
+              placeholder="Tìm kiếm bằng username, email"
+            ></Search>
+          </Col>
+          <Col flex="auto" style={{ textAlign: "right" }}>
+            <Space wrap>
+              <Button
+                loading={loading}
+                onClick={() => setReloading(!reloading)}
+                style={{
+                  backgroundColor: "#ec5504",
+                  border: "1px solid #ec5504",
+                }}
+                type="primary"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faArrowsRotate}
+                    style={{ paddingRight: "8px" }}
+                  />
+                }
+              >
+                Tải lại
+              </Button>
+            </Space>
+          </Col>
+        </Row>
         <Table
+          className="boxShadow0 rounded"
           loading={loading}
           scroll={{
             x: 1500,
@@ -134,7 +164,7 @@ const ShiftAssignmentListPage = (props) => {
             page: page,
             pageSize: pageSize,
             total: total,
-            showTotal: (total, _) => `Tổng ${total} bản ghi`,
+            showTotal: (total) => `Tổng ${total} bản ghi`,
             showSizeChanger: true,
             onShowSizeChange: (page, pageSize) => {
               setPage(page);
@@ -147,6 +177,7 @@ const ShiftAssignmentListPage = (props) => {
             width={60}
             align="right"
             render={(_, record, index) => index + 1}
+            fixed="left"
           />
           <Column
             title="Tên bảng phân ca"
@@ -157,8 +188,15 @@ const ShiftAssignmentListPage = (props) => {
                 {record.Description}
               </NavLink>
             )}
+            fixed="left"
+            sorter={(a, b) => compareString(a.Description, b.Description)}
           />
-          <Column title="Ca làm việc" dataIndex="ShiftName" width={200} />
+          <Column
+            title="Ca làm việc"
+            dataIndex="ShiftName"
+            width={200}
+            sorter={(a, b) => compareString(a.ShiftName, b.ShiftName)}
+          />
           <Column
             title="Thời gian áp dụng"
             align="center"
@@ -171,27 +209,24 @@ const ShiftAssignmentListPage = (props) => {
           />
           <Column
             title="Phòng ban áp dụng"
-            render={(_, record) =>
-              // (record.DepartmentList || []).length > 0
-              //   ? record.DepartmentList.map((element) => element.Name).join(
-              //       "; "
-              //     )
-              //   : ""
-              (record.DepartmentList || []).join("; ")
-            }
+            // render={(_, record) => (record.DepartmentList || []).join("; ")}
+            render={(_, record) => {
+              if ((record.DepartmentList || []).length < 5) {
+                return (record.DepartmentList || []).join("; ");
+              }
+              return [...record.DepartmentList, "..."].join("; ");
+            }}
             width={300}
           />
           <Column
             title="Nhân viên áp dụng"
-            render={(_, record) =>
-              // (record.EmployeeList || []).length > 0
-              //   ? record.EmployeeList.map((element) => element.FullName).join(
-              //       "; "
-              //     )
-              //   : ""
-
-              (record.EmployeeList || []).join("; ")
-            }
+            // render={(_, record) => (record.EmployeeList || []).join("; ")}
+            render={(_, record) => {
+              if ((record.EmployeeList || []).length < 5) {
+                return (record.EmployeeList || []).join("; ");
+              }
+              return [...record.EmployeeList, "..."].join("; ");
+            }}
             width={300}
           />
           <Column
@@ -203,6 +238,8 @@ const ShiftAssignmentListPage = (props) => {
               />
             )}
             fixed="right"
+            align="center"
+            width={80}
           />
         </Table>
       </Content>
@@ -238,17 +275,6 @@ const ActionMenu = (props) => {
   };
   return (
     <Space size="small">
-      <Tooltip title="Xem nhanh">
-        <Button
-          onClick={() =>
-            navigate(`/shift/assignment/detail/${shiftAssignment.Id}`)
-          }
-          type="text"
-          shape="circle"
-          icon={<EyeTwoTone />}
-          size="small"
-        />
-      </Tooltip>
       <Tooltip title="Chỉnh sửa">
         <Button
           onClick={() =>

@@ -232,6 +232,7 @@ const StatisticPage = ({ notify, loginRequired, ...rest }) => {
       </Row>
       <Content>
         <Table
+          className="boxShadow0 rounded"
           loading={loading}
           bordered
           scroll={{

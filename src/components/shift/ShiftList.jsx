@@ -24,6 +24,7 @@ import { compareDatetime, compareString } from "../../utils/Comparation";
 import { handleErrorOfRequest } from "../../utils/Helpers";
 import { EditShift } from "./EditShift";
 import { DeleteShift, GetShiftList } from "./api";
+import Search from "antd/es/input/Search";
 
 function ActionMenu(props) {
   const { shift, setShiftList, shiftList, updateOneShift } = props;
@@ -96,18 +97,20 @@ const DeleteShiftComponent = (props) => {
 
 const ShiftList = function ({ notify, ...rest }) {
   const [loading, setLoading] = useState(true);
-  const [reload, setReload] = useState(true);
+  const [reloading, setReloading] = useState(true);
   const [currentShiftList, setCurrentShiftList] = useState([]);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
-  const searchInput = useRef(null);
+  const searchInputRef = useRef();
   const navigate = useNavigate();
 
   useEffect(() => {
-    GetShiftList({ Page: page, PerPage: perPage })
+    let SearchString = searchInputRef.current
+      ? searchInputRef.current.input.value
+      : "";
+    setLoading(true);
+    GetShiftList({ Page: page, PerPage: perPage, SearchString })
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
@@ -126,7 +129,7 @@ const ShiftList = function ({ notify, ...rest }) {
       .finally(() => {
         setLoading(false);
       });
-  }, [perPage, page, notify, reload]);
+  }, [perPage, page, notify, reloading]);
 
   const updateOneShift = (value) => {
     const newCurrentShiftList = currentShiftList.map((shift) => {
@@ -152,7 +155,7 @@ const ShiftList = function ({ notify, ...rest }) {
         <Col flex="none">
           <Space direction="vertical">
             <Typography.Title level={2} style={{ marginTop: 0 }}>
-              Ca làm việc
+              Danh mục ca làm việc
             </Typography.Title>
             <Breadcrumb>
               <Breadcrumb.Item>
@@ -166,24 +169,6 @@ const ShiftList = function ({ notify, ...rest }) {
         </Col>
         <Col flex="auto" style={{ textAlign: "right" }}>
           <Space wrap>
-            <Button
-              type="primary"
-              onClick={() => setReload(!reload)}
-              icon={
-                <FontAwesomeIcon
-                  icon={faArrowsRotate}
-                  style={{ paddingRight: "8px" }}
-                  spin={loading}
-                />
-              }
-              loading={loading}
-              style={{
-                backgroundColor: "#ec5504",
-                border: "1px solid #ec5504",
-              }}
-            >
-              Lấy lại dữ liệu
-            </Button>
             <Button
               type="primary"
               onClick={() => navigate("/shift/add")}
@@ -201,7 +186,48 @@ const ShiftList = function ({ notify, ...rest }) {
         </Col>
       </Row>
       <Content>
+        <Row
+          wrap={true}
+          gutter={[16, 16]}
+          align="middle"
+          style={{ marginBottom: 16 }}
+        >
+          <Col flex="none" style={{ width: 400 }}>
+            <Search
+              allowClear
+              ref={searchInputRef}
+              onSearch={(value) => {
+                setReloading(!reloading);
+              }}
+              enterButton
+              placeholder="Tìm kiếm bằng username, email"
+            ></Search>
+          </Col>
+          <Col flex="auto" style={{ textAlign: "right" }}>
+            <Space wrap>
+              <Button
+                loading={loading}
+                onClick={() => setReloading(!reloading)}
+                style={{
+                  backgroundColor: "#ec5504",
+                  border: "1px solid #ec5504",
+                }}
+                type="primary"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faArrowsRotate}
+                    style={{ paddingRight: "8px" }}
+                  />
+                }
+              >
+                Tải lại
+              </Button>
+            </Space>
+          </Col>
+        </Row>
+
         <Table
+          className="boxShadow0 rounded"
           loading={loading}
           bordered
           scroll={{
@@ -234,8 +260,9 @@ const ShiftList = function ({ notify, ...rest }) {
             title="Mã ca"
             dataIndex="Id"
             key="Id"
-            sorter={(a, b) => a.Id > b.Id}
+            sorter={(a, b) => a.Id - b.Id}
             width={100}
+            align="right"
             fixed="left"
           />
 
@@ -263,7 +290,7 @@ const ShiftList = function ({ notify, ...rest }) {
                   )
                 : ""
             }
-            width={200}
+            width={150}
             align="center"
           />
           <Column
@@ -278,7 +305,7 @@ const ShiftList = function ({ notify, ...rest }) {
                   )
                 : ""
             }
-            width={200}
+            width={150}
             align="center"
           />
           <Column
@@ -293,7 +320,7 @@ const ShiftList = function ({ notify, ...rest }) {
                   )
                 : ""
             }
-            width={250}
+            width={150}
             align="center"
           />
           <Column
@@ -308,7 +335,7 @@ const ShiftList = function ({ notify, ...rest }) {
                   )
                 : ""
             }
-            width={250}
+            width={150}
             align="center"
           />
           <Column
@@ -316,7 +343,7 @@ const ShiftList = function ({ notify, ...rest }) {
             dataIndex="WorkingDay"
             key="WorkingDay"
             sorter={(a, b) => a.WorkingDay > b.WorkingDay}
-            width={200}
+            width={150}
             align="right"
           />
           <Column
@@ -324,7 +351,7 @@ const ShiftList = function ({ notify, ...rest }) {
             dataIndex="WorkingHour"
             key="WorkingHour"
             sorter={(a, b) => a.WorkingHour > b.WorkingHour}
-            width={200}
+            width={150}
             align="right"
           />
 
@@ -332,7 +359,7 @@ const ShiftList = function ({ notify, ...rest }) {
             title="Trạng thái"
             dataIndex="Status"
             key="Status"
-            width={200}
+            width={120}
             sorter={(a, b) => a.Status > b.Status}
             render={(_, record) => {
               var content = "";
@@ -368,4 +395,3 @@ const ShiftList = function ({ notify, ...rest }) {
 };
 
 export { ShiftList };
-

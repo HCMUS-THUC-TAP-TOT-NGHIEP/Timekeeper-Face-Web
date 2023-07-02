@@ -1,4 +1,6 @@
 import { InfoCircleTwoTone, PlusOutlined } from "@ant-design/icons";
+import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Button,
   Col,
@@ -12,12 +14,12 @@ import {
   Table,
   notification,
 } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { handleErrorOfRequest } from "../../utils/Helpers";
 import { GetManyEmployee } from "../employee/api";
 import { CreateOneDepartment } from "./api";
-import { handleErrorOfRequest } from "../../utils/Helpers";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import Search from "antd/es/input/Search";
+import { compareString } from "../../utils/Comparation";
 
 export const AddDepartmentFrom = function (props) {
   const [form] = Form.useForm();
@@ -40,32 +42,27 @@ export const AddDepartmentFrom = function (props) {
   };
 
   const onSubmit = (values) => {
-    console.log(values);
     setProcessing(true);
     CreateOneDepartment(values)
       .then((response) => {
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
           notification.success({
-            description: "Thêm phòng ban thành công.",
+            message: <b>Thông báo</b>,
+            description: (
+              <div>
+                Thêm phòng ban <b>{values.Name}</b> thành công.
+              </div>
+            ),
           });
-          values.Id = ResponseData.Id;
-          var manager = currentEmployeeList.find(
-            (employee) => employee.Id === values.ManagerId
-          );
-          values.ManagerName = `${manager.LastName} ${manager.FirstName}`;
-          insertOneDepartment(values);
+          insertOneDepartment(ResponseData);
           hideModal();
           return;
         }
-        notification.error({
-          description: "Thêm phòng ban không thành công. " + Description,
-        });
-        return;
+        throw new Error(Description);
       })
       .catch((error) => {
         handleErrorOfRequest({ notify, error });
-        setProcessing(true);
       })
       .finally(() => {
         setProcessing(false);
@@ -73,24 +70,12 @@ export const AddDepartmentFrom = function (props) {
   };
 
   useEffect(() => {
-    GetManyEmployee()
-      .then((response) => {
-        const { Status, Description, ResponseData } = response;
-        if (Status === 1) {
-          var { EmployeeList, Total } = ResponseData;
-          setCurrentEmployeeList(EmployeeList);
-          return;
-        }
-        notification.error({
-          message: "Có lỗi",
-          description:
-            "Truy vấn danh sách nhân viên không thành công. " + Description,
-        });
-      })
-      .catch((error) => {
-        handleErrorOfRequest({ notify, error });
-      });
-  }, []);
+    if (!open) {
+      setCurrentEmployeeList([]);
+      form.resetFields(["Name", "ManagerId", "ManagerName", "Status"]);
+      return;
+    }
+  }, [open]);
 
   const title = (
     <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
@@ -131,6 +116,9 @@ export const AddDepartmentFrom = function (props) {
             span: 8,
           }}
           onFinish={onSubmit}
+          onFinishFailed={(errorInfo) => {
+            console.log(errorInfo);
+          }}
           autoComplete="off"
           layout="vertical"
         >
@@ -144,6 +132,16 @@ export const AddDepartmentFrom = function (props) {
               {
                 required: true,
                 message: "Tên là trường bắt buộc.",
+              },
+              {
+                type: "string",
+                max: 200,
+                message: "Tên phòng ban tối đa 200 ký tự.",
+              },
+              {
+                type: "string",
+                min: 8,
+                message: "Tên phòng ban tối thiểu 8 ký tự.",
               },
               {
                 validator: (_, value) => {
@@ -161,17 +159,7 @@ export const AddDepartmentFrom = function (props) {
             <Input />
           </Form.Item>
           <Form.Item labelCol={24} label="Trưởng phòng" required>
-            <Form.Item
-              key={1}
-              name="ManagerId"
-              hidden
-              rules={[
-                {
-                  required: true,
-                  message: "Trưởng phòng là trường bắt buộc.",
-                },
-              ]}
-            >
+            <Form.Item key={1} name="ManagerId" hidden>
               <InputNumber />
             </Form.Item>
             <Form.Item name="ManagerName" dependencies={["ManagerId"]}>
@@ -224,16 +212,21 @@ export const EmployeeSelectionComponent = ({
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(40);
   const [reloading, setReloading] = useState(false);
+  const searchInputRef = useRef();
 
   useEffect(() => {
     if (!open) return;
     const loadData = async () => {
       setLoading(true);
+      let searchString = searchInputRef.current
+        ? searchInputRef.current.input.value
+        : "";
       try {
         var response = await GetManyEmployee("POST", {
           page,
           perPage,
           Department: department ? [department, null] : [null],
+          searchString,
         });
         const { Status, Description, ResponseData } = response;
         if (Status === 1) {
@@ -265,22 +258,25 @@ export const EmployeeSelectionComponent = ({
     form.setFieldsValue({ ManagerId: chosenOption.Id });
     setOpen(false);
   };
-  const Columns = [
+  const columns = [
     {
       title: "Mã nhân viên",
       dataIndex: "Id",
-      with: 50,
+      with: 100,
       sorter: (a, b) => a.Id - b.Id,
+      align: "left",
     },
     {
       title: "Tên nhân viên",
       dataIndex: "FullName",
       with: 300,
+      sorter: (a, b) => compareString(a.FullName, b.FullName),
     },
     {
       title: "Phòng ban hiện tại",
       dataIndex: "DepartmentName",
       with: 300,
+      sorter: (a, b) => compareString(a.DepartmentName, b.DepartmentName),
     },
   ];
 
@@ -316,11 +312,27 @@ export const EmployeeSelectionComponent = ({
         onCancel={hideModal}
         okText="Chọn"
         cancelText="Hủy"
-        width={900}
+        width={800}
       >
-        <Space direction="vertical" size="large">
-          <Row justify={"end"}>
-            <Col>
+        <Row
+          wrap={true}
+          gutter={[16, 16]}
+          align="middle"
+          style={{ marginBottom: 8, paddingTop: 8 }}
+        >
+          <Col flex="none" style={{ width: 400 }}>
+            <Search
+              allowClear
+              ref={searchInputRef}
+              onSearch={(value) => {
+                setReloading(!reloading);
+              }}
+              enterButton
+              placeholder="Tìm kiếm bằng mã, tên phòng ban"
+            ></Search>
+          </Col>
+          <Col flex="auto" style={{ textAlign: "right" }}>
+            <Space wrap>
               <Button
                 loading={loading}
                 onClick={() => setReloading(!reloading)}
@@ -336,41 +348,44 @@ export const EmployeeSelectionComponent = ({
                   />
                 }
               >
-                Lấy lại dữ liệu
+                Tải lại
               </Button>
-            </Col>
-          </Row>
-          <Table
-            loading={loading}
-            scroll={{
-              x: 700,
-              y: 700,
-            }}
-            columns={Columns}
-            rowKey="Id"
-            rowSelection={{
-              type: "radio",
-              onChange: (selectedRowKeys, selectedRows) => {
-                try {
-                  setChosenOption(selectedRows[0]);
-                } catch (error) {
-                  setChosenOption({});
-                }
-              },
-              defaultSelectedRowKeys: [chosenOption.Id],
-            }}
-            dataSource={currentEmployeeList}
-            pagination={{
-              onChange: (page, pageSize) => {
-                setPage(page);
-                setPerPage(pageSize);
-              },
-              pageSizeOptions: [10, 15, 25, 50],
-              showSizeChanger: true,
-              showTotal: (total, range) => `Tổng số bản ghi: ${total}`,
-            }}
-          ></Table>
-        </Space>
+            </Space>
+          </Col>
+        </Row>
+        <Table
+          className="boxShadow0 rounded"
+          loading={loading}
+          scroll={{
+            x: 500,
+            y: 500,
+          }}
+          columns={columns}
+          rowKey="Id"
+          rowSelection={{
+            type: "radio",
+            onChange: (selectedRowKeys, selectedRows) => {
+              try {
+                setChosenOption(selectedRows[0]);
+              } catch (error) {
+                setChosenOption({});
+              }
+            },
+            defaultSelectedRowKeys: [chosenOption.Id],
+          }}
+          dataSource={currentEmployeeList}
+          pagination={{
+            onChange: (page, pageSize) => {
+              setPage(page);
+              setPerPage(pageSize);
+            },
+            pageSizeOptions: [10, 15, 25, 50],
+            showSizeChanger: true,
+            // hideOnSinglePage: true,
+            total: total,
+            showTotal: (total) => `Tổng số bản ghi: ${total}`,
+          }}
+        ></Table>
       </Modal>
     </>
   );

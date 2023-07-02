@@ -18,7 +18,7 @@ import { handleErrorOfRequest } from "../../utils/Helpers";
 import { RequestResetLink, ResetPassword } from "./api";
 
 const { Content } = Layout;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export const ForgotPasswordPage = function ({ notify, ...rest }) {
   const {

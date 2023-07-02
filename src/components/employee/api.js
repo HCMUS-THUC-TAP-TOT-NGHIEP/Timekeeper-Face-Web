@@ -14,14 +14,15 @@ export const GetManyEmployee = async (method = "GET", requestData) => {
   var params = {
     Page: requestData && requestData.page ? requestData.page : 1,
     PerPage: requestData && requestData.perPage ? requestData.perPage : 10,
+    SearchString:
+      requestData && requestData.searchString ? requestData.searchString : "",
   };
   var access_token = localStorage.getItem("access_token");
-  var response = {};
-  if ( method === "POST") {
+  if (method === "POST") {
     var req = {
       Department: requestData.Department,
     };
-    response = await AxiosInstance.post("employee/many", req, {
+    let response = await AxiosInstance.post("employee/many", req, {
       params: params,
       headers: {
         Authorization: "Bearer " + access_token,
@@ -29,7 +30,7 @@ export const GetManyEmployee = async (method = "GET", requestData) => {
     });
     return response.data;
   }
-  response = await AxiosInstance.get("employee/many", {
+  let response = await AxiosInstance.get("employee/many", {
     params: params,
     headers: {
       Authorization: "Bearer " + access_token,

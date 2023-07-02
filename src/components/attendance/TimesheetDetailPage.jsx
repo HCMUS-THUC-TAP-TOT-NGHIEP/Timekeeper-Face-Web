@@ -1,51 +1,62 @@
-import { UndoOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+  DownOutlined,
+  InfoCircleTwoTone,
+  UndoOutlined,
+} from "@ant-design/icons";
 import {
   faArrowLeft,
   faArrowsRotate,
   faCalendarDays,
   faCircle,
-  faFileExport,
+  faFileExcel,
   faLock,
   faLockOpen,
+  faRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
+  Card,
   Col,
+  Dropdown,
   Form,
   Input,
   InputNumber,
   Modal,
   Row,
   Space,
+  Statistic,
   Table,
   Tag,
   TimePicker,
   Tooltip,
   Typography,
+  message,
   notification,
   theme,
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
+import Search from "antd/es/input/Search";
 import { Content } from "antd/es/layout/layout";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import CountUp from "react-countup";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { handleErrorOfRequest } from "../../utils/Helpers";
-import { defaultColumns } from "../employee";
-import { CustomStatisticsComponent } from "./CustomStatisticsComponent";
+import { ImportTimesheetData } from "./ImportComponent";
 import {
   ExportTimesheetBE,
+  GetEarlyLateStatistics,
+  GetOffStatistics,
   GetTimesheetDetail,
   UpdateTimesheetBE,
   UpdateTimesheetDetail,
 } from "./api";
-import { ImportTimesheetData } from "./ImportComponent";
 
 dayjs.extend(isSameOrBefore);
 
@@ -76,75 +87,33 @@ let defaultCols = [
   },
 ];
 
-const lateEarlyColumns = [
-  {
-    key: "late",
-    title: "Số phút đi trễ",
-    dataIndex: "LateMinutes",
-    render: (value) => value.toFixed(0) || value,
-    width: 100,
-    align: "right",
-  },
-  {
-    key: "early",
-    title: "Số phút về sớm",
-    dataIndex: "EarlyMinutes",
-    render: (value) => value.toFixed(0) || value,
-    width: 100,
-    align: "right",
-  },
-  {
-    key: "count",
-    title: "Số lần đi trễ về sớm",
-    dataIndex: "Count",
-    width: 100,
-    align: "right",
-  },
-];
-
-const noTimekeepingColumns = [
-  {
-    key: "count",
-    title: "Số lần không chấm công",
-    dataIndex: "noTimekeeping",
-    width: 100,
-    align: "right",
-  },
-];
-
 const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
   const { TimesheetId } = useParams();
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [searching, setSearching] = useState(false);
 
   const [timeSheet, setTimeSheet] = useState({});
   const [detailRecord, settDetailRecord] = useState([]);
   const [dateRange, setDateRange] = useState([]);
-  const [clockedIn, setClockedIn] = useState(0);
-  const [offNumber, setOffNumber] = useState(0);
-  const [lateEarly, setLatEarly] = useState([]);
-  const [lateEarlyList, setLateEarlyList] = useState([]);
-  const [noTimekeeping, setToTimekeeping] = useState(0);
   const [columns, setColumns] = useState([]);
   const [reloading, setReloading] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const {
-    token: { colorBgTextActive, colorWarningActive, colorSuccessActive },
-  } = theme.useToken();
-
-  const search = async (value) => {
-    setSearching(true);
-    console.log(value);
-  };
+  const [updating, setUpdating] = useState(false);
+  const searchInputRef = useRef();
 
   useEffect(() => {
     async function LoadData() {
       try {
         setLoading(true);
-        var response = await GetTimesheetDetail({ Id: TimesheetId });
+        let searchString = searchInputRef.current
+          ? searchInputRef.current.input.value
+          : "";
+
+        var response = await GetTimesheetDetail({
+          Id: TimesheetId,
+          SearchString: searchString,
+        });
         if (response.Status === 1) {
           var { Timesheet, Detail, Total } = response.ResponseData;
           setTimeSheet(Timesheet);
@@ -152,7 +121,6 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           settDetailRecord(Detail);
           setDateRange([Timesheet.DateFrom, Timesheet.DateTo]);
           let cols = createColumns(Timesheet.DateFrom, Timesheet.DateTo);
-          console.log(cols);
           setColumns(cols);
           return;
         }
@@ -171,7 +139,6 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
     let start = dayjs(DateFrom);
     let end = dayjs(DateTo);
     let cols = defaultCols.map((element) => element);
-    console.log(cols);
 
     while (!start.isAfter(end, "day")) {
       let col = {
@@ -199,44 +166,8 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
       cols.push(col);
       start = start.add(1, "day");
     }
-    // setColumns(cols);
-    console.log(cols);
     return cols;
   }
-
-  useEffect(() => {
-    try {
-      let employeeId = [];
-      let LateEarlyList = [];
-      let noTimekeeping = [];
-      detailRecord.forEach((rec) => {
-        if ((rec.LateMinutes || 0) > 0 || (rec.EarlyMinutes || 0) > 0) {
-          let index = employeeId.indexOf(rec.EmployeeId);
-          if (index == -1) {
-            employeeId.push(rec.EmployeeId);
-            LateEarlyList.push({
-              Id: rec.EmployeeId,
-              EmployeeName: rec.EmployeeName,
-              Department: rec.Department,
-              Count: 1,
-              LateMinutes: rec.LateMinutes > 0 ? rec.LateMinutes : 0,
-              EarlyMinutes: rec.EarlyMinutes > 0 ? rec.EarlyMinutes : 0,
-            });
-          } else {
-            LateEarlyList[index].Count++;
-            LateEarlyList[index].LateMinutes +=
-              rec.LateMinutes > 0 ? rec.LateMinutes : 0;
-            LateEarlyList[index].EarlyMinutes +=
-              rec.EarlyMinutes > 0 ? rec.EarlyMinutes : 0;
-          }
-        }
-      });
-      setLateEarlyList(LateEarlyList);
-    } catch (error) {
-      handleErrorOfRequest({ error, notify });
-    } finally {
-    }
-  }, [detailRecord]);
 
   const dataSrc = [];
   const employeeId = [];
@@ -251,6 +182,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
         temp[`${record.Date}`] = {
           Checkin: (
             <RecordView
+              key={record.Date}
               record={record}
               reloading={reloading}
               setReloading={setReloading}
@@ -263,6 +195,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
         dataSrc[index][`${record.Date}`] = {
           Checkin: (
             <RecordView
+              key={record.Date}
               record={record}
               reloading={reloading}
               setReloading={setReloading}
@@ -280,7 +213,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
 
   const updateTimeSheet = async () => {
     try {
-      setLoading(true);
+      setUpdating(true);
       let response = await UpdateTimesheetBE(TimesheetId);
       let { Description, Status } = response;
       if (Status === 1) {
@@ -298,36 +231,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
     } catch (error) {
       handleErrorOfRequest({ error: error, notify: notify });
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const exportTimesheetReport = async () => {
-    var url;
-    try {
-      setProcessing(true);
-      var response = await ExportTimesheetBE({ Id: timeSheet.Id });
-      try {
-        let jResponse = JSON.parse(response);
-        notify.error({
-          message: <b>Thông báo</b>,
-          description: jResponse.Description,
-        });
-      } catch (error) {
-        url = URL.createObjectURL(response);
-        var link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", timeSheet.Name);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      }
-    } catch (error) {
-      handleErrorOfRequest({ error, notify });
-      console.error(error);
-    } finally {
-      setProcessing(false);
-      if ((url || "").length > 0) URL.revokeObjectURL(url);
+      setUpdating(false);
     }
   };
 
@@ -335,7 +239,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
     <Space direction="vertical" style={{ width: "100%" }}>
       <Row wrap={false} align="middle">
         <Col flex="none">
-          <Space direction="vertical" wrap>
+          <Space direction="vertical">
             <Space direction="horizontal" align="center" wrap>
               <Tooltip title="Quay lại">
                 <Button
@@ -395,7 +299,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
             <Button
               type="primary"
               icon={<UndoOutlined />}
-              loading={loading}
+              loading={updating}
               onClick={updateTimeSheet}
             >
               Cập nhật
@@ -410,89 +314,87 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
         </Col>
       </Row>
       <Row wrap gutter={[16, 16]} align="middle">
-        <Col span={6}>
-          <CustomStatisticsComponent
-            key="late-early-employee"
-            cols={lateEarlyColumns}
-            dataSrc={lateEarlyList || []}
-            title="Đi trễ về sớm"
-            total={(lateEarlyList || []).length}
-            modalTitle={
-              <span style={{ fontSize: 20 }}>
-                Danh sách nhân viên Đi trễ về sớm
-              </span>
-            }
-            icon={<FontAwesomeIcon icon={faCalendarDays} />}
+        <Col xs={24} sm={24} md={8} lg={6} xl={6} xxl={6}>
+          <EarlyLateStatistics
+            TimesheetId={TimesheetId}
+            notify={notify}
+            reload={reloading}
           />
         </Col>
-        <Col span={6}>
-          <CustomStatisticsComponent
-            key="invalid-record"
-            cols={defaultColumns}
-            dataSrc={[]}
-            title="Chưa chấm công"
-            total={lateEarly}
-            modalTitle={
-              <span style={{ fontSize: 20 }}>
-                Danh sách nhân viên chưa chấm công{" "}
-              </span>
-            }
-            icon={<FontAwesomeIcon icon={faCalendarDays} />}
+        <Col xs={24} sm={24} md={8} lg={6} xl={6} xxl={6}>
+          <OffStatistics
+            TimesheetId={TimesheetId}
+            notify={notify}
+            reload={reloading}
           />
-        </Col>
-        <Col span={12} style={{ textAlign: "end" }}>
-          <Space direction="horizontal">
-            <Space>
-              <FontAwesomeIcon
-                icon={faCircle}
-                size="sm"
-                color={colorSuccessActive}
-              />
-              Đủ công
-            </Space>
-            <Space>
-              <FontAwesomeIcon
-                icon={faCircle}
-                size="sm"
-                color={colorWarningActive}
-              />
-              Nửa công
-            </Space>
-            <Space>
-              <FontAwesomeIcon
-                icon={faCircle}
-                size="sm"
-                color={colorBgTextActive}
-              />
-              Nghỉ
-            </Space>
-          </Space>
         </Col>
       </Row>
-      <Row wrap gutter={[16, 16]}>
-        <Col flex="auto" style={{ textAlign: "right" }}>
-          <Space>
-            <Tooltip title="Tải lại">
+      <Content style={{ paddingTop: 10 }}>
+        <Row wrap gutter={[16, 16]} align="middle" style={{ marginBottom: 8 }}>
+          <Col xs={24} sm={24} md={12} lg={8} xl={8} xxl={8}>
+            <Search
+              allowClear
+              ref={searchInputRef}
+              onSearch={(value) => {
+                setReloading(!reloading);
+              }}
+              enterButton
+              placeholder="Tìm kiếm bằng mã, tên nhân viên"
+            ></Search>
+          </Col>
+          <Col
+            xs={24}
+            sm={24}
+            md={12}
+            lg={16}
+            xl={16}
+            xxl={16}
+            style={{ textAlign: "end" }}
+          >
+            <Space>
               <Button
-                type="primary"
-                icon={<FontAwesomeIcon icon={faArrowsRotate} />}
                 loading={loading}
                 onClick={() => setReloading(!reloading)}
-              />
-            </Tooltip>
-            <Tooltip title="Xuất bảng chấm công" placement="rightTop">
-              <Button
-                type="default"
-                icon={<FontAwesomeIcon icon={faFileExport} />}
-                onClick={exportTimesheetReport}
-                loading={processing}
-              />
-            </Tooltip>
-          </Space>
-        </Col>
-      </Row>
-      <Content>
+                style={{
+                  backgroundColor: "#ec5504",
+                  border: "1px solid #ec5504",
+                }}
+                type="primary"
+                icon={
+                  <FontAwesomeIcon
+                    icon={faArrowsRotate}
+                    style={{ paddingRight: "8px" }}
+                  />
+                }
+              >
+                Tải lại
+              </Button>
+              <ExportReportComponent notify={notify} timesheet={timeSheet} />
+            </Space>
+          </Col>
+          <Col span={24}>
+            <Space direction="horizontal">
+              <Space>
+                <LabelComponent label="enough" />
+                Đủ công
+              </Space>
+              <Space>
+                <LabelComponent label="not-enough" />
+                Thiếu công
+              </Space>
+              <Space>
+                <LabelComponent label="invalid" />
+                Không hợp lệ
+              </Space>
+              <Space>
+                <LabelComponent label="off" />
+                Nghỉ
+              </Space>
+            </Space>
+          </Col>
+        </Row>
         <Table
+          className="boxShadow0 rounded"
           loading={loading}
           bordered
           scroll={{
@@ -510,6 +412,7 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
             showTotal: (total) => `Tổng ${total} mục`,
           }}
           columns={columns}
+          size="small"
         ></Table>
       </Content>
     </Space>
@@ -571,42 +474,69 @@ const RecordView = ({ record, reloading, setReloading, ...rest }) => {
 
   const timeView = () => {
     let checkinTime = null,
-      checkoutTime = null;
+      checkoutTime = null,
+      startTime = null,
+      finishTime = null;
     if (record.CheckinTime) {
-      checkinTime = dayjs(record.CheckinTime, Config.TimeFormat).format(
-        Config.NonSecondFormat
-      );
+      checkinTime = dayjs(record.CheckinTime, Config.TimeFormat);
+    }
+    if (record.CheckoutTime) {
+      checkoutTime = dayjs(record.CheckoutTime, Config.TimeFormat);
+    }
+    if (record.FinishTime) {
+      finishTime = dayjs(record.FinishTime, Config.TimeFormat);
+    }
+    if (record.StartTime) {
+      startTime = dayjs(record.StartTime, Config.TimeFormat);
+    }
+    var lateMinutes = 0,
+      earlyMinutes = 0;
+    if (checkinTime && startTime) {
+      lateMinutes = checkinTime.diff(startTime, "m");
+    }
+    if (checkoutTime && finishTime) {
+      earlyMinutes = finishTime.diff(checkoutTime, "m");
     }
 
-    if (record.CheckoutTime) {
-      checkoutTime = dayjs(record.CheckoutTime, Config.TimeFormat).format(
-        Config.NonSecondFormat
-      );
-    }
     let timeString = [];
     if (checkinTime || checkoutTime) {
       timeString.push(
-        <span
-          style={{ color: record.LateMinutes > 0 ? colorErrorText : colorText }}
-        >
-          {checkinTime || "--:--"}
+        <span style={{ color: lateMinutes > 0 ? colorErrorText : colorText }}>
+          {checkinTime.format(Config.NonSecondFormat) || "--:--"}
         </span>
       );
       timeString.push(" - ");
       timeString.push(
         <span
           style={{
-            color: record.EarlyMinutes > 0 ? colorErrorText : colorText,
+            color: earlyMinutes > 0 ? colorErrorText : colorText,
           }}
         >
-          {checkoutTime || "--:--"}
+          {checkoutTime.format(Config.NonSecondFormat) || "--:--"}
         </span>
       );
-      timeString.push(
-        <span style={{ marginLeft: 2 }}>
-          {record.TotalHour ? `(${record.TotalHour.toFixed(2)}h)` : ""}
-        </span>
-      );
+      if (record.RealWorkingHour) {
+        timeString.push(
+          <span
+            style={{
+              marginLeft: 2,
+            }}
+          >
+            (
+            <span
+              style={{
+                color:
+                  record.RealWorkingHour < record.WorkingHour
+                    ? colorErrorText
+                    : colorText,
+              }}
+            >
+              {record.RealWorkingHour.toFixed(2)}
+            </span>
+            h)
+          </span>
+        );
+      }
     }
     return timeString;
   };
@@ -615,26 +545,46 @@ const RecordView = ({ record, reloading, setReloading, ...rest }) => {
     if (!record.ShiftName) {
       return "";
     }
-    if (record.CheckinTime || record.CheckoutTime) {
-      return (
-        <FontAwesomeIcon icon={faCircle} size="sm" color={colorSuccessActive} />
-      );
+    let checkinTime = null,
+      checkoutTime = null,
+      startTime = null,
+      finishTime = null;
+    if (record.CheckinTime) {
+      checkinTime = dayjs(record.CheckinTime, Config.TimeFormat);
     }
-    if (!record.CheckoutTime && !record.CheckoutTime) {
-      return (
-        <FontAwesomeIcon icon={faCircle} size="sm" color={colorBgTextActive} />
-      );
+    if (record.CheckoutTime) {
+      checkoutTime = dayjs(record.CheckoutTime, Config.TimeFormat);
     }
-    return (
-      <FontAwesomeIcon icon={faCircle} size="sm" color={colorWarningActive} />
-    );
+    if (record.FinishTime) {
+      finishTime = dayjs(record.FinishTime, Config.TimeFormat);
+    }
+    if (record.StartTime) {
+      startTime = dayjs(record.StartTime, Config.TimeFormat);
+    }
+    if (!checkinTime && !checkoutTime) {
+      return <LabelComponent label="off" />;
+    }
+    if (checkinTime.diff(finishTime, "m") > 0) {
+      return <LabelComponent label="invalid" />;
+    }
+    if (record.RealWorkingHour >= record.WorkingHour) {
+      return <LabelComponent label="enough" />;
+    }
+    return <LabelComponent label="not-enough" />;
   };
 
   useEffect(() => {
     if (open) {
-      form.setFieldsValue({});
+      if (record.BreakAt && record.BreakEnd) {
+        form.setFieldValue(
+          "TotalBreak",
+          dayjs(record.BreakEnd, Config.TimeFormat)
+            .diff(dayjs(record.BreakAt, Config.TimeFormat), "hour", true)
+            .toFixed(2)
+        );
+      }
     }
-  }, [open]);
+  }, [open, record.BreakAt, record.BreakEnd]);
 
   const calculateHour = () => {
     try {
@@ -720,13 +670,24 @@ const RecordView = ({ record, reloading, setReloading, ...rest }) => {
           <Form.Item label="Số công hưởng lương">
             <InputNumber value={record.WorkingHour} readOnly precision={2} />
           </Form.Item>
+          <Form.Item label="Số giờ nghỉ" name="TotalBreak" initialValue={"0"}>
+            <InputNumber readOnly />
+          </Form.Item>
           <Form.Item label="Số công đi làm thực tế">
-            <InputNumber value={totalHour} readOnly precision={2} />
+            <InputNumber
+              value={record.RealWorkingHour}
+              readOnly
+              precision={2}
+            />
           </Form.Item>
           <Form.Item
             label="Giờ vào"
             name="CheckinTime"
-            initialValue={dayjs(record.CheckinTime, Config.TimeFormat)}
+            initialValue={
+              record.CheckinTime
+                ? dayjs(record.CheckinTime, Config.TimeFormat)
+                : null
+            }
           >
             <TimePicker
               format={Config.NonSecondFormat}
@@ -737,7 +698,11 @@ const RecordView = ({ record, reloading, setReloading, ...rest }) => {
           <Form.Item
             label="Giờ ra"
             name="CheckoutTime"
-            initialValue={dayjs(record.CheckoutTime, Config.TimeFormat)}
+            initialValue={
+              record.CheckoutTime
+                ? dayjs(record.CheckoutTime, Config.TimeFormat)
+                : null
+            }
           >
             <TimePicker
               format={Config.NonSecondFormat}
@@ -746,6 +711,466 @@ const RecordView = ({ record, reloading, setReloading, ...rest }) => {
             />
           </Form.Item>
         </Form>
+      </Modal>
+    </>
+  );
+};
+
+const ExportReportComponent = ({ notify, timesheet, ...rest }) => {
+  const [excelProcessing, setExcelProcessing] = useState(false);
+
+  const exportTimesheetReport = async () => {
+    var url;
+    try {
+      setExcelProcessing(true);
+      var response = await ExportTimesheetBE({ Id: timesheet.Id });
+      try {
+        let jResponse = JSON.parse(response);
+        notify.error({
+          message: <b>Thông báo</b>,
+          description: jResponse.Description,
+        });
+      } catch (error) {
+        url = URL.createObjectURL(response);
+        var link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", timesheet.Name);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      }
+    } catch (error) {
+      handleErrorOfRequest({ error, notify });
+      console.error(error);
+    } finally {
+      setExcelProcessing(false);
+      if ((url || "").length > 0) URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleMenuClick = async (e) => {
+    console.log("click", e);
+    switch (e.key) {
+      case "excel":
+        await exportTimesheetReport();
+        break;
+      default:
+        break;
+    }
+  };
+  const handleButtonClick = (e) => {
+    message.info("Click on left button.");
+    console.log("click left button", e);
+  };
+  const items = [
+    {
+      label: "Báo cáo tổng hợp",
+      key: "excel",
+      icon: excelProcessing ? (
+        <FontAwesomeIcon
+          icon={faRotateRight}
+          spin
+          style={{
+            "--fa-primary-color": "#0f9d58",
+            "--fa-secondary-color": "#0f9d58",
+          }}
+        />
+      ) : (
+        <FontAwesomeIcon
+          icon={faFileExcel}
+          style={{
+            "--fa-primary-color": "#0f9d58",
+            "--fa-secondary-color": "#0f9d58",
+          }}
+        />
+      ),
+    },
+  ];
+  const menuProps = {
+    items,
+    onClick: handleMenuClick,
+  };
+  return (
+    <Dropdown.Button
+      type="primary"
+      menu={menuProps}
+      onClick={handleButtonClick}
+      icon={<DownOutlined />}
+      loading={excelProcessing}
+    >
+      Báo cáo
+    </Dropdown.Button>
+  );
+};
+
+const LabelComponent = ({ label, size, ...rest }) => {
+  const {
+    token: {
+      colorBgTextActive,
+      colorWarningActive,
+      colorSuccessActive,
+      colorError,
+    },
+  } = theme.useToken();
+
+  const labels = [
+    {
+      key: "enough",
+      icon: (
+        <FontAwesomeIcon
+          icon={faCircle}
+          size={size || "sm"}
+          color={colorSuccessActive}
+        />
+      ),
+    },
+    {
+      key: "not-enough",
+      icon: (
+        <FontAwesomeIcon
+          icon={faCircle}
+          size={size || "sm"}
+          color={colorWarningActive}
+        />
+      ),
+    },
+    {
+      key: "invalid",
+      icon: (
+        <FontAwesomeIcon
+          icon={faCircle}
+          size={size || "sm"}
+          color={colorError}
+        />
+      ),
+    },
+    {
+      key: "off",
+      icon: (
+        <FontAwesomeIcon
+          icon={faCircle}
+          size={size || "sm"}
+          color={colorBgTextActive}
+        />
+      ),
+    },
+  ];
+  for (const labelItem of labels) {
+    if (label == labelItem.key) {
+      return labelItem.icon;
+    }
+  }
+};
+
+const formatter = (value) => <CountUp end={value} separator="," />;
+
+const EarlyLateStatistics = ({ TimesheetId, notify, reload, ...rest }) => {
+  const [lateEarlyList, setLateEarlyList] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [reloading, setReloading] = useState(true);
+
+  const lateEarlyColumns = [
+    {
+      key: "index",
+      title: "Stt",
+      width: 60,
+      align: "right",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      key: "code",
+      dataIndex: "Id",
+      title: "Mã NV",
+      width: 80,
+      sorter: (a, b) => a.Id > b.Id,
+    },
+    {
+      key: "name",
+      title: "Nhân viên",
+      dataIndex: "FullName",
+      width: 200,
+    },
+    {
+      key: "department",
+      title: "Phòng ban",
+      dataIndex: "DepartmentName",
+      width: 200,
+    },
+    {
+      key: "late",
+      title: "Số giờ đi trễ",
+      dataIndex: "LateHour",
+      render: (value) => value,
+      width: 100,
+      align: "right",
+    },
+    {
+      key: "early",
+      title: "Số giờ về sớm",
+      dataIndex: "EarlyHour",
+      render: (value) => value,
+      width: 100,
+      align: "right",
+    },
+    {
+      key: "count",
+      title: "Số lần",
+      dataIndex: "Count",
+      width: 100,
+      align: "right",
+    },
+  ];
+  const showModal = () => {
+    setOpen(true);
+  };
+  const hideModal = () => {
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [TimesheetId, reload, reloading]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      var response = await GetEarlyLateStatistics("GET", { TimesheetId });
+      if (response.Status === 1) {
+        let { List, Total } = response.ResponseData;
+        setLateEarlyList(List);
+        setTotal(Total);
+        return;
+      }
+      throw new Error(response.Description);
+    } catch (error) {
+      handleErrorOfRequest({ notify, error });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Card bordered={false} size="small" onClick={showModal}>
+        <Statistic
+          valueStyle={{
+            fontSize: "14px",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+          value={total}
+          prefix={
+            <Space>
+              <FontAwesomeIcon icon={faCalendarDays} />
+              Đi trễ về sớm
+            </Space>
+          }
+          formatter={formatter}
+        />
+      </Card>
+      <Modal
+        title={
+          <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
+            <InfoCircleTwoTone />
+            Danh sách nhân viên Đi trễ về sớm
+          </Space>
+        }
+        onOk={hideModal}
+        onCancel={hideModal}
+        footer={[
+          <Button
+            loading={loading}
+            className="boxShadow0 rounded"
+            onClick={() => setReloading(!reloading)}
+            style={{
+              backgroundColor: "#ec5504",
+              border: "1px solid #ec5504",
+            }}
+            type="primary"
+            icon={
+              <FontAwesomeIcon
+                icon={faArrowsRotate}
+                style={{ paddingRight: "8px" }}
+              />
+            }
+          >
+            Tải lại
+          </Button>,
+          <Button type="primary" onClick={hideModal}>
+            Đóng
+          </Button>,
+        ]}
+        open={open}
+        width={900}
+      >
+        <Table
+          loading={loading}
+          className="boxShadow0 rounded"
+          columns={lateEarlyColumns}
+          dataSource={lateEarlyList || []}
+          rowKey="Id"
+          scroll={{
+            y: 800,
+          }}
+          pagination={{
+            total: (lateEarlyList || []).length,
+            defaultCurrent: 1,
+            pageSize: 15,
+            pageSizeOptions: [15, 25, 50],
+            showSizeChanger: true,
+            showTotal: (total) => `Tổng ${total} bản ghi.`,
+          }}
+        ></Table>
+      </Modal>
+    </>
+  );
+};
+
+const OffStatistics = ({ TimesheetId, notify, reload, ...rest }) => {
+  const [OffList, setOffList] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [reloading, setReloading] = useState(true);
+
+  const OffColumns = [
+    {
+      key: "index",
+      title: "Stt",
+      width: 60,
+      align: "right",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      key: "code",
+      dataIndex: "Id",
+      title: "Mã NV",
+      width: 80,
+      sorter: (a, b) => a.Id > b.Id,
+    },
+    {
+      key: "name",
+      title: "Nhân viên",
+      dataIndex: "FullName",
+      width: 200,
+    },
+    {
+      key: "department",
+      title: "Phòng ban",
+      dataIndex: "DepartmentName",
+      width: 200,
+    },
+    {
+      key: "count",
+      title: "Số ngày",
+      dataIndex: "Count",
+      width: 100,
+      align: "right",
+    },
+  ];
+  const showModal = () => {
+    setOpen(true);
+  };
+  const hideModal = () => {
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [TimesheetId, reload, reloading]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      var response = await GetOffStatistics("GET", { TimesheetId });
+      if (response.Status === 1) {
+        let { List, Total } = response.ResponseData;
+        setOffList(List);
+        setTotal(Total);
+        return;
+      }
+      throw new Error(response.Description);
+    } catch (error) {
+      handleErrorOfRequest({ notify, error });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Card bordered={false} size="small" onClick={showModal}>
+        <Statistic
+          valueStyle={{
+            fontSize: "14px",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+          value={total}
+          prefix={
+            <Space>
+              <FontAwesomeIcon icon={faCalendarDays} />
+              Chưa chấm công
+            </Space>
+          }
+          formatter={formatter}
+        />
+      </Card>
+      <Modal
+        title={
+          <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
+            <InfoCircleTwoTone />
+            Danh sách nhân viên chưa chấm công
+          </Space>
+        }
+        onOk={hideModal}
+        onCancel={hideModal}
+        footer={[
+          <Button
+            loading={loading}
+            onClick={() => setReloading(!reloading)}
+            style={{
+              backgroundColor: "#ec5504",
+              border: "1px solid #ec5504",
+            }}
+            type="primary"
+            icon={
+              <FontAwesomeIcon
+                icon={faArrowsRotate}
+                style={{ paddingRight: "8px" }}
+              />
+            }
+          >
+            Tải lại
+          </Button>,
+          <Button type="primary" onClick={hideModal}>
+            Đóng
+          </Button>,
+        ]}
+        open={open}
+        width={900}
+      >
+        <Table
+          loading={loading}
+          className="boxShadow0 rounded"
+          rootClassName=""
+          columns={OffColumns}
+          dataSource={OffList || []}
+          rowKey="Id"
+          scroll={{
+            y: 800,
+          }}
+          pagination={{
+            total: (OffList || []).length,
+            defaultCurrent: 1,
+            pageSize: 15,
+            pageSizeOptions: [15, 25, 50],
+            showSizeChanger: true,
+            showTotal: (total) => `Tổng ${total} bản ghi.`,
+          }}
+        ></Table>
       </Modal>
     </>
   );

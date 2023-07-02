@@ -1,4 +1,8 @@
-import { DownOutlined, UndoOutlined } from "@ant-design/icons";
+import {
+  DownOutlined,
+  InfoCircleTwoTone,
+  UndoOutlined,
+} from "@ant-design/icons";
 import {
   faArrowLeft,
   faArrowsRotate,
@@ -13,6 +17,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Breadcrumb,
   Button,
+  Card,
   Col,
   Dropdown,
   Form,
@@ -21,6 +26,7 @@ import {
   Modal,
   Row,
   Space,
+  Statistic,
   Table,
   Tag,
   TimePicker,
@@ -37,15 +43,16 @@ import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import React, { useEffect, useRef, useState } from "react";
+import CountUp from "react-countup";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { handleErrorOfRequest } from "../../utils/Helpers";
-import { defaultColumns } from "../employee";
-import { CustomStatisticsComponent } from "./CustomStatisticsComponent";
 import { ImportTimesheetData } from "./ImportComponent";
 import {
   ExportTimesheetBE,
+  GetEarlyLateStatistics,
+  GetOffStatistics,
   GetTimesheetDetail,
   UpdateTimesheetBE,
   UpdateTimesheetDetail,
@@ -80,42 +87,6 @@ let defaultCols = [
   },
 ];
 
-const lateEarlyColumns = [
-  {
-    key: "late",
-    title: "Số phút đi trễ",
-    dataIndex: "LateMinutes",
-    render: (value) => value.toFixed(0) || value,
-    width: 100,
-    align: "right",
-  },
-  {
-    key: "early",
-    title: "Số phút về sớm",
-    dataIndex: "EarlyMinutes",
-    render: (value) => value.toFixed(0) || value,
-    width: 100,
-    align: "right",
-  },
-  {
-    key: "count",
-    title: "Số lần đi trễ về sớm",
-    dataIndex: "Count",
-    width: 100,
-    align: "right",
-  },
-];
-
-const noTimekeepingColumns = [
-  {
-    key: "count",
-    title: "Số lần không chấm công",
-    dataIndex: "noTimekeeping",
-    width: 100,
-    align: "right",
-  },
-];
-
 const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   const userDetails = useAuthState();
   const navigate = useNavigate();
@@ -126,17 +97,9 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
   const [timeSheet, setTimeSheet] = useState({});
   const [detailRecord, settDetailRecord] = useState([]);
   const [dateRange, setDateRange] = useState([]);
-  const [clockedIn, setClockedIn] = useState(0);
-  const [offNumber, setOffNumber] = useState(0);
-  const [lateEarly, setLatEarly] = useState([]);
-  const [lateEarlyList, setLateEarlyList] = useState([]);
-  const [noTimekeeping, setToTimekeeping] = useState(0);
   const [columns, setColumns] = useState([]);
   const [reloading, setReloading] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const {
-    token: { colorBgTextActive, colorWarningActive, colorSuccessActive },
-  } = theme.useToken();
   const searchInputRef = useRef();
 
   useEffect(() => {
@@ -205,40 +168,6 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
     }
     return cols;
   }
-
-  useEffect(() => {
-    try {
-      let employeeId = [];
-      let LateEarlyList = [];
-      let noTimekeeping = [];
-      detailRecord.forEach((rec) => {
-        if ((rec.LateMinutes || 0) > 0 || (rec.EarlyMinutes || 0) > 0) {
-          let index = employeeId.indexOf(rec.EmployeeId);
-          if (index == -1) {
-            employeeId.push(rec.EmployeeId);
-            LateEarlyList.push({
-              Id: rec.EmployeeId,
-              EmployeeName: rec.EmployeeName,
-              Department: rec.Department,
-              Count: 1,
-              LateMinutes: rec.LateMinutes > 0 ? rec.LateMinutes : 0,
-              EarlyMinutes: rec.EarlyMinutes > 0 ? rec.EarlyMinutes : 0,
-            });
-          } else {
-            LateEarlyList[index].Count++;
-            LateEarlyList[index].LateMinutes +=
-              rec.LateMinutes > 0 ? rec.LateMinutes : 0;
-            LateEarlyList[index].EarlyMinutes +=
-              rec.EarlyMinutes > 0 ? rec.EarlyMinutes : 0;
-          }
-        }
-      });
-      setLateEarlyList(LateEarlyList);
-    } catch (error) {
-      handleErrorOfRequest({ error, notify });
-    } finally {
-    }
-  }, [detailRecord]);
 
   const dataSrc = [];
   const employeeId = [];
@@ -385,34 +314,18 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
         </Col>
       </Row>
       <Row wrap gutter={[16, 16]} align="middle">
-        <Col xs={24} sm={24} md={12} lg={6} xl={6} xxl={6}>
-          <CustomStatisticsComponent
-            key="late-early-employee"
-            cols={lateEarlyColumns}
-            dataSrc={lateEarlyList || []}
-            title="Đi trễ về sớm"
-            total={(lateEarlyList || []).length}
-            modalTitle={
-              <span style={{ fontSize: 20 }}>
-                Danh sách nhân viên Đi trễ về sớm
-              </span>
-            }
-            icon={<FontAwesomeIcon icon={faCalendarDays} />}
+        <Col xs={24} sm={24} md={8} lg={6} xl={6} xxl={6}>
+          <EarlyLateStatistics
+            TimesheetId={TimesheetId}
+            notify={notify}
+            reload={reloading}
           />
         </Col>
-        <Col xs={24} sm={24} md={12} lg={6} xl={6} xxl={6}>
-          <CustomStatisticsComponent
-            key="invalid-record"
-            cols={defaultColumns}
-            dataSrc={[]}
-            title="Chưa chấm công"
-            total={lateEarly}
-            modalTitle={
-              <span style={{ fontSize: 20 }}>
-                Danh sách nhân viên chưa chấm công{" "}
-              </span>
-            }
-            icon={<FontAwesomeIcon icon={faCalendarDays} />}
+        <Col xs={24} sm={24} md={8} lg={6} xl={6} xxl={6}>
+          <OffStatistics
+            TimesheetId={TimesheetId}
+            notify={notify}
+            reload={reloading}
           />
         </Col>
       </Row>
@@ -462,27 +375,19 @@ const TimesheetDetailPage = ({ notify, loginRequired, ...rest }) => {
           <Col span={24}>
             <Space direction="horizontal">
               <Space>
-                <FontAwesomeIcon
-                  icon={faCircle}
-                  size="sm"
-                  color={colorSuccessActive}
-                />
+                <LabelComponent label="enough" />
                 Đủ công
               </Space>
               <Space>
-                <FontAwesomeIcon
-                  icon={faCircle}
-                  size="sm"
-                  color={colorWarningActive}
-                />
-                Nửa công
+                <LabelComponent label="not-enough" />
+                Thiếu công
               </Space>
               <Space>
-                <FontAwesomeIcon
-                  icon={faCircle}
-                  size="sm"
-                  color={colorBgTextActive}
-                />
+                <LabelComponent label="invalid" />
+                Không hợp lệ
+              </Space>
+              <Space>
+                <LabelComponent label="off" />
                 Nghỉ
               </Space>
             </Space>
@@ -569,35 +474,45 @@ const RecordView = ({ record, reloading, setReloading, ...rest }) => {
 
   const timeView = () => {
     let checkinTime = null,
-      checkoutTime = null;
+      checkoutTime = null,
+      startTime = null,
+      finishTime = null;
     if (record.CheckinTime) {
-      checkinTime = dayjs(record.CheckinTime, Config.TimeFormat).format(
-        Config.NonSecondFormat
-      );
+      checkinTime = dayjs(record.CheckinTime, Config.TimeFormat);
+    }
+    if (record.CheckoutTime) {
+      checkoutTime = dayjs(record.CheckoutTime, Config.TimeFormat);
+    }
+    if (record.FinishTime) {
+      finishTime = dayjs(record.FinishTime, Config.TimeFormat);
+    }
+    if (record.StartTime) {
+      startTime = dayjs(record.StartTime, Config.TimeFormat);
+    }
+    var lateMinutes = 0,
+      earlyMinutes = 0;
+    if (checkinTime && startTime) {
+      lateMinutes = checkinTime.diff(startTime, "m");
+    }
+    if (checkoutTime && finishTime) {
+      earlyMinutes = finishTime.diff(checkoutTime, "m");
     }
 
-    if (record.CheckoutTime) {
-      checkoutTime = dayjs(record.CheckoutTime, Config.TimeFormat).format(
-        Config.NonSecondFormat
-      );
-    }
     let timeString = [];
     if (checkinTime || checkoutTime) {
       timeString.push(
-        <span
-          style={{ color: record.LateMinutes > 0 ? colorErrorText : colorText }}
-        >
-          {checkinTime || "--:--"}
+        <span style={{ color: lateMinutes > 0 ? colorErrorText : colorText }}>
+          {checkinTime.format(Config.NonSecondFormat) || "--:--"}
         </span>
       );
       timeString.push(" - ");
       timeString.push(
         <span
           style={{
-            color: record.EarlyMinutes > 0 ? colorErrorText : colorText,
+            color: earlyMinutes > 0 ? colorErrorText : colorText,
           }}
         >
-          {checkoutTime || "--:--"}
+          {checkoutTime.format(Config.NonSecondFormat) || "--:--"}
         </span>
       );
       if (record.RealWorkingHour) {
@@ -611,7 +526,9 @@ const RecordView = ({ record, reloading, setReloading, ...rest }) => {
             <span
               style={{
                 color:
-                  record.RealWorkingHour < record.WorkingHour ? "red" : "black",
+                  record.RealWorkingHour < record.WorkingHour
+                    ? colorErrorText
+                    : colorText,
               }}
             >
               {record.RealWorkingHour.toFixed(2)}
@@ -628,19 +545,32 @@ const RecordView = ({ record, reloading, setReloading, ...rest }) => {
     if (!record.ShiftName) {
       return "";
     }
-    if (record.CheckinTime || record.CheckoutTime) {
-      return (
-        <FontAwesomeIcon icon={faCircle} size="sm" color={colorSuccessActive} />
-      );
+    let checkinTime = null,
+      checkoutTime = null,
+      startTime = null,
+      finishTime = null;
+    if (record.CheckinTime) {
+      checkinTime = dayjs(record.CheckinTime, Config.TimeFormat);
     }
-    if (!record.CheckoutTime && !record.CheckoutTime) {
-      return (
-        <FontAwesomeIcon icon={faCircle} size="sm" color={colorBgTextActive} />
-      );
+    if (record.CheckoutTime) {
+      checkoutTime = dayjs(record.CheckoutTime, Config.TimeFormat);
     }
-    return (
-      <FontAwesomeIcon icon={faCircle} size="sm" color={colorWarningActive} />
-    );
+    if (record.FinishTime) {
+      finishTime = dayjs(record.FinishTime, Config.TimeFormat);
+    }
+    if (record.StartTime) {
+      startTime = dayjs(record.StartTime, Config.TimeFormat);
+    }
+    if (!checkinTime && !checkoutTime) {
+      return <LabelComponent label="off" />;
+    }
+    if (checkinTime.diff(finishTime, "m") > 0) {
+      return <LabelComponent label="invalid" />;
+    }
+    if (record.RealWorkingHour >= record.WorkingHour) {
+      return <LabelComponent label="enough" />;
+    }
+    return <LabelComponent label="not-enough" />;
   };
 
   useEffect(() => {
@@ -866,9 +796,383 @@ const ExportReportComponent = ({ notify, timesheet, ...rest }) => {
       menu={menuProps}
       onClick={handleButtonClick}
       icon={<DownOutlined />}
+      loading={excelProcessing}
     >
       Báo cáo
     </Dropdown.Button>
+  );
+};
+
+const LabelComponent = ({ label, size, ...rest }) => {
+  const {
+    token: {
+      colorBgTextActive,
+      colorWarningActive,
+      colorSuccessActive,
+      colorError,
+    },
+  } = theme.useToken();
+
+  const labels = [
+    {
+      key: "enough",
+      icon: (
+        <FontAwesomeIcon
+          icon={faCircle}
+          size={size || "sm"}
+          color={colorSuccessActive}
+        />
+      ),
+    },
+    {
+      key: "not-enough",
+      icon: (
+        <FontAwesomeIcon
+          icon={faCircle}
+          size={size || "sm"}
+          color={colorWarningActive}
+        />
+      ),
+    },
+    {
+      key: "invalid",
+      icon: (
+        <FontAwesomeIcon
+          icon={faCircle}
+          size={size || "sm"}
+          color={colorError}
+        />
+      ),
+    },
+    {
+      key: "off",
+      icon: (
+        <FontAwesomeIcon
+          icon={faCircle}
+          size={size || "sm"}
+          color={colorBgTextActive}
+        />
+      ),
+    },
+  ];
+  for (const labelItem of labels) {
+    if (label == labelItem.key) {
+      return labelItem.icon;
+    }
+  }
+};
+
+const formatter = (value) => <CountUp end={value} separator="," />;
+
+const EarlyLateStatistics = ({ TimesheetId, notify, reload, ...rest }) => {
+  const [lateEarlyList, setLateEarlyList] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [reloading, setReloading] = useState(true);
+
+  const lateEarlyColumns = [
+    {
+      key: "index",
+      title: "Stt",
+      width: 60,
+      align: "right",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      key: "code",
+      dataIndex: "Id",
+      title: "Mã NV",
+      width: 80,
+      sorter: (a, b) => a.Id > b.Id,
+    },
+    {
+      key: "name",
+      title: "Nhân viên",
+      dataIndex: "FullName",
+      width: 200,
+    },
+    {
+      key: "department",
+      title: "Phòng ban",
+      dataIndex: "DepartmentName",
+      width: 200,
+    },
+    {
+      key: "late",
+      title: "Số giờ đi trễ",
+      dataIndex: "LateHour",
+      render: (value) => value,
+      width: 100,
+      align: "right",
+    },
+    {
+      key: "early",
+      title: "Số giờ về sớm",
+      dataIndex: "EarlyHour",
+      render: (value) => value,
+      width: 100,
+      align: "right",
+    },
+    {
+      key: "count",
+      title: "Số lần",
+      dataIndex: "Count",
+      width: 100,
+      align: "right",
+    },
+  ];
+  const showModal = () => {
+    setOpen(true);
+  };
+  const hideModal = () => {
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [TimesheetId, reload, reloading]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      var response = await GetEarlyLateStatistics("GET", { TimesheetId });
+      if (response.Status === 1) {
+        let { List, Total } = response.ResponseData;
+        setLateEarlyList(List);
+        setTotal(Total);
+        return;
+      }
+      throw new Error(response.Description);
+    } catch (error) {
+      handleErrorOfRequest({ notify, error });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Card bordered={false} size="small" onClick={showModal}>
+        <Statistic
+          valueStyle={{
+            fontSize: "14px",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+          value={total}
+          prefix={
+            <Space>
+              <FontAwesomeIcon icon={faCalendarDays} />
+              Đi trễ về sớm
+            </Space>
+          }
+          formatter={formatter}
+        />
+      </Card>
+      <Modal
+        title={
+          <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
+            <InfoCircleTwoTone />
+            Danh sách nhân viên Đi trễ về sớm
+          </Space>
+        }
+        onOk={hideModal}
+        onCancel={hideModal}
+        footer={[
+          <Button
+            loading={loading}
+            className="boxShadow0 rounded"
+            onClick={() => setReloading(!reloading)}
+            style={{
+              backgroundColor: "#ec5504",
+              border: "1px solid #ec5504",
+            }}
+            type="primary"
+            icon={
+              <FontAwesomeIcon
+                icon={faArrowsRotate}
+                style={{ paddingRight: "8px" }}
+              />
+            }
+          >
+            Tải lại
+          </Button>,
+          <Button type="primary" onClick={hideModal}>
+            Đóng
+          </Button>,
+        ]}
+        open={open}
+        width={900}
+      >
+        <Table
+          loading={loading}
+          className="boxShadow0 rounded"
+          columns={lateEarlyColumns}
+          dataSource={lateEarlyList || []}
+          rowKey="Id"
+          scroll={{
+            y: 800,
+          }}
+          pagination={{
+            total: (lateEarlyList || []).length,
+            defaultCurrent: 1,
+            pageSize: 15,
+            pageSizeOptions: [15, 25, 50],
+            showSizeChanger: true,
+            showTotal: (total) => `Tổng ${total} bản ghi.`,
+          }}
+        ></Table>
+      </Modal>
+    </>
+  );
+};
+
+const OffStatistics = ({ TimesheetId, notify, reload, ...rest }) => {
+  const [OffList, setOffList] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [reloading, setReloading] = useState(true);
+
+  const OffColumns = [
+    {
+      key: "index",
+      title: "Stt",
+      width: 60,
+      align: "right",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      key: "code",
+      dataIndex: "Id",
+      title: "Mã NV",
+      width: 80,
+      sorter: (a, b) => a.Id > b.Id,
+    },
+    {
+      key: "name",
+      title: "Nhân viên",
+      dataIndex: "FullName",
+      width: 200,
+    },
+    {
+      key: "department",
+      title: "Phòng ban",
+      dataIndex: "DepartmentName",
+      width: 200,
+    },
+    {
+      key: "count",
+      title: "Số ngày",
+      dataIndex: "Count",
+      width: 100,
+      align: "right",
+    },
+  ];
+  const showModal = () => {
+    setOpen(true);
+  };
+  const hideModal = () => {
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [TimesheetId, reload, reloading]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      var response = await GetOffStatistics("GET", { TimesheetId });
+      if (response.Status === 1) {
+        let { List, Total } = response.ResponseData;
+        setOffList(List);
+        setTotal(Total);
+        return;
+      }
+      throw new Error(response.Description);
+    } catch (error) {
+      handleErrorOfRequest({ notify, error });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Card bordered={false} size="small" onClick={showModal}>
+        <Statistic
+          valueStyle={{
+            fontSize: "14px",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+          value={total}
+          prefix={
+            <Space>
+              <FontAwesomeIcon icon={faCalendarDays} />
+              Chưa chấm công
+            </Space>
+          }
+          formatter={formatter}
+        />
+      </Card>
+      <Modal
+        title={
+          <Space direction="horizontal" align="center" style={{ fontSize: 20 }}>
+            <InfoCircleTwoTone />
+            Danh sách nhân viên chưa chấm công
+          </Space>
+        }
+        onOk={hideModal}
+        onCancel={hideModal}
+        footer={[
+          <Button
+            loading={loading}
+            onClick={() => setReloading(!reloading)}
+            style={{
+              backgroundColor: "#ec5504",
+              border: "1px solid #ec5504",
+            }}
+            type="primary"
+            icon={
+              <FontAwesomeIcon
+                icon={faArrowsRotate}
+                style={{ paddingRight: "8px" }}
+              />
+            }
+          >
+            Tải lại
+          </Button>,
+          <Button type="primary" onClick={hideModal}>
+            Đóng
+          </Button>,
+        ]}
+        open={open}
+        width={900}
+      >
+        <Table
+          loading={loading}
+          className="boxShadow0 rounded"
+          rootClassName=""
+          columns={OffColumns}
+          dataSource={OffList || []}
+          rowKey="Id"
+          scroll={{
+            y: 800,
+          }}
+          pagination={{
+            total: (OffList || []).length,
+            defaultCurrent: 1,
+            pageSize: 15,
+            pageSizeOptions: [15, 25, 50],
+            showSizeChanger: true,
+            showTotal: (total) => `Tổng ${total} bản ghi.`,
+          }}
+        ></Table>
+      </Modal>
+    </>
   );
 };
 

@@ -55,12 +55,6 @@ export const AddDepartmentFrom = function (props) {
               </div>
             ),
           });
-          // values.Id = ResponseData.Id;
-          // var manager = currentEmployeeList.find(
-          //   (employee) => employee.Id === values.ManagerId
-          // );
-          // values.ManagerName = `${manager.LastName} ${manager.FirstName}`;
-          // insertOneDepartment(values);
           insertOneDepartment(ResponseData);
           hideModal();
           return;
@@ -81,24 +75,6 @@ export const AddDepartmentFrom = function (props) {
       form.resetFields(["Name", "ManagerId", "ManagerName", "Status"]);
       return;
     }
-    // GetManyEmployee()
-    //   .then((response) => {
-    //     const { Status, Description, ResponseData } = response;
-    //     if (Status === 1) {
-    //       var { EmployeeList, Total } = ResponseData;
-    //       setCurrentEmployeeList(EmployeeList);
-    //       return;
-    //     }
-    //     notification.error({
-    //       message: "Có lỗi",
-    //       description:
-    //         "Truy vấn danh sách nhân viên không thành công. " + Description,
-    //     });
-    //   })
-    //   .catch((error) => {
-    //     handleErrorOfRequest({ notify, error });
-    //   })
-    //   .finally(() => {});
   }, [open]);
 
   const title = (

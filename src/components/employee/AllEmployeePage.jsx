@@ -13,6 +13,7 @@ import {
   Typography,
   notification,
 } from "antd";
+import Search from "antd/es/input/Search";
 import { Content } from "antd/es/layout/layout";
 import dayjs from "dayjs";
 import React, { useEffect, useRef, useState } from "react";
@@ -25,7 +26,6 @@ import { handleErrorOfRequest } from "../../utils/Helpers";
 import { ImportDataComponent } from "./ImportEmployeeList";
 import { DeleteOneEmployee, GetManyEmployee } from "./api";
 import "./style.css";
-import Search from "antd/es/input/Search";
 
 export const AllEmployeesPage = (props) => {
   const [page, setPage] = useState(1);

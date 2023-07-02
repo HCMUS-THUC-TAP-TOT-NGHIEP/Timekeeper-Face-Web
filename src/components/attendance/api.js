@@ -215,3 +215,45 @@ export const GetAllCheckinMethods = async () => {
   });
   return res.data;
 };
+
+export const GetEarlyLateStatistics = async (method = "GET", requestData) => {
+  console.log(typeof method);
+  // let upperStr = method.toUpperCase();
+  switch (method) {
+    case "GET":
+      let res = await AxiosInstance.get("checkin/late-early/count", {
+        params: {
+          TimesheetId: requestData.TimesheetId,
+        },
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("access_token"),
+        },
+      });
+      return res.data;
+    case "POST":
+      break;
+    default:
+      break;
+  }
+};
+
+export const GetOffStatistics = async (method = "GET", requestData) => {
+  console.log(typeof method);
+  // let upperStr = method.toUpperCase();
+  switch (method) {
+    case "GET":
+      let res = await AxiosInstance.get("checkin/off/statistics", {
+        params: {
+          TimesheetId: requestData.TimesheetId,
+        },
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("access_token"),
+        },
+      });
+      return res.data;
+    case "POST":
+      break;
+    default:
+      break;
+  }
+};

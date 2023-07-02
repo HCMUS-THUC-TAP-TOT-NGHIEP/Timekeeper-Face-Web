@@ -26,7 +26,6 @@ import {
   Tooltip,
   TreeSelect,
   Typography,
-  theme,
 } from "antd";
 import locale from "antd/es/date-picker/locale/vi_VN";
 import Search from "antd/es/input/Search";
@@ -36,40 +35,41 @@ import Column from "antd/es/table/Column";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthState } from "../../Contexts/AuthContext";
 import Config from "../../constant";
 import { handleErrorOfRequest } from "../../utils/Helpers";
-import { CreatTimesheetBE, DeleteTimesheetBE, GetTimesheetList } from "./api";
 import { GetDepartmentList } from "../department/api";
-import { TreeNode } from "antd/es/tree-select";
+import { CreatTimesheetBE, DeleteTimesheetBE, GetTimesheetList } from "./api";
 const { SHOW_PARENT } = TreeSelect;
 dayjs.extend(isSameOrBefore);
 
 const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
-  const userDetails = useAuthState();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [reloading, setReloading] = useState(true);
   const [timesheetList, setTimesheetList] = useState([]);
   const [total, setTotal] = useState(0);
-  const [searching, setSearching] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
+  const searchInputRef = useRef();
+  const { authorization } = useAuthState();
+  const UserPermission = authorization.Timesheet || null;
 
   useEffect(() => {
     loadData();
-  }, [page, pageSize]);
+  }, [page, pageSize, reloading]);
   async function loadData() {
     try {
       setLoading(true);
+      let searchString = searchInputRef.current
+        ? searchInputRef.current.input.value
+        : "";
       var response = await GetTimesheetList({
         Page: page,
         PageSize: pageSize,
-        Keyword: "",
+        Keyword: searchString,
       });
       if (response.Status == 1) {
         const { ResponseData } = response;
@@ -77,21 +77,13 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
         setTimesheetList(ResponseData.TimesheetList);
         return;
       }
-      notify.error({
-        message: "",
-        description: response.Description,
-      });
+      throw new Error(response.Description);
     } catch (error) {
       handleErrorOfRequest({ notify, error });
     } finally {
       setLoading(false);
     }
   }
-
-  const search = async (value) => {
-    setSearching(true);
-    console.log(value);
-  };
 
   const insertReportFE = (value) => {
     if (timesheetList.length < pageSize) {
@@ -104,7 +96,7 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space direction="vertical" style={{ width: "100%" }}>
       <Row wrap={false} align="middle">
         <Col flex="none">
           <Space direction="vertical">
@@ -130,9 +122,11 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
           <Col flex="none">
             <Search
               placeholder="Tìm kiếm"
-              // onSeacrh={search}
+              ref={searchInputRef}
+              onSearch={(value) => {
+                setReloading(!reloading);
+              }}
               allowClear={true}
-              loading={searching}
               enterButton
               style={{ width: 400, maxWidth: "100%" }}
             />
@@ -211,9 +205,9 @@ const TimesheetTablePage = ({ notify, loginRequired, ...rest }) => {
             title="Vị trí công việc"
             width={100}
             render={(_, record) => {
-              return record.DepartmentList.length == 0
+              return record.DepartmentNameList.length == 0
                 ? "Tất cả"
-                : record.DepartmentList.join("; ");
+                : record.DepartmentNameList.join("; ");
             }}
           />
           <Column
@@ -371,18 +365,17 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
       let response = await GetDepartmentList();
       if (response.Status === 1) {
         let { DepartmentList } = response.ResponseData;
-        let index = optionList.findIndex((element) => element.key === 0);
-        let options = optionList;
+        let option = optionList[0];
+        console.log(option);
+        option.children = [];
         DepartmentList.forEach((department) => {
-          options[index].children.push({
-            // pId: options[index].value,
-            key: department.Id,
+          option.children.push({
+            // key: department.Id,
             title: department.Name,
-            value: department.Name,
+            value: department.Id,
           });
         });
-        console.log(options);
-        setOptionList(options);
+        setOptionList([option]);
         return;
       }
       throw new Error(response.Description);
@@ -520,17 +513,18 @@ const AddReportComponent = ({ notify, insertReportFE, ...rest }) => {
               name="DepartmentList"
               key="DepartmentList"
               required
-              initialValue={[0]}
             >
               <TreeSelect
                 // treeDataSimpleMode={true}
                 treeData={optionList}
+                // treeData={treeData}
                 treeCheckable={true}
-                showCheckedStrategy={TreeSelect.SHOW_CHILD}
+                showCheckedStrategy={TreeSelect.SHOW_PARENT}
                 showSearch={true}
                 loading={loading}
                 treeNodeLabelProp="title"
                 treeDefaultExpandAll={true}
+                multiple={true}
               ></TreeSelect>
             </Form.Item>
             <Form.Item

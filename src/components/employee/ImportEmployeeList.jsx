@@ -27,7 +27,7 @@ const ImportDataComponent = ({ notify, ...rest }) => {
       console.log(url);
       var link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "Template");
+      link.setAttribute("download", "Template.xlsx");
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);

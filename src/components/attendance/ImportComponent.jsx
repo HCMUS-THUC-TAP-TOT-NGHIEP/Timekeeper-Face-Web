@@ -31,7 +31,7 @@ const ImportTimekeeperData = ({ notify, ...rest }) => {
       console.log(url);
       var link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "TimekeeperData");
+      link.setAttribute("download", "TimekeeperData.xlsx");
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
@@ -228,7 +228,7 @@ const ImportTimesheetData = ({
       console.log(url);
       var link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "TimesheetData_Import");
+      link.setAttribute("download", "TimesheetData_Import.xlsx");
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);

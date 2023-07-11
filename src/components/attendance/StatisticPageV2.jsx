@@ -139,7 +139,7 @@ const StatisticPageV2 = ({ notify, loginRequired, ...rest }) => {
           "download",
           `Dữ liệu chấm công từ ngày ${dateRange[0].format(
             Config.DateFormat
-          )} dến ngày ${dateRange[1].format(Config.DateFormat)}`
+          )} dến ngày ${dateRange[1].format(Config.DateFormat)}.xlsx`
         );
         document.body.appendChild(link);
         link.click();

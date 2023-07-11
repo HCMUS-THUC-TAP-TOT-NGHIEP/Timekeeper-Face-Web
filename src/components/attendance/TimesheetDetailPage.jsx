@@ -734,7 +734,7 @@ const ExportReportComponent = ({ notify, timesheet, ...rest }) => {
         url = URL.createObjectURL(response);
         var link = document.createElement("a");
         link.href = url;
-        link.setAttribute("download", timesheet.Name);
+        link.setAttribute("download", timesheet.Name + ".xlsx");
         document.body.appendChild(link);
         link.click();
         link.parentNode.removeChild(link);

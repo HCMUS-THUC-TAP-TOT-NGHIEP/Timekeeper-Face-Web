@@ -174,7 +174,7 @@ const EarlyLateCard = ({ notify, ...rest }) => {
     async function loadData() {
       try {
         setLoading(true);
-        let firstDay = dayjs().toISOString();
+        let firstDay = dayjs().locale("vi").toISOString().replace("Z", "");
         let response = await GetEarlyLateCount({
           DateFrom: firstDay,
           DateTo: null,
@@ -223,7 +223,7 @@ const OffCard = ({ notify, ...rest }) => {
     async function loadData() {
       try {
         setLoading(true);
-        let firstDay = dayjs().toISOString();
+        let firstDay = dayjs().locale("vi").toISOString().replace("Z", "");
         let response = await GetOffCount({
           DateFrom: firstDay,
           DateTo: null,
